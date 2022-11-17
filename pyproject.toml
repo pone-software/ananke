@@ -1,0 +1,101 @@
+[tool.poetry]
+name = "pone-ananke"
+version = "0.1.0"
+description = ""
+authors = ["Janik Prottung <me@jprottung.com>"]
+readme = "README.md"
+packages = [{include = "ananke"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^5.0.4"
+mypy = "^0.991"
+black = {extras = ["jupyter"], version = "^22.10.0"}
+pytest = "^7.2.0"
+jupyter = "^1.0.0"
+pytest-cov = "^4.0.0"
+isort = "^5.10.1"
+sphinx = "^5.3.0"
+sphinx-rtd-theme = "^1.1.1"
+pydocstyle = {extras = ["toml"], version = "^6.1.1"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.black]
+target-version = ["py38"]
+preview = true
+force-exclude = '''
+.*/setup\.py$
+'''
+
+[tool.pydocstyle]
+convention = "google"
+
+
+[tool.mypy]
+python_version = "3.8"
+files = "apollo"
+strict = true
+warn_return_any = true
+
+[[tool.mypy.overrides]]
+module = [
+    "apollo.data.importers",
+    "apollo.graph.*",
+    "examples.*",
+    "tests.*"
+]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "matplotlib",
+    "matplotlib.*",
+    "torch",
+    "plotly",
+    "plotly.*",
+    "awkward",
+    "pandas",
+    "olympus.*"
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+# Personal preference: I am too used to native traceback
+testpaths = [
+    "tests"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "nocov",
+    "if TYPE_CHECKING:",
+]
+
+[tool.coverage.run]
+# Activating branch coverage is super important
+branch = true
+omit = [
+  # add your files to omit here
+    ]
+
+
+[tool.isort]
+py_version = 38
+profile = "black"
+combine_as_imports = true
+lines_between_types = 1
+lines_after_imports = 2
+src_paths = ["apollo", "tests"]
+extend_skip = ["setup.py"]
+known_third_party = ["poetry.core"]
