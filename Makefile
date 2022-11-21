@@ -22,7 +22,7 @@ lint:  ## Run linting
 	poetry run black --check $(PACKAGENAME)
 	poetry run isort -c $(PACKAGENAME)
 	poetry run flake8 $(PACKAGENAME)
-	# poetry run pydocstyle $(PACKAGENAME)
+	poetry run pydocstyle $(PACKAGENAME)
 .PHONY: lint
 
 lint-fix:  ## Run autoformatters
