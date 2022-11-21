@@ -4,7 +4,7 @@ from enum import Enum, auto
 from typing import List
 
 from ananke.data.detector import Detector
-from ananke.data.geometry import OrientedLocatedObject
+from ananke.models.geometry import OrientedLocatedObject
 
 
 @dataclass
@@ -60,7 +60,7 @@ class EventType(Enum):
 
 @dataclass
 class EventRecord(Record):
-    """Record of a event that happened."""
+    """Record of an event that happened."""
 
     #: Energy of the event
     energy: float
