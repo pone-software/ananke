@@ -2,7 +2,7 @@
 import numpy as np
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import List, Any
+from typing import List, Any, Optional
 
 from numpy import typing as npt
 
@@ -25,7 +25,7 @@ class PMT(OrientedLocatedObject):
 
     def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
         oriented_array = super()._get_numpy_array(dtype=dtype)
-        return np.append(oriented_array, self.ID)
+        return np.insert(oriented_array, 0, self.ID)
 
 
 @dataclass
@@ -36,15 +36,26 @@ class Module(LocatedObject):
     ID: int
 
     #: Module PMTs
-    PMTs: List[PMT]
+    PMTs: Optional[List[PMT]] = None
 
     def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
+        # create numpy array without PMTs
+        if self.PMTs is None:
+            module_array = super()._get_numpy_array(dtype=dtype)
+
+            # add ID
+            module_array = np.insert(module_array, 0, self.ID)
+
+            # append radius
+            module_array = np.append(module_array, self.location.norm)
+
+            return module_array
+
         module_arrays = []
-        module_array = super()._get_numpy_array(dtype=dtype)
 
         for pmt in self.PMTs:
-            current_array = np.append(module_array, np.array(pmt))
-            current_array = np.append(current_array, self.ID)
+            current_array = np.array(pmt)
+            current_array = np.insert(current_array, 0, self.ID)
             module_arrays.append(current_array)
 
         return np.array(module_arrays, dtype=dtype)
@@ -62,14 +73,13 @@ class String(LocatedObject):
 
     def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
         string_arrays = []
-        string_array = super()._get_numpy_array(dtype=dtype)
 
         for module in self.modules:
-            current_array = np.append(string_array, np.array(module, dtype=dtype))
-            current_array = np.append(current_array, self.ID)
+            current_array = np.array(module, dtype=dtype)
+            current_array = np.insert(current_array, 0, self.ID, axis=1)
             string_arrays.append(current_array)
 
-        return np.array(string_arrays, dtype=dtype)
+        return np.concatenate(string_arrays, dtype=dtype)
 
 
 @dataclass

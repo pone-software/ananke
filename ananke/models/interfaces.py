@@ -14,6 +14,10 @@ class NumpyRepresentable(Sequence):
     numpy_array: npt.NDArray[Any] = field(init=False)
 
     def __post_init__(self):
+        """Update Numpy after Init"""
+        self._update_numpy_array()
+
+    def _update_numpy_array(self):
         self.numpy_array = self._get_numpy_array()
 
     @abstractmethod

@@ -38,8 +38,31 @@ class AbstractDetectorBuilder(ABC):
         """
         raise NotImplementedError('get string locations not implemented')
 
+    def __get_noise_rate_for_pmt(self) -> float:
+        """Generates a noise rate based on input or gamma distribution.
+
+        Returns:
+            Noise rate for a PMT
+        """
+        noise_rate = 0
+
+        # Randomize noise level with given parameters
+        if self.configuration.pmt.noise_rate > 0 and self.configuration.pmt.gamma_scale > 0:
+            noise_rate = scipy.stats.gamma.rvs(
+                1, self.configuration.pmt.gamma_scale,
+                random_state=self.rng
+            ) * self.configuration.pmt.noise_rate
+        return noise_rate
+
     def _get_pmts_for_module_location(self, module_location: Vector3D) -> List[PMT]:
         """Build the PMTs for a given module.
+
+        The method is as follows. At the moment, we have two layers at each half of
+        the module. An inner one and an outer one. Starting from the vertical
+        separation ring, the inner PMTs have an angle of 25° and the outer ones one
+        of 57.5°. There is four each spread out evenly. The outer and inner PMTs are
+        shifted by 45°. The inner modules start at an azimuthal angle of 45°. In total
+        16 PMTs are generated as we have two halves
 
         Args:
             module_location: Location of the general for which to generate PMTs
@@ -48,17 +71,55 @@ class AbstractDetectorBuilder(ABC):
             List containing all PMTs for a given module
         """
         efficiency = self.configuration.pmt.efficiency
-        noise_rate = 0
+        module_radius = self.configuration.module.radius  # TODO: Better place?
 
-        if self.configuration.pmt.noise_rate > 0 and self.configuration.pmt.gamma_scale > 0:
-            noise_rate = scipy.stats.gamma.rvs(1, self.configuration.pmt.gamma_scale,
-                                               random_state=self.rng) * self.configuration.pmt.noise_rate
+        # We start with having the module "flat" as the ring is horizontal.
+        # Afterwards we upright the module otherwise my head explodes :D
 
-        PMTs = [PMT(ID=0, location=module_location, orientation=Vector3D(x=1, y=0, z=0),
-                    efficiency=self.configuration.pmt.efficiency, noise_rate=noise_rate)]
+        orientation = []
+
+        for i in range(8):
+            phi = 2 * np.pi / 8 * i
+            if i % 2:
+                theta = 57.5 / 90 * np.pi
+            else:
+                theta = 25 / 90 * np.pi
+
+            original_vector_top = Vector3D.from_spherical(module_radius, phi, theta)
+            original_vector_bottom = Vector3D.from_spherical(module_radius, phi, -theta)
+
+            # rotate 90° around y-axis (x,y,z) -> (-z, y, x)
+
+            rotated_vector_top = Vector3D(
+                x=-original_vector_top.z,
+                y=-original_vector_top.y,
+                z=-original_vector_top.x,
+            )
+
+            rotated_vector_bottom = Vector3D(
+                x=-original_vector_bottom.z,
+                y=-original_vector_bottom.y,
+                z=-original_vector_bottom.x,
+            )
+
+            orientation.append(rotated_vector_top)
+            orientation.append(rotated_vector_bottom)
+
+        PMTs = []
+
+        for ID, orientation in enumerate(orientation):
+            PMTs.append(PMT(
+                ID=ID,
+                location=module_location,
+                orientation=orientation,
+                efficiency=self.configuration.pmt.efficiency,
+                noise_rate=self.__get_noise_rate_for_pmt()
+            ))
+
         return PMTs
 
-    def _get_modules_for_string_location(self, string_location: Vector3D) -> List[Module]:
+    def _get_modules_for_string_location(self, string_location: Vector3D) -> List[
+        Module]:
         """Build the modules for a given string.
 
         Args:
@@ -74,11 +135,20 @@ class AbstractDetectorBuilder(ABC):
 
         for module_ID in range(string_configuration.module_number):
             z_location = module_ID * string_configuration.module_distance + string_configuration.z_offset
-            module_location = Vector3D(x=string_location.x, y=string_location.y, z=z_location)
+            module_location = Vector3D(
+                x=string_location.x,
+                y=string_location.y,
+                z=z_location
+            )
+            PMTs = None
+
+            if self.configuration.module.include_pmts:
+                PMTs = self._get_pmts_for_module_location(module_location)
+
             module = Module(
                 ID=module_ID,
                 location=module_location,
-                PMTs=self._get_pmts_for_module_location(module_location)
+                PMTs=PMTs
             )
             modules.append(module)
 

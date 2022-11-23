@@ -1,6 +1,6 @@
 """Module containing all the configuration classes."""
 from enum import Enum
-from typing import Union, Optional, Literal
+from typing import Union, Literal
 
 from pydantic import BaseModel, Field, PositiveInt, PositiveFloat, NonNegativeFloat, confloat
 
@@ -86,6 +86,9 @@ class ModuleConfiguration(BaseModel):
 
     #: radius of a given module
     radius: PositiveFloat
+
+    #: whether to stop at the module level or not
+    include_pmts: bool = True
 
 
 class StringConfiguration(BaseModel):
