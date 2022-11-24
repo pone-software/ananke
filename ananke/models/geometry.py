@@ -2,16 +2,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 import numpy as np
+import pandas as pd
 
-from ananke.models.interfaces import NumpyRepresentable
-from numpy import typing as npt
+from ananke.models.interfaces import ScientificConvertible
 
 
 @dataclass
-class Vector2D(NumpyRepresentable):
+class Vector2D(ScientificConvertible):
     """A 2D vector with interface to radial and cartesian coordinates."""
 
     #: X-component
@@ -48,19 +47,19 @@ class Vector2D(NumpyRepresentable):
 
         return Vector2D(x=self.x + other.x, y=self.y + other.y)
 
-    def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
-        """Gets the numpy array to set for the Vector2D class.
+    def to_pandas(self) -> pd.DataFrame:
+        """Gets the dataframe of the Vector2D class.
 
-        Generates a numpy array containing the x and y value.
-
-        Args:
-            dtype: Type of the numpy array
+        Generates a list of the dataframes of the vector.
 
         Returns:
-            Numpy array with format [x,y]
+            Dataframe containing vector information
 
         """
-        return np.array([self.x, self.y], dtype=dtype)
+        return pd.DataFrame({
+            'x': self.x,
+            'y': self.y,
+        }, index=[0])
 
     def _get_scaling_factor_for_length(self, length: float) -> float:
         """Calculates the factor to scale by to get to length.
@@ -84,7 +83,6 @@ class Vector2D(NumpyRepresentable):
         factor = self._get_scaling_factor_for_length(length)
         self.x *= factor
         self.y *= factor
-        self._update_numpy_array()
 
     @classmethod
     def from_polar(cls, norm: float, phi: float) -> Vector2D:
@@ -132,19 +130,17 @@ class Vector3D(Vector2D):
 
         return Vector3D(x=self.x + other.x, y=self.y + other.y, z=self.z + other.z)
 
-    def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
-        """Gets the numpy array to set for the Vector3D class.
+    def to_pandas(self) -> pd.DataFrame:
+        """Gets the dataframe of the Vector3D class.
 
-        Generates a numpy array containing the x, y and z value.
-
-        Args:
-            dtype: Type of the numpy array
+        Generates a list of the dataframes of the vector.
 
         Returns:
-            Numpy array with format [x,y, z]
+            Dataframe containing vector information
 
         """
-        return np.append(super()._get_numpy_array(dtype=dtype), self.z)
+        dataframe = super().to_pandas()
+        return dataframe.assign(z=self.z)
 
     def scale_to_length(self, length: float) -> None:
         """Scaling the vector to a given length.
@@ -185,25 +181,27 @@ class Vector3D(Vector2D):
 
 
 @dataclass
-class LocatedObject(NumpyRepresentable):
+class LocatedObject(ScientificConvertible):
     """Object that has a location."""
 
     #: Location of the object
     location: Vector3D
 
-    def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
-        """Gets the numpy array to set for the LocatedObject class.
+    def to_pandas(self) -> pd.DataFrame:
+        """Gets the dataframe of the oriented located object class.
 
-        Generates the numpy array by using the array of its location.
-
-        Args:
-            dtype: Type of the numpy array
+        Generates a list of the dataframes of the strings.
 
         Returns:
-            Numpy array with format [x,y,z]
+            Dataframe containing pmt information
 
         """
-        return np.array(self.location)
+        dataframe = self.location.to_pandas()
+        return dataframe.rename(columns={
+            'x': 'location_x',
+            'y': 'location_y',
+            'z': 'location_z',
+        })
 
 
 @dataclass
@@ -213,22 +211,18 @@ class OrientedLocatedObject(LocatedObject):
     #: Orientation of the object
     orientation: Vector3D
 
-    def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
-        """Gets the numpy array to set for the OrientedLocatedObject class.
+    def to_pandas(self) -> pd.DataFrame:
+        """Gets the dataframe of the oriented located object class.
 
-        Generates the numpy array by using the array of its location appended by the
-        angles at which the object is rotated as well as the norm of the orientation
-        vector.
-
-        Args:
-            dtype: Type of the numpy array
+        Generates a list of the dataframes of the strings.
 
         Returns:
-            Numpy array with format [x, y, z,norm, phi, theta]
+            Dataframe containing pmt information
 
         """
-        location_array = super()._get_numpy_array()
-        return np.append(
-            location_array,
-            [self.orientation.norm, self.orientation.phi, self.orientation.theta],
+        dataframe = super().to_pandas()
+        return dataframe.assign(
+            orientation_x=self.orientation.x,
+            orientation_y=self.orientation.y,
+            orientation_z=self.orientation.z,
         )

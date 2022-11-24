@@ -1,12 +1,12 @@
 """Contains all the classes for representing a detector."""
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import List
 
 import numpy as np
+import pandas as pd
 
 from ananke.models.geometry import LocatedObject, OrientedLocatedObject, Vector3D
-from ananke.models.interfaces import NumpyRepresentable
-from numpy import typing as npt
+from ananke.models.interfaces import ScientificConvertible
 
 
 @dataclass
@@ -19,21 +19,48 @@ class PMT(OrientedLocatedObject):
     #: PMT efficiency
     efficiency: float
 
-    #: PMT noise rate 1/x
+    #: Opening area of the PMT
+    area: float
+
+    #: PMT noise rate 1/value
     noise_rate: float
 
-    def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
-        """Returns the orientated array and adds the pmt id.
+    def to_pandas(self) -> pd.DataFrame:
+        """Gets the dataframe of the PMT class.
 
-        Args:
-            dtype: type of the numpy array
+        Generates dataframe of the PMT.
 
         Returns:
-            Array containing the orientation and id.
-        """
-        oriented_array = super()._get_numpy_array(dtype=dtype)
-        return np.insert(oriented_array, 0, self.ID)
+            Dataframe containing pmt information
 
+        """
+        dataframe = super().to_pandas()
+        dataframe = dataframe.assign(
+            pmt_id=self.ID,
+            pmt_efficiency=self.efficiency,
+            pmt_area=self.area,
+            pmt_noise_rate=self.noise_rate,
+            pmt_x=lambda value: value.location_x + value.orientation_x,
+            pmt_y=lambda value: value.location_y + value.orientation_x,
+            pmt_z=lambda value: value.location_z + value.orientation_x,
+        )
+        dataframe = dataframe.rename(
+            columns={
+                'orientation_x': 'pmt_orientation_x',
+                'orientation_y': 'pmt_orientation_y',
+                'orientation_z': 'pmt_orientation_z',
+            }
+        )
+        dataframe = dataframe.drop(
+            [
+                'location_x',
+                'location_y',
+                'location_z',
+            ], axis=1
+        )
+        columns = dataframe.columns.tolist()
+
+        return dataframe[columns[3:] + columns[:3]]
     @property
     def surface_location(self) -> Vector3D:
         """Returns the final PMT location (location-vector + orientation-vector).
@@ -55,42 +82,32 @@ class Module(LocatedObject):
     radius: float
 
     #: Module PMTs
-    PMTs: Optional[List[PMT]] = None
+    PMTs: List[PMT]
 
-    def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
-        """Get numpy array to set for the module class.
+    def to_pandas(self) -> pd.DataFrame:
+        """Gets the dataframe of the module class.
 
-        When module contains no PMTs returns the location along with module ID.
-        If PMTs are present it generates a list of PMT arrays with the according
-        PMT-ID.
-
-        Args:
-            dtype: Type of the numpy array
+        Generates a list of the dataframes of the module.
 
         Returns:
-            Numpy array containing module or list of PMT numpy arrays.
+            Dataframe containing pmt information
 
         """
-        # create numpy array without PMTs
-        if self.PMTs is None:
-            module_array = np.array(self.location)
 
-            # add ID
-            module_array = np.insert(module_array, 0, self.ID)
-
-            # append radius
-            module_array = np.append(module_array, self.location.norm)
-
-            return module_array
-
-        module_arrays = []
+        pmt_dataframes = []
 
         for pmt in self.PMTs:
-            current_array = np.array(pmt)
-            current_array = np.insert(current_array, 0, self.ID)
-            module_arrays.append(current_array)
+            pmt_dataframes.append(pmt.to_pandas())
 
-        return np.array(module_arrays, dtype=dtype)
+        dataframe = pd.concat(pmt_dataframes, ignore_index=True)
+
+        return dataframe.assign(
+            module_id=self.ID,
+            module_radius=self.radius,
+            module_x=self.location.x,
+            module_y=self.location.y,
+            module_z=self.location.z,
+        )
 
     @property
     def pmt_locations(self) -> List[Vector3D]:
@@ -102,9 +119,6 @@ class Module(LocatedObject):
         Raises:
             AttributeError: Only possible when modules have pmts
         """
-        if self.PMTs is None:
-            raise AttributeError("Cannot create PMT Coordinates without PMTs")
-
         pmt_locations = []
 
         for pmt in self.PMTs:
@@ -123,27 +137,23 @@ class String(LocatedObject):
     #: Modules in string
     modules: List[Module]
 
-    def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
-        """Gets the numpy array to set for the string class.
+    def to_pandas(self) -> pd.DataFrame:
+        """Gets the dataframe of the string class.
 
-        Generates a list of the numpy arrays of the modules and inserts the string
-        ID.
-
-        Args:
-            dtype: Type of the numpy array
+        Generates a list of the dataframes of the strings.
 
         Returns:
-            Numpy array containing list of PMT or module numpy arrays.
+            Dataframe containing pmt information
 
         """
-        string_arrays = []
+        module_frames = []
 
         for module in self.modules:
-            current_array = np.array(module, dtype=dtype)
-            current_array = np.insert(current_array, 0, self.ID, axis=1)
-            string_arrays.append(current_array)
+            module_frames.append(module.to_pandas())
 
-        return np.concatenate(string_arrays, dtype=dtype)
+        dataframe = pd.concat(module_frames, ignore_index=True)
+
+        return dataframe.assign(string_id=self.ID)
 
     @property
     def module_locations(self) -> List[Vector3D]:
@@ -178,30 +188,27 @@ class String(LocatedObject):
 
 
 @dataclass
-class Detector(NumpyRepresentable):
+class Detector(ScientificConvertible):
     """Python class representing detector."""
 
     #: list of detector strings
     strings: List[String]
 
-    def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
-        """Gets the numpy array to set for the detector class.
+    def to_pandas(self) -> pd.DataFrame:
+        """Gets the dataframe of the detector class.
 
-        Generates a list of the numpy arrays of the strings.
-
-        Args:
-            dtype: Type of the numpy array
+        Generates a list of the dataframes of the strings.
 
         Returns:
-            Numpy array containing list of string or module numpy arrays.
+            Dataframe containing pmt information
 
         """
         string_arrays = []
 
         for string in self.strings:
-            string_arrays.append(np.array(string))
+            string_arrays.append(string.to_pandas())
 
-        return np.concatenate(string_arrays, dtype=dtype)
+        return pd.concat(string_arrays, ignore_index=True)
 
     @property
     def module_locations(self) -> List[Vector3D]:

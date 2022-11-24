@@ -2,7 +2,7 @@
 import itertools
 
 from abc import ABC, abstractmethod
-from typing import List, Mapping, Type
+from typing import List, Mapping, Type, Optional
 
 import numpy as np
 import scipy
@@ -24,14 +24,24 @@ class AbstractDetectorBuilder(ABC):
         - Implement Calibration module
     """
 
-    def __init__(self, configuration: DetectorConfiguration):
+    def __init__(
+            self,
+            configuration: DetectorConfiguration,
+            detector_subclass: Optional[Type[Detector]] = None
+    ) -> None:
         """Constructor of the Detector builder.
 
         Args:
             configuration: Configuration to build the detector from.
+            detector_subclass: Subclass by which detector should be generated.
         """
         self.configuration = configuration
         self.rng = np.random.default_rng(configuration.seed)
+
+        if detector_subclass is None:
+            self.detector_class = Detector
+        else:
+            self.detector_class = detector_subclass
 
     @abstractmethod
     def _get_string_locations(self) -> List[Vector3D]:
@@ -56,18 +66,20 @@ class AbstractDetectorBuilder(ABC):
 
         # Randomize noise level with given parameters
         if (
-            self.configuration.pmt.noise_rate > 0
-            and self.configuration.pmt.gamma_scale > 0
+                self.configuration.pmt.noise_rate > 0
+                and self.configuration.pmt.gamma_scale > 0
         ):
             noise_rate = (
-                scipy.stats.gamma.rvs(
-                    1, self.configuration.pmt.gamma_scale, random_state=self.rng
-                )
-                * self.configuration.pmt.noise_rate
+                    scipy.stats.gamma.rvs(
+                        1, self.configuration.pmt.gamma_scale, random_state=self.rng
+                    )
+                    * self.configuration.pmt.noise_rate
             )
         return noise_rate
 
-    def _get_pmts_for_module_location(self, module_location: Vector3D) -> List[PMT]:
+    def _get_pmts_for_module_location(
+            self, module_location: Vector3D, module_as_PMT=False
+    ) -> List[PMT]:
         """Build the PMTs for a given module.
 
         The method is as follows. At the moment, we have two layers at each half of
@@ -79,10 +91,23 @@ class AbstractDetectorBuilder(ABC):
 
         Args:
             module_location: Location of the general for which to generate PMTs
+            module_as_PMT: When there should only be one PMT at module position
 
         Returns:
             List containing all PMTs for a given module
         """
+        # Return only one central PMT if module should not contain any
+        if module_as_PMT:
+            return [
+                PMT(
+                    location=module_location,
+                    orientation=Vector3D(x=0, y=0, z=0),
+                    noise_rate=self.__get_noise_rate_for_pmt(),
+                    efficiency=self.configuration.pmt.efficiency,
+                    area=self.configuration.pmt.area,
+                    ID=0
+                )
+            ]
         module_radius = self.configuration.module.radius  # TODO: Better place?
 
         # We start with having the module "flat" as the ring is horizontal.
@@ -133,13 +158,14 @@ class AbstractDetectorBuilder(ABC):
                     orientation=orientation,
                     efficiency=self.configuration.pmt.efficiency,
                     noise_rate=self.__get_noise_rate_for_pmt(),
+                    area=self.configuration.pmt.area
                 )
             )
 
         return PMTs
 
     def _get_modules_for_string_location(
-        self, string_location: Vector3D
+            self, string_location: Vector3D
     ) -> List[Module]:
         """Build the modules for a given string.
 
@@ -156,16 +182,16 @@ class AbstractDetectorBuilder(ABC):
 
         for module_ID in range(0, string_configuration.module_number):
             z_location = (
-                module_ID * string_configuration.module_distance
-                + string_configuration.z_offset
+                    module_ID * string_configuration.module_distance
+                    + string_configuration.z_offset
             )
             module_location = Vector3D(
                 x=string_location.x, y=string_location.y, z=z_location
             )
-            PMTs = None
-
-            if self.configuration.module.include_pmts:
-                PMTs = self._get_pmts_for_module_location(module_location)
+            PMTs = self._get_pmts_for_module_location(
+                module_location=module_location,
+                module_as_PMT=self.configuration.module.module_as_PMT
+            )
 
             module = Module(
                 ID=module_ID,
@@ -209,7 +235,9 @@ class AbstractDetectorBuilder(ABC):
 
         """
         string_locations = self._get_string_locations()
-        return Detector(strings=self._get_strings(string_locations=string_locations))
+        return self.detector_class(
+            strings=self._get_strings(string_locations=string_locations)
+        )
 
 
 class SingleStringDetectorBuilder(AbstractDetectorBuilder):
@@ -242,7 +270,7 @@ class TriangularDetectorBuilder(AbstractDetectorBuilder):
             raise ValueError("Triangular Geometry needs LengthGeometryConfiguration")
         side_length = self.configuration.geometry.side_length
 
-        height = np.sqrt(side_length**2 - (side_length / 2) ** 2)
+        height = np.sqrt(side_length ** 2 - (side_length / 2) ** 2)
         z_position = 0.0
         return [
             Vector3D(x=-side_length / 2, y=-height / 3, z=z_position),
@@ -351,8 +379,12 @@ class GridDetectorBuilder(AbstractDetectorBuilder):
 class DetectorBuilderService:
     """Class responsible for building detectors."""
 
-    def __init__(self) -> None:
-        """Constructor for the DetectorBuilderService."""
+    def __init__(self, detector_subclass: Optional[Type[Detector]] = None) -> None:
+        """Constructor for the DetectorBuilderService.
+
+        Args:
+            detector_subclass: Subclass by which detector should be generated.
+        """
         self.__builders: Mapping[str, Type[AbstractDetectorBuilder]] = {
             DetectorGeometries.GRID: GridDetectorBuilder,
             DetectorGeometries.SINGLE: SingleStringDetectorBuilder,
@@ -360,6 +392,7 @@ class DetectorBuilderService:
             DetectorGeometries.TRIANGULAR: TriangularDetectorBuilder,
             DetectorGeometries.RHOMBUS: RhombusDetectorBuilder,
         }
+        self.detector_subclass = detector_subclass
 
     def get(self, configuration: DetectorConfiguration) -> Detector:
         """Returns a detector based on a given configuration.
@@ -371,6 +404,9 @@ class DetectorBuilderService:
             Detector based on the given configuration.
 
         """
-        builder = self.__builders[configuration.geometry.type](configuration)
+        builder = self.__builders[configuration.geometry.type](
+            configuration=configuration,
+            detector_subclass=self.detector_subclass
+        )
 
         return builder.get()

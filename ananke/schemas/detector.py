@@ -94,7 +94,10 @@ class PMTConfiguration(BaseModel):
     #: Efficiency of the PMT
     efficiency: confloat(ge=0, le=1) = 0.5  # type: ignore
 
-    #: Base Noise rate for the detector
+    #: Area of the PMT opening [m^2]
+    area: NonNegativeFloat = 75e-3 / 2
+
+    #: Base Noise rate for the detector [1/ns]
     noise_rate: NonNegativeFloat = 16e-5
 
     #: Scale of gamma distribution for noise rate. If `0.0`, the fixed value is taken
@@ -108,7 +111,7 @@ class ModuleConfiguration(BaseModel):
     radius: PositiveFloat
 
     #: whether to stop at the module level or not
-    include_pmts: bool = True
+    module_as_PMT: bool = False
 
 
 class StringConfiguration(BaseModel):
