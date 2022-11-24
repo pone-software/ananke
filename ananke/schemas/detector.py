@@ -1,16 +1,34 @@
 """Module containing all the configuration classes."""
 from enum import Enum
-from typing import Union, Literal
+from typing import Literal, Union
 
-from pydantic import BaseModel, Field, PositiveInt, PositiveFloat, NonNegativeFloat, confloat
+from pydantic import (
+    BaseModel,
+    Field,
+    NonNegativeFloat,
+    PositiveFloat,
+    PositiveInt,
+    confloat,
+)
+
 
 class DetectorGeometries(str, Enum):
     """Possible detector geometries."""
-    SINGLE = 'single'
-    TRIANGULAR = 'triangular'
-    GRID = 'grid'
-    HEXAGONAL = 'hexagonal'
-    RHOMBUS = 'rhombus'
+
+    #: Detector of only a single string.
+    SINGLE = "single"
+
+    #: Detector with three triangular strings.
+    TRIANGULAR = "triangular"
+
+    #: detector with a given number of grid located strings.
+    GRID = "grid"
+
+    #: detector with a given number of hexagonal located strings.
+    HEXAGONAL = "hexagonal"
+
+    #: Detector of four square strings
+    RHOMBUS = "rhombus"
 
 
 class Position(BaseModel):
@@ -29,9 +47,11 @@ class GeometryConfiguration(BaseModel):
     #: Start position of the current geometry
     start_position: Position = Position(x=0.0, y=0.0)
 
-    type: Literal[DetectorGeometries.SINGLE]
+    type: str
+
 
 class SingleGeometryConfiguration(GeometryConfiguration):
+    """Configuration for a single string geometry."""
 
     #: Type of the expected detector geometry
     type: Literal[DetectorGeometries.SINGLE]
@@ -59,7 +79,7 @@ class SidedGeometryConfiguration(GeometryConfiguration):
     """
 
     #: types for SidedGeometryConfiguration
-    type : Literal[DetectorGeometries.GRID, DetectorGeometries.HEXAGONAL]
+    type: Literal[DetectorGeometries.GRID, DetectorGeometries.HEXAGONAL]
 
     #: Amounts for the number of modules per side
     number_of_strings_per_side: PositiveInt
@@ -72,7 +92,7 @@ class PMTConfiguration(BaseModel):
     """Configuration for a single PMT."""
 
     #: Efficiency of the PMT
-    efficiency: confloat(ge=0, le=1) = 0.5
+    efficiency: confloat(ge=0, le=1) = 0.5  # type: ignore
 
     #: Base Noise rate for the detector
     noise_rate: NonNegativeFloat = 16e-5
@@ -82,7 +102,7 @@ class PMTConfiguration(BaseModel):
 
 
 class ModuleConfiguration(BaseModel):
-    """Configuration for a single Module"""
+    """Configuration for a single Module."""
 
     #: radius of a given module
     radius: PositiveFloat
@@ -92,7 +112,7 @@ class ModuleConfiguration(BaseModel):
 
 
 class StringConfiguration(BaseModel):
-    """Configuration for a single string"""
+    """Configuration for a single string."""
 
     #: The distance of the first module to the flow
     z_offset: float = 0.0
@@ -108,8 +128,11 @@ class DetectorConfiguration(BaseModel):
     """Configuration for the detector builder to build detector."""
 
     #: Settings regarding the shape of the final detector
-    geometry: Union[LengthGeometryConfiguration, SidedGeometryConfiguration, GeometryConfiguration] \
-        = Field(..., discriminator="type")
+    geometry: Union[
+        LengthGeometryConfiguration,
+        SidedGeometryConfiguration,
+        SingleGeometryConfiguration,
+    ] = Field(..., discriminator="type")
 
     #: Configuration for the individual string
     string: StringConfiguration

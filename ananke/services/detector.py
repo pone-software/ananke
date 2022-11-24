@@ -1,15 +1,20 @@
 """Module containing all the Services for a detector."""
 import itertools
+
 from abc import ABC, abstractmethod
-from enum import Enum
-from typing import List
+from typing import List, Mapping, Type
 
 import numpy as np
 import scipy
 
-from ananke.models.detector import Detector, String, Module, PMT
+from ananke.models.detector import PMT, Detector, Module, String
 from ananke.models.geometry import Vector3D
-from ananke.schemas.detector import DetectorConfiguration, DetectorGeometries
+from ananke.schemas.detector import (
+    DetectorConfiguration,
+    DetectorGeometries,
+    LengthGeometryConfiguration,
+    SidedGeometryConfiguration,
+)
 
 
 class AbstractDetectorBuilder(ABC):
@@ -20,23 +25,26 @@ class AbstractDetectorBuilder(ABC):
     """
 
     def __init__(self, configuration: DetectorConfiguration):
-        """Constructor of the Detector builder
+        """Constructor of the Detector builder.
 
         Args:
-            configuration:
+            configuration: Configuration to build the detector from.
         """
         self.configuration = configuration
         self.rng = np.random.default_rng(configuration.seed)
 
     @abstractmethod
     def _get_string_locations(self) -> List[Vector3D]:
-        """Abstract method supposed to return an array of string locations in child classes.
+        """Abstract method supposed to return an array of string locations.
 
         Returns:
             List containing the string locations for the detector to build
 
+        Raises:
+            NotImplementedError: get string locations not implemented
+
         """
-        raise NotImplementedError('get string locations not implemented')
+        raise NotImplementedError("get string locations not implemented")
 
     def __get_noise_rate_for_pmt(self) -> float:
         """Generates a noise rate based on input or gamma distribution.
@@ -47,11 +55,16 @@ class AbstractDetectorBuilder(ABC):
         noise_rate = 0
 
         # Randomize noise level with given parameters
-        if self.configuration.pmt.noise_rate > 0 and self.configuration.pmt.gamma_scale > 0:
-            noise_rate = scipy.stats.gamma.rvs(
-                1, self.configuration.pmt.gamma_scale,
-                random_state=self.rng
-            ) * self.configuration.pmt.noise_rate
+        if (
+            self.configuration.pmt.noise_rate > 0
+            and self.configuration.pmt.gamma_scale > 0
+        ):
+            noise_rate = (
+                scipy.stats.gamma.rvs(
+                    1, self.configuration.pmt.gamma_scale, random_state=self.rng
+                )
+                * self.configuration.pmt.noise_rate
+            )
         return noise_rate
 
     def _get_pmts_for_module_location(self, module_location: Vector3D) -> List[PMT]:
@@ -70,13 +83,12 @@ class AbstractDetectorBuilder(ABC):
         Returns:
             List containing all PMTs for a given module
         """
-        efficiency = self.configuration.pmt.efficiency
         module_radius = self.configuration.module.radius  # TODO: Better place?
 
         # We start with having the module "flat" as the ring is horizontal.
         # Afterwards we upright the module otherwise my head explodes :D
 
-        orientation = []
+        orientations = []  # type: List[Vector3D]
 
         for i in range(8):
             phi = 2 * np.pi / 8 * i
@@ -87,8 +99,12 @@ class AbstractDetectorBuilder(ABC):
 
             theta_start = np.pi / 2
 
-            original_vector_top = Vector3D.from_spherical(module_radius, phi, theta_start + theta)
-            original_vector_bottom = Vector3D.from_spherical(module_radius, phi, theta_start - theta)
+            original_vector_top = Vector3D.from_spherical(
+                module_radius, phi, theta_start + theta
+            )
+            original_vector_bottom = Vector3D.from_spherical(
+                module_radius, phi, theta_start - theta
+            )
 
             # rotate 90° around y-axis (x,y,z) -> (-z, y, x)
 
@@ -104,24 +120,27 @@ class AbstractDetectorBuilder(ABC):
                 z=original_vector_bottom.x,
             )
 
-            orientation.append(rotated_vector_top)
-            orientation.append(rotated_vector_bottom)
+            orientations.append(rotated_vector_top)
+            orientations.append(rotated_vector_bottom)
 
         PMTs = []
 
-        for ID, orientation in enumerate(orientation):
-            PMTs.append(PMT(
-                ID=ID,
-                location=module_location,
-                orientation=orientation,
-                efficiency=self.configuration.pmt.efficiency,
-                noise_rate=self.__get_noise_rate_for_pmt()
-            ))
+        for ID, orientation in enumerate(orientations):
+            PMTs.append(
+                PMT(
+                    ID=ID,
+                    location=module_location,
+                    orientation=orientation,
+                    efficiency=self.configuration.pmt.efficiency,
+                    noise_rate=self.__get_noise_rate_for_pmt(),
+                )
+            )
 
         return PMTs
 
-    def _get_modules_for_string_location(self, string_location: Vector3D) -> List[
-        Module]:
+    def _get_modules_for_string_location(
+        self, string_location: Vector3D
+    ) -> List[Module]:
         """Build the modules for a given string.
 
         Args:
@@ -136,11 +155,12 @@ class AbstractDetectorBuilder(ABC):
         modules = []
 
         for module_ID in range(0, string_configuration.module_number):
-            z_location = module_ID * string_configuration.module_distance + string_configuration.z_offset
+            z_location = (
+                module_ID * string_configuration.module_distance
+                + string_configuration.z_offset
+            )
             module_location = Vector3D(
-                x=string_location.x,
-                y=string_location.y,
-                z=z_location
+                x=string_location.x, y=string_location.y, z=z_location
             )
             PMTs = None
 
@@ -151,7 +171,7 @@ class AbstractDetectorBuilder(ABC):
                 ID=module_ID,
                 location=module_location,
                 radius=self.configuration.module.radius,
-                PMTs=PMTs
+                PMTs=PMTs,
             )
             modules.append(module)
 
@@ -175,7 +195,7 @@ class AbstractDetectorBuilder(ABC):
             string = String(
                 ID=index,
                 location=location,
-                modules=self._get_modules_for_string_location(location)
+                modules=self._get_modules_for_string_location(location),
             )
             strings.append(string)
 
@@ -189,9 +209,7 @@ class AbstractDetectorBuilder(ABC):
 
         """
         string_locations = self._get_string_locations()
-        return Detector(
-            strings=self._get_strings(string_locations=string_locations)
-        )
+        return Detector(strings=self._get_strings(string_locations=string_locations))
 
 
 class SingleStringDetectorBuilder(AbstractDetectorBuilder):
@@ -202,7 +220,7 @@ class SingleStringDetectorBuilder(AbstractDetectorBuilder):
         position = Vector3D(
             x=self.configuration.geometry.start_position.x,
             y=self.configuration.geometry.start_position.y,
-            z=0.0
+            z=0.0,
         )
 
         return [position]
@@ -212,27 +230,24 @@ class TriangularDetectorBuilder(AbstractDetectorBuilder):
     """Implementation of the detector builder for triangular detectors."""
 
     def _get_string_locations(self) -> List[Vector3D]:
-        """Get string locations for triangular detector."""
+        """Get string locations for triangular detector.
+
+        Returns:
+            Locations of the triangular strings.
+
+        Raises:
+            ValueError: Rhombus Geometry needs LengthGeometryConfiguration
+        """
+        if not isinstance(self.configuration.geometry, LengthGeometryConfiguration):
+            raise ValueError("Triangular Geometry needs LengthGeometryConfiguration")
         side_length = self.configuration.geometry.side_length
 
-        height = np.sqrt(side_length ** 2 - (side_length / 2) ** 2)
+        height = np.sqrt(side_length**2 - (side_length / 2) ** 2)
         z_position = 0.0
         return [
-            Vector3D(
-                x=- side_length / 2,
-                y=- height / 3,
-                z=z_position
-            ),
-            Vector3D(
-                x=+ side_length / 2,
-                y=- height / 3,
-                z=z_position
-            ),
-            Vector3D(
-                x=0,
-                y=+ height * 2 / 3,
-                z=z_position
-            ),
+            Vector3D(x=-side_length / 2, y=-height / 3, z=z_position),
+            Vector3D(x=+side_length / 2, y=-height / 3, z=z_position),
+            Vector3D(x=0, y=+height * 2 / 3, z=z_position),
         ]
 
 
@@ -240,7 +255,16 @@ class HexagonalDetectorBuilder(AbstractDetectorBuilder):
     """Implementation of the detector builder for hexagonal detectors."""
 
     def _get_string_locations(self) -> List[Vector3D]:
-        """Get string locations for hexagonal detector."""
+        """Get string locations for hexagonal detector.
+
+        Returns:
+            Locations of the hexagonal strings.
+
+        Raises:
+            ValueError: Hexagonal Geometry needs SidedGeometryConfiguration
+        """
+        if not isinstance(self.configuration.geometry, SidedGeometryConfiguration):
+            raise ValueError("Hexagonal Geometry needs SidedGeometryConfiguration")
         string_locations = []
         number_per_side = self.configuration.geometry.number_of_strings_per_side
         distance_between_strings = self.configuration.geometry.distance_between_strings
@@ -250,34 +274,22 @@ class HexagonalDetectorBuilder(AbstractDetectorBuilder):
             x_positions = np.linspace(
                 -(i_this_row - 1) / 2 * distance_between_strings,
                 (i_this_row - 1) / 2 * distance_between_strings,
-                i_this_row
+                i_this_row,
             )
             y_position = row_index * distance_between_strings * np.sqrt(3) / 2
             for x_position in x_positions:
-                string_locations.append(
-                    Vector3D(
-                        x=x_position,
-                        y=y_position,
-                        z=0.0
-                    )
-                )
+                string_locations.append(Vector3D(x=x_position, y=y_position, z=0.0))
 
             if row_index != 0:
                 x_positions = np.linspace(
                     -(i_this_row - 1) / 2 * distance_between_strings,
                     (i_this_row - 1) / 2 * distance_between_strings,
-                    i_this_row
+                    i_this_row,
                 )
                 y_position = -row_index * distance_between_strings * np.sqrt(3) / 2
 
                 for x_position in x_positions:
-                    string_locations.append(
-                        Vector3D(
-                            x=x_position,
-                            y=y_position,
-                            z=0.0
-                        )
-                    )
+                    string_locations.append(Vector3D(x=x_position, y=y_position, z=0.0))
 
         return string_locations
 
@@ -286,32 +298,23 @@ class RhombusDetectorBuilder(AbstractDetectorBuilder):
     """Implementation of the detector builder for rhombus detectors."""
 
     def _get_string_locations(self) -> List[Vector3D]:
-        """Get string locations for rhombus detector."""
-        side_length = self.configuration.geometry.side_length
+        """Get string locations for rhombus detector.
 
-        height = np.sqrt(side_length ** 2 - (side_length / 2) ** 2)
+        Returns:
+            Locations of the rhombus strings.
+
+        Raises:
+            ValueError: Rhombus Geometry needs LengthGeometryConfiguration
+        """
+        if not isinstance(self.configuration.geometry, LengthGeometryConfiguration):
+            raise ValueError("Rhombus Geometry needs LengthGeometryConfiguration")
+        side_length = self.configuration.geometry.side_length
         z_position = 0.0
         return [
-            Vector3D(
-                x=-side_length / 2,
-                y=-0.0,
-                z=z_position
-            ),
-            Vector3D(
-                x=+side_length / 2,
-                y=0.0,
-                z=z_position
-            ),
-            Vector3D(
-                x=0,
-                y=np.sqrt(3) / 2 * side_length,
-                z=z_position
-            ),
-            Vector3D(
-                x=0,
-                y=-np.sqrt(3) / 2 * side_length,
-                z=z_position
-            ),
+            Vector3D(x=-side_length / 2, y=-0.0, z=z_position),
+            Vector3D(x=+side_length / 2, y=0.0, z=z_position),
+            Vector3D(x=0, y=np.sqrt(3) / 2 * side_length, z=z_position),
+            Vector3D(x=0, y=-np.sqrt(3) / 2 * side_length, z=z_position),
         ]
 
 
@@ -319,25 +322,28 @@ class GridDetectorBuilder(AbstractDetectorBuilder):
     """Implementation of the detector builder for grid detectors."""
 
     def _get_string_locations(self) -> List[Vector3D]:
-        """Get string locations for grid detector."""
+        """Get string locations for grid detector.
+
+        Returns:
+            Locations of the grid strings.
+
+        Raises:
+            ValueError: Rhombus Geometry needs SidedGeometryConfiguration
+        """
+        if not isinstance(self.configuration.geometry, SidedGeometryConfiguration):
+            raise ValueError("Rhombus Geometry needs SidedGeometryConfiguration")
         string_locations = []
         number_per_side = self.configuration.geometry.number_of_strings_per_side
         distance_between_strings = self.configuration.geometry.distance_between_strings
         x_positions = np.linspace(
             -number_per_side / 2 * distance_between_strings,
             number_per_side / 2 * distance_between_strings,
-            number_per_side
+            number_per_side,
         )
         y_positions = x_positions
 
         for x_position, y_position in itertools.product(x_positions, y_positions):
-            string_locations.append(
-                Vector3D(
-                    x=x_position,
-                    y=y_position,
-                    z=0.0
-                )
-            )
+            string_locations.append(Vector3D(x=x_position, y=y_position, z=0.0))
 
         return string_locations
 
@@ -345,14 +351,14 @@ class GridDetectorBuilder(AbstractDetectorBuilder):
 class DetectorBuilderService:
     """Class responsible for building detectors."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor for the DetectorBuilderService."""
-        self.__builders = {
+        self.__builders: Mapping[str, Type[AbstractDetectorBuilder]] = {
             DetectorGeometries.GRID: GridDetectorBuilder,
             DetectorGeometries.SINGLE: SingleStringDetectorBuilder,
             DetectorGeometries.HEXAGONAL: HexagonalDetectorBuilder,
             DetectorGeometries.TRIANGULAR: TriangularDetectorBuilder,
-            DetectorGeometries.RHOMBUS: RhombusDetectorBuilder
+            DetectorGeometries.RHOMBUS: RhombusDetectorBuilder,
         }
 
     def get(self, configuration: DetectorConfiguration) -> Detector:

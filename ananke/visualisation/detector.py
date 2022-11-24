@@ -1,16 +1,31 @@
-"""Module containing relevant functions for plotting a detector"""
+"""Module containing relevant functions for plotting a detector."""
 
 from typing import List
-import plotly.graph_objects as go
+
+import numpy
 import numpy as np
+import plotly.graph_objects as go
 
 from ananke.models.detector import Detector
 
 
-def get_detector_scatter3ds(detector: Detector, include_pmts: bool = False) -> List[go.Scatter3d]:
+def get_detector_scatter3ds(
+    detector: Detector, include_pmts: bool = False
+) -> List[go.Scatter3d]:
+    """Paint the detectors modules and eventually strings onto a 3d-scatter trace.
+
+    Args:
+        detector: Detector to draw
+        include_pmts: Want to show the individual PMTs
+
+    Returns:
+        List of traces containing module and eventually pmt trace.
+    """
     traces = []
-    module_coordinates = np.array(detector.module_locations)
-    radius = detector.strings[0].modules[0].radius
+
+    module_coordinates = np.array(
+        detector.module_locations
+    )  # type: numpy.typing.NDArray[numpy.float64]
     traces.append(
         go.Scatter3d(
             x=module_coordinates[:, 0],
@@ -28,7 +43,9 @@ def get_detector_scatter3ds(detector: Detector, include_pmts: bool = False) -> L
     )
 
     if include_pmts:
-        pmt_coordinates = np.array(detector.pmt_locations)
+        pmt_coordinates = np.array(
+            detector.pmt_locations
+        )  # type: numpy.typing.NDArray[numpy.float64]
         traces.append(
             go.Scatter3d(
                 x=pmt_coordinates[:, 0],

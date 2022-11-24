@@ -44,34 +44,42 @@ class Vector2D(NumpyRepresentable):
 
         """
         if not isinstance(other, Vector2D):
-            raise ValueError('Can only add Vector2D objects')
+            raise ValueError("Can only add Vector2D objects")
 
-        return Vector2D(
-            x=self.x + other.x,
-            y=self.y + other.y
-        )
+        return Vector2D(x=self.x + other.x, y=self.y + other.y)
 
     def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
+        """Gets the numpy array to set for the Vector2D class.
+
+        Generates a numpy array containing the x and y value.
+
+        Args:
+            dtype: Type of the numpy array
+
+        Returns:
+            Numpy array with format [x,y]
+
+        """
         return np.array([self.x, self.y], dtype=dtype)
 
     def _get_scaling_factor_for_length(self, length: float) -> float:
         """Calculates the factor to scale by to get to length.
 
         Args:
-            length: Length to calculate factor for
+            length: Length to calculate factor for.
 
         Returns:
-            Scaling factor based on vector norm
+            Scaling factor based on vector norm.
 
         """
         norm = self.norm
         return length / norm
 
     def scale_to_length(self, length: float) -> None:
-        """Scaling the vector to a given length
+        """Scaling the vector to a given length.
 
         Args:
-            length: length to scale the vector to
+            length: length to scale the vector to.
         """
         factor = self._get_scaling_factor_for_length(length)
         self.x *= factor
@@ -80,14 +88,14 @@ class Vector2D(NumpyRepresentable):
 
     @classmethod
     def from_polar(cls, norm: float, phi: float) -> Vector2D:
-        """Creates a 2D vector from polar coordinates
+        """Creates a 2D vector from polar coordinates.
 
         Args:
             norm: norm of the vector
             phi: angle phi
 
         Returns:
-            2D Vector with the given properties
+            2D Vector with the given properties.
         """
         x = np.cos(phi) * norm
         y = np.sin(phi) * norm
@@ -106,7 +114,7 @@ class Vector3D(Vector2D):
         """Phi coordinate in radial units."""
         return float(np.arccos(self.z / self.norm))
 
-    def __add__(self, other: Vector3D) -> Vector3D:
+    def __add__(self, other: Vector3D) -> Vector3D:  # type: ignore[override]
         """Adds two 3D vectors together.
 
         Args:
@@ -120,18 +128,30 @@ class Vector3D(Vector2D):
 
         """
         if not isinstance(other, Vector3D):
-            raise ValueError('Can only add Vector3D objects')
+            raise ValueError("Can only add Vector3D objects")
 
-        return Vector3D(
-            x=self.x + other.x,
-            y=self.y + other.y,
-            z=self.z + other.z
-        )
+        return Vector3D(x=self.x + other.x, y=self.y + other.y, z=self.z + other.z)
 
     def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
+        """Gets the numpy array to set for the Vector3D class.
+
+        Generates a numpy array containing the x, y and z value.
+
+        Args:
+            dtype: Type of the numpy array
+
+        Returns:
+            Numpy array with format [x,y, z]
+
+        """
         return np.append(super()._get_numpy_array(dtype=dtype), self.z)
 
     def scale_to_length(self, length: float) -> None:
+        """Scaling the vector to a given length.
+
+        Args:
+            length: length to scale the vector to.
+        """
         factor = self._get_scaling_factor_for_length(length=length)
         self.z *= factor
         super().scale_to_length(length)
@@ -147,7 +167,7 @@ class Vector3D(Vector2D):
 
     @classmethod
     def from_spherical(cls, norm: float, phi: float, theta: float) -> Vector3D:
-        """Create 3D vector based on spherical coordinates
+        """Create 3D vector based on spherical coordinates.
 
         Args:
             norm: length of the vector
@@ -172,6 +192,17 @@ class LocatedObject(NumpyRepresentable):
     location: Vector3D
 
     def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
+        """Gets the numpy array to set for the LocatedObject class.
+
+        Generates the numpy array by using the array of its location.
+
+        Args:
+            dtype: Type of the numpy array
+
+        Returns:
+            Numpy array with format [x,y,z]
+
+        """
         return np.array(self.location)
 
 
@@ -183,5 +214,21 @@ class OrientedLocatedObject(LocatedObject):
     orientation: Vector3D
 
     def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
+        """Gets the numpy array to set for the OrientedLocatedObject class.
+
+        Generates the numpy array by using the array of its location appended by the
+        angles at which the object is rotated as well as the norm of the orientation
+        vector.
+
+        Args:
+            dtype: Type of the numpy array
+
+        Returns:
+            Numpy array with format [x, y, z,norm, phi, theta]
+
+        """
         location_array = super()._get_numpy_array()
-        return np.append(location_array, [self.orientation.norm, self.orientation.phi, self.orientation.theta])
+        return np.append(
+            location_array,
+            [self.orientation.norm, self.orientation.phi, self.orientation.theta],
+        )

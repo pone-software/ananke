@@ -1,13 +1,12 @@
 """Contains all the classes for representing a detector."""
-import numpy as np
-from abc import abstractmethod
 from dataclasses import dataclass
-from typing import List, Any, Optional
+from typing import Any, List, Optional
 
-from numpy import typing as npt
+import numpy as np
 
 from ananke.models.geometry import LocatedObject, OrientedLocatedObject, Vector3D
 from ananke.models.interfaces import NumpyRepresentable
+from numpy import typing as npt
 
 
 @dataclass
@@ -59,6 +58,19 @@ class Module(LocatedObject):
     PMTs: Optional[List[PMT]] = None
 
     def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
+        """Get numpy array to set for the module class.
+
+        When module contains no PMTs returns the location along with module ID.
+        If PMTs are present it generates a list of PMT arrays with the according
+        PMT-ID.
+
+        Args:
+            dtype: Type of the numpy array
+
+        Returns:
+            Numpy array containing module or list of PMT numpy arrays.
+
+        """
         # create numpy array without PMTs
         if self.PMTs is None:
             module_array = np.array(self.location)
@@ -112,6 +124,18 @@ class String(LocatedObject):
     modules: List[Module]
 
     def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
+        """Gets the numpy array to set for the string class.
+
+        Generates a list of the numpy arrays of the modules and inserts the string
+        ID.
+
+        Args:
+            dtype: Type of the numpy array
+
+        Returns:
+            Numpy array containing list of PMT or module numpy arrays.
+
+        """
         string_arrays = []
 
         for module in self.modules:
@@ -128,7 +152,6 @@ class String(LocatedObject):
         Returns:
             List of module locations
         """
-
         module_locations = []
 
         for module in self.modules:
@@ -146,7 +169,6 @@ class String(LocatedObject):
         Raises:
             AttributeError: Only possible when modules have pmts
         """
-
         pmt_locations = []
 
         for module in self.modules:
@@ -163,6 +185,17 @@ class Detector(NumpyRepresentable):
     strings: List[String]
 
     def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
+        """Gets the numpy array to set for the detector class.
+
+        Generates a list of the numpy arrays of the strings.
+
+        Args:
+            dtype: Type of the numpy array
+
+        Returns:
+            Numpy array containing list of string or module numpy arrays.
+
+        """
         string_arrays = []
 
         for string in self.strings:
@@ -177,7 +210,6 @@ class Detector(NumpyRepresentable):
         Returns:
             List of module locations
         """
-
         module_locations = []
 
         for string in self.strings:
@@ -195,7 +227,6 @@ class Detector(NumpyRepresentable):
         Raises:
             AttributeError: Only possible when modules have pmts
         """
-
         pmt_locations = []
 
         for string in self.strings:

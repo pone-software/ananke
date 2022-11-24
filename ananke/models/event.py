@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import List
 
-from ananke.data.detector import Detector
+from ananke.models.detector import Detector
 from ananke.models.geometry import OrientedLocatedObject
 
 
