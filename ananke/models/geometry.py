@@ -20,9 +20,6 @@ class Vector2D(NumpyRepresentable):
     #: Y-component
     y: float
 
-    def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
-        return np.array([self.x, self.y], dtype=dtype)
-
     @property
     def phi(self) -> float:
         """Phi coordinate in radial units."""
@@ -32,6 +29,30 @@ class Vector2D(NumpyRepresentable):
     def norm(self) -> float:
         """Returns L2-norm of 2D vector."""
         return float(np.linalg.norm(self))
+
+    def __add__(self, other: Vector2D) -> Vector2D:
+        """Adds two 2D vectors together.
+
+        Args:
+            other: Vector to add.
+
+        Returns:
+            new vector with added values.
+
+        Raises:
+            ValueError: Only objects of type Vector2D are allowed
+
+        """
+        if not isinstance(other, Vector2D):
+            raise ValueError('Can only add Vector2D objects')
+
+        return Vector2D(
+            x=self.x + other.x,
+            y=self.y + other.y
+        )
+
+    def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
+        return np.array([self.x, self.y], dtype=dtype)
 
     def _get_scaling_factor_for_length(self, length: float) -> float:
         """Calculates the factor to scale by to get to length.
@@ -80,13 +101,35 @@ class Vector3D(Vector2D):
     #: Z-component
     z: float
 
-    def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
-        return np.append(super()._get_numpy_array(dtype=dtype), self.z)
-
     @property
     def theta(self) -> float:
         """Phi coordinate in radial units."""
         return float(np.arccos(self.z / self.norm))
+
+    def __add__(self, other: Vector3D) -> Vector3D:
+        """Adds two 3D vectors together.
+
+        Args:
+            other: Vector to add.
+
+        Returns:
+            new vector with added values.
+
+        Raises:
+            ValueError: Only objects of type Vector3D are allowed
+
+        """
+        if not isinstance(other, Vector3D):
+            raise ValueError('Can only add Vector3D objects')
+
+        return Vector3D(
+            x=self.x + other.x,
+            y=self.y + other.y,
+            z=self.z + other.z
+        )
+
+    def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
+        return np.append(super()._get_numpy_array(dtype=dtype), self.z)
 
     def scale_to_length(self, length: float) -> None:
         factor = self._get_scaling_factor_for_length(length=length)

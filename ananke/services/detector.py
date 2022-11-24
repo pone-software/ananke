@@ -81,25 +81,27 @@ class AbstractDetectorBuilder(ABC):
         for i in range(8):
             phi = 2 * np.pi / 8 * i
             if i % 2:
-                theta = 57.5 / 90 * np.pi
+                theta = (1 - 57.5 / 90) * np.pi / 2
             else:
-                theta = 25 / 90 * np.pi
+                theta = (1 - 25 / 90) * np.pi / 2
 
-            original_vector_top = Vector3D.from_spherical(module_radius, phi, theta)
-            original_vector_bottom = Vector3D.from_spherical(module_radius, phi, -theta)
+            theta_start = np.pi / 2
+
+            original_vector_top = Vector3D.from_spherical(module_radius, phi, theta_start + theta)
+            original_vector_bottom = Vector3D.from_spherical(module_radius, phi, theta_start - theta)
 
             # rotate 90° around y-axis (x,y,z) -> (-z, y, x)
 
             rotated_vector_top = Vector3D(
                 x=-original_vector_top.z,
-                y=-original_vector_top.y,
-                z=-original_vector_top.x,
+                y=original_vector_top.y,
+                z=original_vector_top.x,
             )
 
             rotated_vector_bottom = Vector3D(
                 x=-original_vector_bottom.z,
-                y=-original_vector_bottom.y,
-                z=-original_vector_bottom.x,
+                y=original_vector_bottom.y,
+                z=original_vector_bottom.x,
             )
 
             orientation.append(rotated_vector_top)
@@ -133,7 +135,7 @@ class AbstractDetectorBuilder(ABC):
 
         modules = []
 
-        for module_ID in range(string_configuration.module_number):
+        for module_ID in range(0, string_configuration.module_number):
             z_location = module_ID * string_configuration.module_distance + string_configuration.z_offset
             module_location = Vector3D(
                 x=string_location.x,
@@ -148,6 +150,7 @@ class AbstractDetectorBuilder(ABC):
             module = Module(
                 ID=module_ID,
                 location=module_location,
+                radius=self.configuration.module.radius,
                 PMTs=PMTs
             )
             modules.append(module)
@@ -169,7 +172,6 @@ class AbstractDetectorBuilder(ABC):
         strings = []
 
         for index, location in enumerate(locations):
-            modules = self._get_modules_for_string_location(location)
             string = String(
                 ID=index,
                 location=location,

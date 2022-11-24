@@ -6,7 +6,7 @@ from typing import List, Any, Optional
 
 from numpy import typing as npt
 
-from ananke.models.geometry import LocatedObject, OrientedLocatedObject
+from ananke.models.geometry import LocatedObject, OrientedLocatedObject, Vector3D
 from ananke.models.interfaces import NumpyRepresentable
 
 
@@ -24,8 +24,25 @@ class PMT(OrientedLocatedObject):
     noise_rate: float
 
     def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
+        """Returns the orientated array and adds the pmt id.
+
+        Args:
+            dtype: type of the numpy array
+
+        Returns:
+            Array containing the orientation and id.
+        """
         oriented_array = super()._get_numpy_array(dtype=dtype)
         return np.insert(oriented_array, 0, self.ID)
+
+    @property
+    def surface_location(self) -> Vector3D:
+        """Returns the final PMT location (location-vector + orientation-vector).
+
+        Returns:
+            Vector with final location
+        """
+        return self.location + self.orientation
 
 
 @dataclass
@@ -35,13 +52,16 @@ class Module(LocatedObject):
     #: Index of the current module
     ID: int
 
+    #: radius of the module
+    radius: float
+
     #: Module PMTs
     PMTs: Optional[List[PMT]] = None
 
     def _get_numpy_array(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
         # create numpy array without PMTs
         if self.PMTs is None:
-            module_array = super()._get_numpy_array(dtype=dtype)
+            module_array = np.array(self.location)
 
             # add ID
             module_array = np.insert(module_array, 0, self.ID)
@@ -59,6 +79,26 @@ class Module(LocatedObject):
             module_arrays.append(current_array)
 
         return np.array(module_arrays, dtype=dtype)
+
+    @property
+    def pmt_locations(self) -> List[Vector3D]:
+        """Aggregates all locations of pmts in one list.
+
+        Returns:
+            List of pmt locations
+
+        Raises:
+            AttributeError: Only possible when modules have pmts
+        """
+        if self.PMTs is None:
+            raise AttributeError("Cannot create PMT Coordinates without PMTs")
+
+        pmt_locations = []
+
+        for pmt in self.PMTs:
+            pmt_locations.append(pmt.surface_location)
+
+        return pmt_locations
 
 
 @dataclass
@@ -81,6 +121,39 @@ class String(LocatedObject):
 
         return np.concatenate(string_arrays, dtype=dtype)
 
+    @property
+    def module_locations(self) -> List[Vector3D]:
+        """Aggregates all locations of modules in one list.
+
+        Returns:
+            List of module locations
+        """
+
+        module_locations = []
+
+        for module in self.modules:
+            module_locations.append(module.location)
+
+        return module_locations
+
+    @property
+    def pmt_locations(self) -> List[Vector3D]:
+        """Aggregates all locations of pmts in one list.
+
+        Returns:
+            List of pmt locations
+
+        Raises:
+            AttributeError: Only possible when modules have pmts
+        """
+
+        pmt_locations = []
+
+        for module in self.modules:
+            pmt_locations += module.pmt_locations
+
+        return pmt_locations
+
 
 @dataclass
 class Detector(NumpyRepresentable):
@@ -96,3 +169,36 @@ class Detector(NumpyRepresentable):
             string_arrays.append(np.array(string))
 
         return np.concatenate(string_arrays, dtype=dtype)
+
+    @property
+    def module_locations(self) -> List[Vector3D]:
+        """Aggregates all locations of modules in one list.
+
+        Returns:
+            List of module locations
+        """
+
+        module_locations = []
+
+        for string in self.strings:
+            module_locations += string.module_locations
+
+        return module_locations
+
+    @property
+    def pmt_locations(self) -> List[Vector3D]:
+        """Aggregates all locations of pmts in one list.
+
+        Returns:
+            List of pmt locations
+
+        Raises:
+            AttributeError: Only possible when modules have pmts
+        """
+
+        pmt_locations = []
+
+        for string in self.strings:
+            pmt_locations += string.pmt_locations
+
+        return pmt_locations
