@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ananke.models package &mdash; Ananke 0.1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ananke.schemas package" href="ananke.schemas.html" />
+    <link rel="prev" title="ananke package" href="ananke.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Ananke
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="ananke.html">ananke package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="ananke.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">ananke.models package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ananke.models.detector">ananke.models.detector module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ananke.models.event">ananke.models.event module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ananke.models.geometry">ananke.models.geometry module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ananke.models.interfaces">ananke.models.interfaces module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ananke.models">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.schemas.html">ananke.schemas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.html">ananke.services package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.visualisation.html">ananke.visualisation package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ananke.html#module-ananke">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Ananke</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="ananke.html">ananke package</a></li>
+      <li class="breadcrumb-item active">ananke.models package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ananke.models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ananke-models-package">
+<h1>ananke.models package<a class="headerlink" href="#ananke-models-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-ananke.models.detector">
+<span id="ananke-models-detector-module"></span><h2>ananke.models.detector module<a class="headerlink" href="#module-ananke.models.detector" title="Permalink to this heading"></a></h2>
+<p>Contains all the classes for representing a detector.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.detector.PMT">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.detector.</span></span><span class="sig-name descname"><span class="pre">PMT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">efficiency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/detector.html#PMT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.detector.PMT" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.geometry.OrientedLocatedObject" title="ananke.models.geometry.OrientedLocatedObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrientedLocatedObject</span></code></a></p>
+<p>Python class representing individual PMT.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.PMT.ID">
+<span class="sig-name descname"><span class="pre">ID</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ananke.models.detector.PMT.ID" title="Permalink to this definition"></a></dt>
+<dd><p>Index of the current PMT</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.PMT.efficiency">
+<span class="sig-name descname"><span class="pre">efficiency</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.detector.PMT.efficiency" title="Permalink to this definition"></a></dt>
+<dd><p>PMT efficiency</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.PMT.noise_rate">
+<span class="sig-name descname"><span class="pre">noise_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.detector.PMT.noise_rate" title="Permalink to this definition"></a></dt>
+<dd><p>PMT noise rate 1/x</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.PMT.surface_location">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">surface_location</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></em><a class="headerlink" href="#ananke.models.detector.PMT.surface_location" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the final PMT location (location-vector + orientation-vector).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Vector with final location</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.detector.Module">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.detector.</span></span><span class="sig-name descname"><span class="pre">Module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PMTs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.detector.PMT" title="ananke.models.detector.PMT"><span class="pre">PMT</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/detector.html#Module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.detector.Module" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.geometry.LocatedObject" title="ananke.models.geometry.LocatedObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocatedObject</span></code></a></p>
+<p>Python class representing individual module.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.Module.ID">
+<span class="sig-name descname"><span class="pre">ID</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ananke.models.detector.Module.ID" title="Permalink to this definition"></a></dt>
+<dd><p>Index of the current module</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.Module.radius">
+<span class="sig-name descname"><span class="pre">radius</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.detector.Module.radius" title="Permalink to this definition"></a></dt>
+<dd><p>radius of the module</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.Module.PMTs">
+<span class="sig-name descname"><span class="pre">PMTs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.detector.PMT" title="ananke.models.detector.PMT"><span class="pre">PMT</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ananke.models.detector.Module.PMTs" title="Permalink to this definition"></a></dt>
+<dd><p>Module PMTs</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.Module.pmt_locations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pmt_locations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.Module.pmt_locations" title="Permalink to this definition"></a></dt>
+<dd><p>Aggregates all locations of pmts in one list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of pmt locations</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>AttributeError</strong> – Only possible when modules have pmts</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.detector.String">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.detector.</span></span><span class="sig-name descname"><span class="pre">String</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modules</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.detector.Module" title="ananke.models.detector.Module"><span class="pre">Module</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/detector.html#String"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.detector.String" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.geometry.LocatedObject" title="ananke.models.geometry.LocatedObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocatedObject</span></code></a></p>
+<p>Python class representing individual string.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.String.ID">
+<span class="sig-name descname"><span class="pre">ID</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ananke.models.detector.String.ID" title="Permalink to this definition"></a></dt>
+<dd><p>Index of the current string</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.String.modules">
+<span class="sig-name descname"><span class="pre">modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.detector.Module" title="ananke.models.detector.Module"><span class="pre">Module</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.String.modules" title="Permalink to this definition"></a></dt>
+<dd><p>Modules in string</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.String.module_locations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">module_locations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.String.module_locations" title="Permalink to this definition"></a></dt>
+<dd><p>Aggregates all locations of modules in one list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of module locations</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.String.pmt_locations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pmt_locations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.String.pmt_locations" title="Permalink to this definition"></a></dt>
+<dd><p>Aggregates all locations of pmts in one list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of pmt locations</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>AttributeError</strong> – Only possible when modules have pmts</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.detector.</span></span><span class="sig-name descname"><span class="pre">Detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.detector.String" title="ananke.models.detector.String"><span class="pre">String</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/detector.html#Detector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.detector.Detector" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.interfaces.NumpyRepresentable" title="ananke.models.interfaces.NumpyRepresentable"><code class="xref py py-class docutils literal notranslate"><span class="pre">NumpyRepresentable</span></code></a></p>
+<p>Python class representing detector.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector.strings">
+<span class="sig-name descname"><span class="pre">strings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.detector.String" title="ananke.models.detector.String"><span class="pre">String</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.Detector.strings" title="Permalink to this definition"></a></dt>
+<dd><p>list of detector strings</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector.module_locations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">module_locations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.Detector.module_locations" title="Permalink to this definition"></a></dt>
+<dd><p>Aggregates all locations of modules in one list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of module locations</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector.pmt_locations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pmt_locations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.Detector.pmt_locations" title="Permalink to this definition"></a></dt>
+<dd><p>Aggregates all locations of pmts in one list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of pmt locations</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>AttributeError</strong> – Only possible when modules have pmts</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ananke.models.event">
+<span id="ananke-models-event-module"></span><h2>ananke.models.event module<a class="headerlink" href="#module-ananke.models.event" title="Permalink to this heading"></a></h2>
+<p>This module contains all event and photon source related structures.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.Hit">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">Hit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pmt_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#Hit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.Hit" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Description of a detector hit.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Hit.string_id">
+<span class="sig-name descname"><span class="pre">string_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ananke.models.event.Hit.string_id" title="Permalink to this definition"></a></dt>
+<dd><p>ID of the string</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Hit.module_id">
+<span class="sig-name descname"><span class="pre">module_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ananke.models.event.Hit.module_id" title="Permalink to this definition"></a></dt>
+<dd><p>ID of the module</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Hit.pmt_id">
+<span class="sig-name descname"><span class="pre">pmt_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ananke.models.event.Hit.pmt_id" title="Permalink to this definition"></a></dt>
+<dd><p>ID of the PMT</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Hit.time">
+<span class="sig-name descname"><span class="pre">time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.event.Hit.time" title="Permalink to this definition"></a></dt>
+<dd><p>time of the hit</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.Record">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">Record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Enum</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#Record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.Record" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.geometry.OrientedLocatedObject" title="ananke.models.geometry.OrientedLocatedObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrientedLocatedObject</span></code></a></p>
+<p>General description of a record for events or sources.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Record.time">
+<span class="sig-name descname"><span class="pre">time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.event.Record.time" title="Permalink to this definition"></a></dt>
+<dd><p>Time of the record</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Record.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Enum</span></em><a class="headerlink" href="#ananke.models.event.Record.type" title="Permalink to this definition"></a></dt>
+<dd><p>Some Enum like Type Object</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.SourceType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">SourceType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#SourceType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.SourceType" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Enum for photon source types.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.SourceType.STANDARD_CHERENKOV">
+<span class="sig-name descname"><span class="pre">STANDARD_CHERENKOV</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#ananke.models.event.SourceType.STANDARD_CHERENKOV" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.SourceType.ISOTROPIC">
+<span class="sig-name descname"><span class="pre">ISOTROPIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#ananke.models.event.SourceType.ISOTROPIC" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.SourceRecord">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">SourceRecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.event.SourceType" title="ananke.models.event.SourceType"><span class="pre">SourceType</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#SourceRecord"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.SourceRecord" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.event.Record" title="ananke.models.event.Record"><code class="xref py py-class docutils literal notranslate"><span class="pre">Record</span></code></a></p>
+<p>Record for a photon source.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.SourceRecord.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.event.SourceType" title="ananke.models.event.SourceType"><span class="pre">SourceType</span></a></em><a class="headerlink" href="#ananke.models.event.SourceRecord.type" title="Permalink to this definition"></a></dt>
+<dd><p>Source record type</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.EventType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">EventType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#EventType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.EventType" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Enum for different event types.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.EventType.STARTING_TRACK">
+<span class="sig-name descname"><span class="pre">STARTING_TRACK</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#ananke.models.event.EventType.STARTING_TRACK" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.EventType.CASCADE">
+<span class="sig-name descname"><span class="pre">CASCADE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#ananke.models.event.EventType.CASCADE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.EventType.REALISTIC_TRACK">
+<span class="sig-name descname"><span class="pre">REALISTIC_TRACK</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#ananke.models.event.EventType.REALISTIC_TRACK" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.EventRecord">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">EventRecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.event.EventType" title="ananke.models.event.EventType"><span class="pre">EventType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#EventRecord"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.EventRecord" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.event.Record" title="ananke.models.event.Record"><code class="xref py py-class docutils literal notranslate"><span class="pre">Record</span></code></a></p>
+<p>Record of an event that happened.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.EventRecord.energy">
+<span class="sig-name descname"><span class="pre">energy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.event.EventRecord.energy" title="Permalink to this definition"></a></dt>
+<dd><p>Energy of the event</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.EventRecord.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.event.EventType" title="ananke.models.event.EventType"><span class="pre">EventType</span></a></em><a class="headerlink" href="#ananke.models.event.EventRecord.type" title="Permalink to this definition"></a></dt>
+<dd><p>Type of the event</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.Event">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">Event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ID:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector:</span> <span class="pre">~ananke.models.detector.Detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_record:</span> <span class="pre">~ananke.models.event.EventRecord</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hits:</span> <span class="pre">~typing.List[~ananke.models.event.Hit]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sources:</span> <span class="pre">~typing.List[~ananke.models.event.SourceRecord]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#Event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.Event" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class combining detector response with monte carlo truth sources and record.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Event.ID">
+<span class="sig-name descname"><span class="pre">ID</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ananke.models.event.Event.ID" title="Permalink to this definition"></a></dt>
+<dd><p>ID of the event</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Event.detector">
+<span class="sig-name descname"><span class="pre">detector</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.detector.Detector" title="ananke.models.detector.Detector"><span class="pre">Detector</span></a></em><a class="headerlink" href="#ananke.models.event.Event.detector" title="Permalink to this definition"></a></dt>
+<dd><p>Detector of the event</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Event.event_record">
+<span class="sig-name descname"><span class="pre">event_record</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.event.EventRecord" title="ananke.models.event.EventRecord"><span class="pre">EventRecord</span></a></em><a class="headerlink" href="#ananke.models.event.Event.event_record" title="Permalink to this definition"></a></dt>
+<dd><p>Monte carlo truth of the event</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Event.hits">
+<span class="sig-name descname"><span class="pre">hits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.event.Hit" title="ananke.models.event.Hit"><span class="pre">Hit</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.event.Event.hits" title="Permalink to this definition"></a></dt>
+<dd><p>Detector response</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Event.sources">
+<span class="sig-name descname"><span class="pre">sources</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.event.SourceRecord" title="ananke.models.event.SourceRecord"><span class="pre">SourceRecord</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.event.Event.sources" title="Permalink to this definition"></a></dt>
+<dd><p>Photon sources leading to hits</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ananke.models.geometry">
+<span id="ananke-models-geometry-module"></span><h2>ananke.models.geometry module<a class="headerlink" href="#module-ananke.models.geometry" title="Permalink to this heading"></a></h2>
+<p>This module contains all geometric dataclasses.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector2D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.geometry.</span></span><span class="sig-name descname"><span class="pre">Vector2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vector2D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vector2D" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.interfaces.NumpyRepresentable" title="ananke.models.interfaces.NumpyRepresentable"><code class="xref py py-class docutils literal notranslate"><span class="pre">NumpyRepresentable</span></code></a></p>
+<p>A 2D vector with interface to radial and cartesian coordinates.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector2D.x">
+<span class="sig-name descname"><span class="pre">x</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.geometry.Vector2D.x" title="Permalink to this definition"></a></dt>
+<dd><p>X-component</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector2D.y">
+<span class="sig-name descname"><span class="pre">y</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.geometry.Vector2D.y" title="Permalink to this definition"></a></dt>
+<dd><p>Y-component</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector2D.phi">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">phi</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.geometry.Vector2D.phi" title="Permalink to this definition"></a></dt>
+<dd><p>Phi coordinate in radial units.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector2D.norm">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.geometry.Vector2D.norm" title="Permalink to this definition"></a></dt>
+<dd><p>Returns L2-norm of 2D vector.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector2D.scale_to_length">
+<span class="sig-name descname"><span class="pre">scale_to_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vector2D.scale_to_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vector2D.scale_to_length" title="Permalink to this definition"></a></dt>
+<dd><p>Scaling the vector to a given length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>length</strong> – length to scale the vector to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector2D.from_polar">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_polar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ananke.models.geometry.Vector2D" title="ananke.models.geometry.Vector2D"><span class="pre">Vector2D</span></a></span></span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vector2D.from_polar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vector2D.from_polar" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a 2D vector from polar coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>norm</strong> – norm of the vector</p></li>
+<li><p><strong>phi</strong> – angle phi</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>2D Vector with the given properties.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector3D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.geometry.</span></span><span class="sig-name descname"><span class="pre">Vector3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vector3D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vector3D" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.geometry.Vector2D" title="ananke.models.geometry.Vector2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">Vector2D</span></code></a></p>
+<p>A 3D vector with interface to radial and spherical coordinates.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector3D.z">
+<span class="sig-name descname"><span class="pre">z</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.geometry.Vector3D.z" title="Permalink to this definition"></a></dt>
+<dd><p>Z-component</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector3D.theta">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">theta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.geometry.Vector3D.theta" title="Permalink to this definition"></a></dt>
+<dd><p>Phi coordinate in radial units.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector3D.scale_to_length">
+<span class="sig-name descname"><span class="pre">scale_to_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vector3D.scale_to_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vector3D.scale_to_length" title="Permalink to this definition"></a></dt>
+<dd><p>Scaling the vector to a given length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>length</strong> – length to scale the vector to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector3D.from_polar">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_polar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ananke.models.geometry.Vector2D" title="ananke.models.geometry.Vector2D"><span class="pre">Vector2D</span></a></span></span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vector3D.from_polar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vector3D.from_polar" title="Permalink to this definition"></a></dt>
+<dd><p>3D vector cannot be created from polar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>AttributeError</strong> – A creation from polar coordinates is not possible</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vector3D.from_spherical">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_spherical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vector3D.from_spherical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vector3D.from_spherical" title="Permalink to this definition"></a></dt>
+<dd><p>Create 3D vector based on spherical coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>norm</strong> – length of the vector</p></li>
+<li><p><strong>phi</strong> – azimutal angle</p></li>
+<li><p><strong>theta</strong> – elevation angle</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>AttributeError</strong> – A creation from polar coordinates is not possible</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.geometry.LocatedObject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.geometry.</span></span><span class="sig-name descname"><span class="pre">LocatedObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#LocatedObject"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.LocatedObject" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.interfaces.NumpyRepresentable" title="ananke.models.interfaces.NumpyRepresentable"><code class="xref py py-class docutils literal notranslate"><span class="pre">NumpyRepresentable</span></code></a></p>
+<p>Object that has a location.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.geometry.LocatedObject.location">
+<span class="sig-name descname"><span class="pre">location</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></em><a class="headerlink" href="#ananke.models.geometry.LocatedObject.location" title="Permalink to this definition"></a></dt>
+<dd><p>Location of the object</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.geometry.OrientedLocatedObject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.geometry.</span></span><span class="sig-name descname"><span class="pre">OrientedLocatedObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#OrientedLocatedObject"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.OrientedLocatedObject" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.geometry.LocatedObject" title="ananke.models.geometry.LocatedObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocatedObject</span></code></a></p>
+<p>Object that has a location and orientation.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.geometry.OrientedLocatedObject.orientation">
+<span class="sig-name descname"><span class="pre">orientation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.geometry.Vector3D" title="ananke.models.geometry.Vector3D"><span class="pre">Vector3D</span></a></em><a class="headerlink" href="#ananke.models.geometry.OrientedLocatedObject.orientation" title="Permalink to this definition"></a></dt>
+<dd><p>Orientation of the object</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ananke.models.interfaces">
+<span id="ananke-models-interfaces-module"></span><h2>ananke.models.interfaces module<a class="headerlink" href="#module-ananke.models.interfaces" title="Permalink to this heading"></a></h2>
+<p>Place for all interfaces used in the package.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.interfaces.NumpyRepresentable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.interfaces.</span></span><span class="sig-name descname"><span class="pre">NumpyRepresentable</span></span><a class="reference internal" href="_modules/ananke/models/interfaces.html#NumpyRepresentable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.interfaces.NumpyRepresentable" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></p>
+<p>Interface for making a class numpy representable.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.interfaces.NumpyRepresentable.numpy_array">
+<span class="sig-name descname"><span class="pre">numpy_array</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.interfaces.NumpyRepresentable.numpy_array" title="Permalink to this definition"></a></dt>
+<dd><p>Numpy array property for easy access and less recalculation</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ananke.models">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ananke.models" title="Permalink to this heading"></a></h2>
+<p>Package containing all data models with business logic for cross package use.</p>
+<p class="rubric">Examples</p>
+<ul class="simple">
+<li><p>Detector class and all its subclasses</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ananke.html" class="btn btn-neutral float-left" title="ananke package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ananke.schemas.html" class="btn btn-neutral float-right" title="ananke.schemas package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Janik Prottung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ananke.models.detector &mdash; Ananke 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Ananke
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ananke.html">ananke package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ananke</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ananke.models.detector</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ananke.models.detector</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Contains all the classes for representing a detector.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">ananke.models.geometry</span> <span class="kn">import</span> <span class="n">LocatedObject</span><span class="p">,</span> <span class="n">OrientedLocatedObject</span><span class="p">,</span> <span class="n">Vector3D</span>
+<span class="kn">from</span> <span class="nn">ananke.models.interfaces</span> <span class="kn">import</span> <span class="n">NumpyRepresentable</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">typing</span> <span class="k">as</span> <span class="n">npt</span>
+
+
+<div class="viewcode-block" id="PMT"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.detector.PMT">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">PMT</span><span class="p">(</span><span class="n">OrientedLocatedObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Python class representing individual PMT.&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Index of the current PMT</span>
+    <span class="n">ID</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="c1">#: PMT efficiency</span>
+    <span class="n">efficiency</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="c1">#: PMT noise rate 1/x</span>
+    <span class="n">noise_rate</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="k">def</span> <span class="nf">_get_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">DTypeLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the orientated array and adds the pmt id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dtype: type of the numpy array</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Array containing the orientation and id.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">oriented_array</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_get_numpy_array</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">oriented_array</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">surface_location</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vector3D</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the final PMT location (location-vector + orientation-vector).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Vector with final location</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span></div>
+
+
+<div class="viewcode-block" id="Module"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.detector.Module">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Module</span><span class="p">(</span><span class="n">LocatedObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Python class representing individual module.&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Index of the current module</span>
+    <span class="n">ID</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="c1">#: radius of the module</span>
+    <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="c1">#: Module PMTs</span>
+    <span class="n">PMTs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">PMT</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_get_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">DTypeLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get numpy array to set for the module class.</span>
+
+<span class="sd">        When module contains no PMTs returns the location along with module ID.</span>
+<span class="sd">        If PMTs are present it generates a list of PMT arrays with the according</span>
+<span class="sd">        PMT-ID.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dtype: Type of the numpy array</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Numpy array containing module or list of PMT numpy arrays.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create numpy array without PMTs</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">PMTs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">module_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">)</span>
+
+            <span class="c1"># add ID</span>
+            <span class="n">module_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">module_array</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+
+            <span class="c1"># append radius</span>
+            <span class="n">module_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">module_array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">norm</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">module_array</span>
+
+        <span class="n">module_arrays</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">pmt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PMTs</span><span class="p">:</span>
+            <span class="n">current_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pmt</span><span class="p">)</span>
+            <span class="n">current_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">current_array</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+            <span class="n">module_arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_array</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">module_arrays</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pmt_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector3D</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Aggregates all locations of pmts in one list.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of pmt locations</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AttributeError: Only possible when modules have pmts</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">PMTs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Cannot create PMT Coordinates without PMTs&quot;</span><span class="p">)</span>
+
+        <span class="n">pmt_locations</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">pmt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PMTs</span><span class="p">:</span>
+            <span class="n">pmt_locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pmt</span><span class="o">.</span><span class="n">surface_location</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pmt_locations</span></div>
+
+
+<div class="viewcode-block" id="String"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.detector.String">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">String</span><span class="p">(</span><span class="n">LocatedObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Python class representing individual string.&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Index of the current string</span>
+    <span class="n">ID</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="c1">#: Modules in string</span>
+    <span class="n">modules</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Module</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">DTypeLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the numpy array to set for the string class.</span>
+
+<span class="sd">        Generates a list of the numpy arrays of the modules and inserts the string</span>
+<span class="sd">        ID.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dtype: Type of the numpy array</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Numpy array containing list of PMT or module numpy arrays.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">string_arrays</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+            <span class="n">current_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="n">current_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">current_array</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">string_arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_array</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">string_arrays</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">module_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector3D</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Aggregates all locations of modules in one list.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of module locations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">module_locations</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+            <span class="n">module_locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">location</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">module_locations</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pmt_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector3D</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Aggregates all locations of pmts in one list.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of pmt locations</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AttributeError: Only possible when modules have pmts</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pmt_locations</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+            <span class="n">pmt_locations</span> <span class="o">+=</span> <span class="n">module</span><span class="o">.</span><span class="n">pmt_locations</span>
+
+        <span class="k">return</span> <span class="n">pmt_locations</span></div>
+
+
+<div class="viewcode-block" id="Detector"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.detector.Detector">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Detector</span><span class="p">(</span><span class="n">NumpyRepresentable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Python class representing detector.&quot;&quot;&quot;</span>
+
+    <span class="c1">#: list of detector strings</span>
+    <span class="n">strings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">String</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">DTypeLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the numpy array to set for the detector class.</span>
+
+<span class="sd">        Generates a list of the numpy arrays of the strings.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dtype: Type of the numpy array</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Numpy array containing list of string or module numpy arrays.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">string_arrays</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">string</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">strings</span><span class="p">:</span>
+            <span class="n">string_arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">string</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">string_arrays</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">module_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector3D</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Aggregates all locations of modules in one list.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of module locations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">module_locations</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">string</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">strings</span><span class="p">:</span>
+            <span class="n">module_locations</span> <span class="o">+=</span> <span class="n">string</span><span class="o">.</span><span class="n">module_locations</span>
+
+        <span class="k">return</span> <span class="n">module_locations</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pmt_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector3D</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Aggregates all locations of pmts in one list.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of pmt locations</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AttributeError: Only possible when modules have pmts</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pmt_locations</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">string</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">strings</span><span class="p">:</span>
+            <span class="n">pmt_locations</span> <span class="o">+=</span> <span class="n">string</span><span class="o">.</span><span class="n">pmt_locations</span>
+
+        <span class="k">return</span> <span class="n">pmt_locations</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Janik Prottung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

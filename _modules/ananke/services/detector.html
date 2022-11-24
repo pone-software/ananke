@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ananke.services.detector &mdash; Ananke 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Ananke
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ananke.html">ananke package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ananke</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ananke.services.detector</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ananke.services.detector</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module containing all the Services for a detector.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Type</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+
+<span class="kn">from</span> <span class="nn">ananke.models.detector</span> <span class="kn">import</span> <span class="n">PMT</span><span class="p">,</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">Module</span><span class="p">,</span> <span class="n">String</span>
+<span class="kn">from</span> <span class="nn">ananke.models.geometry</span> <span class="kn">import</span> <span class="n">Vector3D</span>
+<span class="kn">from</span> <span class="nn">ananke.schemas.detector</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DetectorConfiguration</span><span class="p">,</span>
+    <span class="n">DetectorGeometries</span><span class="p">,</span>
+    <span class="n">LengthGeometryConfiguration</span><span class="p">,</span>
+    <span class="n">SidedGeometryConfiguration</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="AbstractDetectorBuilder"><a class="viewcode-back" href="../../../ananke.services.html#ananke.services.detector.AbstractDetectorBuilder">[docs]</a><span class="k">class</span> <span class="nc">AbstractDetectorBuilder</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Detector builder interface.</span>
+
+<span class="sd">    Todo:</span>
+<span class="sd">        - Implement Calibration module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">:</span> <span class="n">DetectorConfiguration</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor of the Detector builder.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            configuration: Configuration to build the detector from.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span> <span class="o">=</span> <span class="n">configuration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">configuration</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_get_string_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector3D</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Abstract method supposed to return an array of string locations.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List containing the string locations for the detector to build</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: get string locations not implemented</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;get string locations not implemented&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__get_noise_rate_for_pmt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generates a noise rate based on input or gamma distribution.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Noise rate for a PMT</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">noise_rate</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Randomize noise level with given parameters</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">pmt</span><span class="o">.</span><span class="n">noise_rate</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">pmt</span><span class="o">.</span><span class="n">gamma_scale</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="n">noise_rate</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span>
+                    <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">pmt</span><span class="o">.</span><span class="n">gamma_scale</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span>
+                <span class="p">)</span>
+                <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">pmt</span><span class="o">.</span><span class="n">noise_rate</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">noise_rate</span>
+
+    <span class="k">def</span> <span class="nf">_get_pmts_for_module_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_location</span><span class="p">:</span> <span class="n">Vector3D</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">PMT</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Build the PMTs for a given module.</span>
+
+<span class="sd">        The method is as follows. At the moment, we have two layers at each half of</span>
+<span class="sd">        the module. An inner one and an outer one. Starting from the vertical</span>
+<span class="sd">        separation ring, the inner PMTs have an angle of 25° and the outer ones one</span>
+<span class="sd">        of 57.5°. There is four each spread out evenly. The outer and inner PMTs are</span>
+<span class="sd">        shifted by 45°. The inner modules start at an azimuthal angle of 45°. In total</span>
+<span class="sd">        16 PMTs are generated as we have two halves</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            module_location: Location of the general for which to generate PMTs</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List containing all PMTs for a given module</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">module_radius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">radius</span>  <span class="c1"># TODO: Better place?</span>
+
+        <span class="c1"># We start with having the module &quot;flat&quot; as the ring is horizontal.</span>
+        <span class="c1"># Afterwards we upright the module otherwise my head explodes :D</span>
+
+        <span class="n">orientations</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[Vector3D]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+            <span class="n">phi</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">i</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mf">57.5</span> <span class="o">/</span> <span class="mi">90</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">25</span> <span class="o">/</span> <span class="mi">90</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span>
+
+            <span class="n">theta_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span>
+
+            <span class="n">original_vector_top</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="o">.</span><span class="n">from_spherical</span><span class="p">(</span>
+                <span class="n">module_radius</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">theta_start</span> <span class="o">+</span> <span class="n">theta</span>
+            <span class="p">)</span>
+            <span class="n">original_vector_bottom</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="o">.</span><span class="n">from_spherical</span><span class="p">(</span>
+                <span class="n">module_radius</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">theta_start</span> <span class="o">-</span> <span class="n">theta</span>
+            <span class="p">)</span>
+
+            <span class="c1"># rotate 90° around y-axis (x,y,z) -&gt; (-z, y, x)</span>
+
+            <span class="n">rotated_vector_top</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=-</span><span class="n">original_vector_top</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">original_vector_top</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                <span class="n">z</span><span class="o">=</span><span class="n">original_vector_top</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">rotated_vector_bottom</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=-</span><span class="n">original_vector_bottom</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">original_vector_bottom</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                <span class="n">z</span><span class="o">=</span><span class="n">original_vector_bottom</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">orientations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rotated_vector_top</span><span class="p">)</span>
+            <span class="n">orientations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rotated_vector_bottom</span><span class="p">)</span>
+
+        <span class="n">PMTs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">ID</span><span class="p">,</span> <span class="n">orientation</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">orientations</span><span class="p">):</span>
+            <span class="n">PMTs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">PMT</span><span class="p">(</span>
+                    <span class="n">ID</span><span class="o">=</span><span class="n">ID</span><span class="p">,</span>
+                    <span class="n">location</span><span class="o">=</span><span class="n">module_location</span><span class="p">,</span>
+                    <span class="n">orientation</span><span class="o">=</span><span class="n">orientation</span><span class="p">,</span>
+                    <span class="n">efficiency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">pmt</span><span class="o">.</span><span class="n">efficiency</span><span class="p">,</span>
+                    <span class="n">noise_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__get_noise_rate_for_pmt</span><span class="p">(),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">PMTs</span>
+
+    <span class="k">def</span> <span class="nf">_get_modules_for_string_location</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">string_location</span><span class="p">:</span> <span class="n">Vector3D</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Module</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Build the modules for a given string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            string_location: location of the string for which to generate modules.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List containing all Modules for a given string</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">string_configuration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">string</span>
+
+        <span class="n">modules</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">module_ID</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">string_configuration</span><span class="o">.</span><span class="n">module_number</span><span class="p">):</span>
+            <span class="n">z_location</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">module_ID</span> <span class="o">*</span> <span class="n">string_configuration</span><span class="o">.</span><span class="n">module_distance</span>
+                <span class="o">+</span> <span class="n">string_configuration</span><span class="o">.</span><span class="n">z_offset</span>
+            <span class="p">)</span>
+            <span class="n">module_location</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">string_location</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">string_location</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z_location</span>
+            <span class="p">)</span>
+            <span class="n">PMTs</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">include_pmts</span><span class="p">:</span>
+                <span class="n">PMTs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pmts_for_module_location</span><span class="p">(</span><span class="n">module_location</span><span class="p">)</span>
+
+            <span class="n">module</span> <span class="o">=</span> <span class="n">Module</span><span class="p">(</span>
+                <span class="n">ID</span><span class="o">=</span><span class="n">module_ID</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">module_location</span><span class="p">,</span>
+                <span class="n">radius</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">radius</span><span class="p">,</span>
+                <span class="n">PMTs</span><span class="o">=</span><span class="n">PMTs</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">modules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">modules</span>
+
+    <span class="k">def</span> <span class="nf">_get_strings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string_locations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector3D</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">String</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Build the strings for a detector.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            string_locations: List of string locations</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List containing all strings for a set of given string locations</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_string_locations</span><span class="p">()</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">location</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">locations</span><span class="p">):</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="n">String</span><span class="p">(</span>
+                <span class="n">ID</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">location</span><span class="p">,</span>
+                <span class="n">modules</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_modules_for_string_location</span><span class="p">(</span><span class="n">location</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">strings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">strings</span>
+
+<div class="viewcode-block" id="AbstractDetectorBuilder.get"><a class="viewcode-back" href="../../../ananke.services.html#ananke.services.detector.AbstractDetectorBuilder.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Detector</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Builds a detector based on a given configuration.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Detector containing all strings and modules</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">string_locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_string_locations</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Detector</span><span class="p">(</span><span class="n">strings</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_strings</span><span class="p">(</span><span class="n">string_locations</span><span class="o">=</span><span class="n">string_locations</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="SingleStringDetectorBuilder"><a class="viewcode-back" href="../../../ananke.services.html#ananke.services.detector.SingleStringDetectorBuilder">[docs]</a><span class="k">class</span> <span class="nc">SingleStringDetectorBuilder</span><span class="p">(</span><span class="n">AbstractDetectorBuilder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of the detector builder for one string detectors.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_get_string_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector3D</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get string locations for string detector.&quot;&quot;&quot;</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">start_position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">start_position</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+            <span class="n">z</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">position</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="TriangularDetectorBuilder"><a class="viewcode-back" href="../../../ananke.services.html#ananke.services.detector.TriangularDetectorBuilder">[docs]</a><span class="k">class</span> <span class="nc">TriangularDetectorBuilder</span><span class="p">(</span><span class="n">AbstractDetectorBuilder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of the detector builder for triangular detectors.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_get_string_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector3D</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get string locations for triangular detector.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Locations of the triangular strings.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Rhombus Geometry needs LengthGeometryConfiguration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span> <span class="n">LengthGeometryConfiguration</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Triangular Geometry needs LengthGeometryConfiguration&quot;</span><span class="p">)</span>
+        <span class="n">side_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">side_length</span>
+
+        <span class="n">height</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">side_length</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">side_length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">z_position</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">Vector3D</span><span class="p">(</span><span class="n">x</span><span class="o">=-</span><span class="n">side_length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=-</span><span class="n">height</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z_position</span><span class="p">),</span>
+            <span class="n">Vector3D</span><span class="p">(</span><span class="n">x</span><span class="o">=+</span><span class="n">side_length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=-</span><span class="n">height</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z_position</span><span class="p">),</span>
+            <span class="n">Vector3D</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="o">=+</span><span class="n">height</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z_position</span><span class="p">),</span>
+        <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="HexagonalDetectorBuilder"><a class="viewcode-back" href="../../../ananke.services.html#ananke.services.detector.HexagonalDetectorBuilder">[docs]</a><span class="k">class</span> <span class="nc">HexagonalDetectorBuilder</span><span class="p">(</span><span class="n">AbstractDetectorBuilder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of the detector builder for hexagonal detectors.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_get_string_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector3D</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get string locations for hexagonal detector.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Locations of the hexagonal strings.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Hexagonal Geometry needs SidedGeometryConfiguration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span> <span class="n">SidedGeometryConfiguration</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Hexagonal Geometry needs SidedGeometryConfiguration&quot;</span><span class="p">)</span>
+        <span class="n">string_locations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">number_per_side</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">number_of_strings_per_side</span>
+        <span class="n">distance_between_strings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">distance_between_strings</span>
+
+        <span class="k">for</span> <span class="n">row_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">number_per_side</span><span class="p">):</span>
+            <span class="n">i_this_row</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">number_per_side</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">row_index</span>
+            <span class="n">x_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                <span class="o">-</span><span class="p">(</span><span class="n">i_this_row</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">distance_between_strings</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">i_this_row</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">distance_between_strings</span><span class="p">,</span>
+                <span class="n">i_this_row</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">y_position</span> <span class="o">=</span> <span class="n">row_index</span> <span class="o">*</span> <span class="n">distance_between_strings</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="k">for</span> <span class="n">x_position</span> <span class="ow">in</span> <span class="n">x_positions</span><span class="p">:</span>
+                <span class="n">string_locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Vector3D</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x_position</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y_position</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">row_index</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">x_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                    <span class="o">-</span><span class="p">(</span><span class="n">i_this_row</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">distance_between_strings</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">i_this_row</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">distance_between_strings</span><span class="p">,</span>
+                    <span class="n">i_this_row</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">y_position</span> <span class="o">=</span> <span class="o">-</span><span class="n">row_index</span> <span class="o">*</span> <span class="n">distance_between_strings</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+                <span class="k">for</span> <span class="n">x_position</span> <span class="ow">in</span> <span class="n">x_positions</span><span class="p">:</span>
+                    <span class="n">string_locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Vector3D</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x_position</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y_position</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">string_locations</span></div>
+
+
+<div class="viewcode-block" id="RhombusDetectorBuilder"><a class="viewcode-back" href="../../../ananke.services.html#ananke.services.detector.RhombusDetectorBuilder">[docs]</a><span class="k">class</span> <span class="nc">RhombusDetectorBuilder</span><span class="p">(</span><span class="n">AbstractDetectorBuilder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of the detector builder for rhombus detectors.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_get_string_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector3D</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get string locations for rhombus detector.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Locations of the rhombus strings.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Rhombus Geometry needs LengthGeometryConfiguration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span> <span class="n">LengthGeometryConfiguration</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Rhombus Geometry needs LengthGeometryConfiguration&quot;</span><span class="p">)</span>
+        <span class="n">side_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">side_length</span>
+        <span class="n">z_position</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">Vector3D</span><span class="p">(</span><span class="n">x</span><span class="o">=-</span><span class="n">side_length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=-</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z_position</span><span class="p">),</span>
+            <span class="n">Vector3D</span><span class="p">(</span><span class="n">x</span><span class="o">=+</span><span class="n">side_length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z_position</span><span class="p">),</span>
+            <span class="n">Vector3D</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">side_length</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z_position</span><span class="p">),</span>
+            <span class="n">Vector3D</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">side_length</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z_position</span><span class="p">),</span>
+        <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="GridDetectorBuilder"><a class="viewcode-back" href="../../../ananke.services.html#ananke.services.detector.GridDetectorBuilder">[docs]</a><span class="k">class</span> <span class="nc">GridDetectorBuilder</span><span class="p">(</span><span class="n">AbstractDetectorBuilder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of the detector builder for grid detectors.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_get_string_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector3D</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get string locations for grid detector.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Locations of the grid strings.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Rhombus Geometry needs SidedGeometryConfiguration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span> <span class="n">SidedGeometryConfiguration</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Rhombus Geometry needs SidedGeometryConfiguration&quot;</span><span class="p">)</span>
+        <span class="n">string_locations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">number_per_side</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">number_of_strings_per_side</span>
+        <span class="n">distance_between_strings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">distance_between_strings</span>
+        <span class="n">x_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+            <span class="o">-</span><span class="n">number_per_side</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">distance_between_strings</span><span class="p">,</span>
+            <span class="n">number_per_side</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">distance_between_strings</span><span class="p">,</span>
+            <span class="n">number_per_side</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">y_positions</span> <span class="o">=</span> <span class="n">x_positions</span>
+
+        <span class="k">for</span> <span class="n">x_position</span><span class="p">,</span> <span class="n">y_position</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">x_positions</span><span class="p">,</span> <span class="n">y_positions</span><span class="p">):</span>
+            <span class="n">string_locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Vector3D</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x_position</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y_position</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">string_locations</span></div>
+
+
+<div class="viewcode-block" id="DetectorBuilderService"><a class="viewcode-back" href="../../../ananke.services.html#ananke.services.detector.DetectorBuilderService">[docs]</a><span class="k">class</span> <span class="nc">DetectorBuilderService</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Class responsible for building detectors.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Constructor for the DetectorBuilderService.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__builders</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbstractDetectorBuilder</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">DetectorGeometries</span><span class="o">.</span><span class="n">GRID</span><span class="p">:</span> <span class="n">GridDetectorBuilder</span><span class="p">,</span>
+            <span class="n">DetectorGeometries</span><span class="o">.</span><span class="n">SINGLE</span><span class="p">:</span> <span class="n">SingleStringDetectorBuilder</span><span class="p">,</span>
+            <span class="n">DetectorGeometries</span><span class="o">.</span><span class="n">HEXAGONAL</span><span class="p">:</span> <span class="n">HexagonalDetectorBuilder</span><span class="p">,</span>
+            <span class="n">DetectorGeometries</span><span class="o">.</span><span class="n">TRIANGULAR</span><span class="p">:</span> <span class="n">TriangularDetectorBuilder</span><span class="p">,</span>
+            <span class="n">DetectorGeometries</span><span class="o">.</span><span class="n">RHOMBUS</span><span class="p">:</span> <span class="n">RhombusDetectorBuilder</span><span class="p">,</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="DetectorBuilderService.get"><a class="viewcode-back" href="../../../ananke.services.html#ananke.services.detector.DetectorBuilderService.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">:</span> <span class="n">DetectorConfiguration</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Detector</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns a detector based on a given configuration.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            configuration: Configuration to create detector from.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Detector based on the given configuration.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">builder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__builders</span><span class="p">[</span><span class="n">configuration</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">type</span><span class="p">](</span><span class="n">configuration</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="n">get</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Janik Prottung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
