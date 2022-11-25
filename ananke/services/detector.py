@@ -2,7 +2,7 @@
 import itertools
 
 from abc import ABC, abstractmethod
-from typing import List, Mapping, Type, Optional
+from typing import List, Mapping, Type, Optional, TypeVar
 
 import numpy as np
 import scipy
@@ -375,7 +375,7 @@ class GridDetectorBuilder(AbstractDetectorBuilder):
 
         return string_locations
 
-
+DetectorTypeVar = TypeVar('DetectorTypeVar', bound=Detector)
 class DetectorBuilderService:
     """Class responsible for building detectors."""
 
@@ -394,7 +394,7 @@ class DetectorBuilderService:
         }
         self.detector_subclass = detector_subclass
 
-    def get(self, configuration: DetectorConfiguration) -> Detector:
+    def get(self, configuration: DetectorConfiguration) -> DetectorTypeVar:
         """Returns a detector based on a given configuration.
 
         Args:
@@ -403,7 +403,13 @@ class DetectorBuilderService:
         Returns:
             Detector based on the given configuration.
 
+        Raises:
+            ValueError: Configuration must be of type detector configuration
+
         """
+        if not isinstance(configuration, DetectorConfiguration):
+            raise ValueError('Configuration must be of type detector configuration')
+
         builder = self.__builders[configuration.geometry.type](
             configuration=configuration,
             detector_subclass=self.detector_subclass

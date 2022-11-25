@@ -2,15 +2,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
-from ananke.models.interfaces import ScientificConvertible
+from ananke.models.interfaces import ScientificSequence
 
 
 @dataclass
-class Vector2D(ScientificConvertible):
+class Vector2D(ScientificSequence):
     """A 2D vector with interface to radial and cartesian coordinates."""
 
     #: X-component
@@ -99,6 +101,22 @@ class Vector2D(ScientificConvertible):
         y = np.sin(phi) * norm
         return cls(x=x, y=y)
 
+    @classmethod
+    def from_numpy(cls, numpy_array: npt.NDArray[Any]) -> Vector2D:
+        """Creates 2d vector out of numpy array.
+
+        Args:
+            numpy_array: numpy array of length two [x, y]
+
+        Returns:
+            2d vector by given numpy array
+
+        """
+        return cls(
+            x=numpy_array[0],
+            y=numpy_array[1]
+        )
+
 
 @dataclass
 class Vector3D(Vector2D):
@@ -179,9 +197,26 @@ class Vector3D(Vector2D):
 
         return cls(x=x, y=y, z=z)
 
+    @classmethod
+    def from_numpy(cls, numpy_array: npt.NDArray[Any]) -> Vector3D: # type: ignore
+        """Creates 3d vector out of numpy array.
+
+        Args:
+            numpy_array: numpy array of length three [x, y, z]
+
+        Returns:
+            3d vector by given numpy array
+
+        """
+        return cls(
+            x=numpy_array[0],
+            y=numpy_array[1],
+            z=numpy_array[2]
+        )
+
 
 @dataclass
-class LocatedObject(ScientificConvertible):
+class LocatedObject(ScientificSequence):
     """Object that has a location."""
 
     #: Location of the object

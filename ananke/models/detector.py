@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from ananke.models.geometry import LocatedObject, OrientedLocatedObject, Vector3D
-from ananke.models.interfaces import ScientificConvertible
+from ananke.models.interfaces import ScientificSequence
 
 
 @dataclass
@@ -188,7 +188,7 @@ class String(LocatedObject):
 
 
 @dataclass
-class Detector(ScientificConvertible):
+class Detector(ScientificSequence):
     """Python class representing detector."""
 
     #: list of detector strings
