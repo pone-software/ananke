@@ -54,7 +54,7 @@ def get_detector_scatter3ds(
                 name="PMTs",
                 mode="markers",
                 marker=dict(
-                    size=1,
+                    size=5,
                     color="red",  # set color to an array/list of desired values
                     colorscale="Viridis",  # choose a colorscale
                     opacity=0.6,

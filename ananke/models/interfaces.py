@@ -1,4 +1,5 @@
 """Place for all interfaces used in the package."""
+from __future__ import annotations
 from abc import abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -7,6 +8,8 @@ from typing import Any, MutableSequence, TypeVar, Optional, List
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+
+
 @dataclass
 class ScientificSequence(Sequence):
     """Interface for making a class numpy representable."""
@@ -23,7 +26,7 @@ class ScientificSequence(Sequence):
         """
 
     def to_numpy(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
-        array = self.to_pandas().to_numpy(dtype=dtype) # type: npt.NDArray[Any]
+        array = self.to_pandas().to_numpy(dtype=dtype)  # type: npt.NDArray[Any]
         return array.flatten()
 
     def __array__(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
@@ -57,18 +60,18 @@ class ScientificSequence(Sequence):
         return len(np.array(self))
 
 
-ScientificCollectionType = TypeVar(
-    'ScientificCollectionType',
+ScientificSequenceType = TypeVar(
+    'ScientificSequenceType',
     bound=ScientificSequence
-    )
+)
 
 
-class ScientificCollection(MutableSequence[ScientificCollectionType]):
+class ScientificCollection(MutableSequence[ScientificSequenceType]):
     """Summarize scientific convertibles."""
 
     def __init__(
             self,
-            sequence: Optional[List[ScientificCollectionType]] = None
+            sequence: Optional[List[ScientificSequenceType]] = None
     ) -> None:
         """Constructor of the ScientificCollection.
 
@@ -80,7 +83,7 @@ class ScientificCollection(MutableSequence[ScientificCollectionType]):
 
         self._sequence = sequence
 
-    def insert(self, index: int, value: ScientificCollectionType) -> None:
+    def insert(self, index: int, value: ScientificSequenceType) -> None:
         """Insert an element into the sequence
 
         Args:
@@ -88,6 +91,10 @@ class ScientificCollection(MutableSequence[ScientificCollectionType]):
             value: Value to insert
         """
         self._sequence.insert(index, value)
+
+    def __add__(self, other: ScientificCollection) -> \
+            ScientificCollection:
+        return ScientificCollection(self._sequence + other._sequence)
 
     def __getitem__(self, index: Any) -> Any:
         """Gets element(s) from the sequence
@@ -100,7 +107,7 @@ class ScientificCollection(MutableSequence[ScientificCollectionType]):
         """
         return self._sequence[index]
 
-    def __setitem__(self, index: Any, value: ScientificCollectionType) -> None:
+    def __setitem__(self, index: Any, value: ScientificSequenceType) -> None:
         """Sets element(s) to the sequence
 
         Args:

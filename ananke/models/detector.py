@@ -216,6 +216,9 @@ class Detector(ScientificSequence):
 
         Returns:
             List of module locations
+
+        Todo:
+            * Remove
         """
         module_locations = []
 
@@ -230,6 +233,9 @@ class Detector(ScientificSequence):
 
         Returns:
             List of pmt locations
+
+        Todo:
+            * Remove
 
         Raises:
             AttributeError: Only possible when modules have pmts
