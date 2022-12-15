@@ -10,9 +10,9 @@ packages = [{include = "ananke"}]
 python = "^3.8"
 numpy = "^1.23.4"
 pydantic = "^1.10.2"
-scipy = "^1.9.3"
 plotly = "^5.11.0"
 pandas = "^1.5.2"
+pandera = {extras = ["mypy"], version = "^0.13.4"}
 
 
 [tool.poetry.group.dev.dependencies]
@@ -46,8 +46,8 @@ convention = "google"
 
 [tool.mypy]
 python_version = "3.8"
-plugins = "numpy.typing.mypy_plugin"
-files = "apollo"
+plugins = "numpy.typing.mypy_plugin, pandera.mypy"
+files = "ananke"
 strict = true
 warn_return_any = true
 

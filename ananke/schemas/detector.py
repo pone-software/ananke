@@ -2,6 +2,8 @@
 from enum import Enum
 from typing import Literal, Union
 
+from pandera.typing import Series
+from pandera import SchemaModel
 from pydantic import (
     BaseModel,
     Field,
@@ -10,7 +12,6 @@ from pydantic import (
     PositiveInt,
     confloat,
 )
-
 
 class DetectorGeometries(str, Enum):
     """Possible detector geometries."""
@@ -148,3 +149,31 @@ class DetectorConfiguration(BaseModel):
 
     #: Seed for the random generators used within detector
     seed: int = 1337
+
+
+class PMTSchema(SchemaModel):
+    pmt_id: Series[int]
+    pmt_efficiency: Series[float]
+    pmt_area: Series[float]
+    pmt_noise_rate: Series[float]
+    pmt_location_x: Series[float]
+    pmt_location_y: Series[float]
+    pmt_location_z: Series[float]
+    pmt_orientation_x: Series[float]
+    pmt_orientation_y: Series[float]
+    pmt_orientation_z: Series[float]
+
+
+class ModuleSchema(PMTSchema):
+    module_id: Series[int]
+    module_radius: Series[float]
+    module_location_x: Series[float]
+    module_location_y: Series[float]
+    module_location_z: Series[float]
+
+
+class StringSchema(ModuleSchema):
+    string_id: Series[int]
+    string_location_x: Series[float]
+    string_location_y: Series[float]
+    string_location_z: Series[float]

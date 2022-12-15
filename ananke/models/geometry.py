@@ -1,69 +1,42 @@
 """This module contains all geometric dataclasses."""
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+from pandera.typing import DataFrame
+from pandera import check_input
 
-from ananke.models.interfaces import ScientificSequence
+from ananke.models.interfaces import DataFrameFacade
+from ananke.utils import df_columns_to_vectors3d
+from ananke.schemas.geometry import Vector2DSchema, PolarSchema, Vector3DSchema, SphericalSchema, LocatedObjectSchema, \
+    OrientedLocatedObjectSchema
 
 
-@dataclass
-class Vector2D(ScientificSequence):
+class Vectors2D(DataFrameFacade):
     """A 2D vector with interface to radial and cartesian coordinates."""
-
-    #: X-component
-    x: float
-
-    #: Y-component
-    y: float
+    df: DataFrame[Vector2DSchema]
 
     @property
-    def phi(self) -> float:
+    def phi(self) -> pd.DataFrame:
         """Phi coordinate in radial units."""
-        return float(np.arctan(self.y / self.x))
+        d = {
+           'phi': np.arctan((self.df['y'] / self.df['x']).to_numpy())
+        }
+        return pd.DataFrame(d)
 
     @property
-    def norm(self) -> float:
+    def norm(self) -> pd.DataFrame:
         """Returns L2-norm of 2D vector."""
-        return float(np.linalg.norm(self))
+        numpy_array = self.df.to_numpy(dtype=np.float)
+        d = {
+           'norm': np.linalg.norm(numpy_array, axis=1)
+        }
+        return pd.DataFrame(d)
 
-    def __add__(self, other: Vector2D) -> Vector2D:
-        """Adds two 2D vectors together.
-
-        Args:
-            other: Vector to add.
-
-        Returns:
-            new vector with added values.
-
-        Raises:
-            ValueError: Only objects of type Vector2D are allowed
-
-        """
-        if not isinstance(other, Vector2D):
-            raise ValueError("Can only add Vector2D objects")
-
-        return Vector2D(x=self.x + other.x, y=self.y + other.y)
-
-    def to_pandas(self) -> pd.DataFrame:
-        """Gets the dataframe of the Vector2D class.
-
-        Generates a list of the dataframes of the vector.
-
-        Returns:
-            Dataframe containing vector information
-
-        """
-        return pd.DataFrame({
-            'x': self.x,
-            'y': self.y,
-        }, index=[0])
-
-    def _get_scaling_factor_for_length(self, length: float) -> float:
+    def _get_scaling_factor_for_length(self, length: float) -> pd.DataFrame:
         """Calculates the factor to scale by to get to length.
 
         Args:
@@ -83,26 +56,31 @@ class Vector2D(ScientificSequence):
             length: length to scale the vector to.
         """
         factor = self._get_scaling_factor_for_length(length)
-        self.x *= factor
-        self.y *= factor
+        self.df = self.df.mul(factor)
 
     @classmethod
-    def from_polar(cls, norm: float, phi: float) -> Vector2D:
+    @check_input(PolarSchema.to_schema())
+    def from_polar(cls, polar: DataFrame[PolarSchema]) -> Vectors2D:
         """Creates a 2D vector from polar coordinates.
 
         Args:
-            norm: norm of the vector
-            phi: angle phi
+            polar: DataFrame with columns (norm, phi)
 
         Returns:
             2D Vector with the given properties.
         """
-        x = np.cos(phi) * norm
-        y = np.sin(phi) * norm
-        return cls(x=x, y=y)
+        np_polar = polar.to_numpy()
+        np_norm = np_polar[0]
+        np_phi = np_polar[1]
+        d = {
+            'x': np.cos(np_phi) * np_norm,
+            'y': np.sin(np_phi) * np_norm,
+        }
+        df = pd.DataFrame(d)
+        return cls(df=df)
 
     @classmethod
-    def from_numpy(cls, numpy_array: npt.NDArray[Any]) -> Vector2D:
+    def from_numpy(cls, numpy_array: npt.NDArray[Any]) -> Vectors2D:
         """Creates 2d vector out of numpy array.
 
         Args:
@@ -112,66 +90,28 @@ class Vector2D(ScientificSequence):
             2d vector by given numpy array
 
         """
-        return cls(
-            x=numpy_array[0],
-            y=numpy_array[1]
-        )
+        d = {
+            'x': numpy_array[0],
+            'y': numpy_array[1],
+        }
+        df = pd.DataFrame(d)
+        return cls(df=df)
 
 
-@dataclass
-class Vector3D(Vector2D):
+class Vectors3D(Vectors2D):
     """A 3D vector with interface to radial and spherical coordinates."""
-
-    #: Z-component
-    z: float
+    df: DataFrame[Vector3DSchema]
 
     @property
-    def theta(self) -> float:
+    def theta(self) -> pd.DataFrame:
         """Phi coordinate in radial units."""
-        return float(np.arccos(self.z / self.norm))
-
-    def __add__(self, other: Vector3D) -> Vector3D:  # type: ignore[override]
-        """Adds two 3D vectors together.
-
-        Args:
-            other: Vector to add.
-
-        Returns:
-            new vector with added values.
-
-        Raises:
-            ValueError: Only objects of type Vector3D are allowed
-
-        """
-        if not isinstance(other, Vector3D):
-            raise ValueError("Can only add Vector3D objects")
-
-        return Vector3D(x=self.x + other.x, y=self.y + other.y, z=self.z + other.z)
-
-    def to_pandas(self) -> pd.DataFrame:
-        """Gets the dataframe of the Vector3D class.
-
-        Generates a list of the dataframes of the vector.
-
-        Returns:
-            Dataframe containing vector information
-
-        """
-        dataframe = super().to_pandas()
-        return dataframe.assign(z=self.z)
-
-    def scale_to_length(self, length: float) -> None:
-        """Scaling the vector to a given length.
-
-        Args:
-            length: length to scale the vector to.
-        """
-        factor = self._get_scaling_factor_for_length(length=length)
-        self.z *= factor
-        super().scale_to_length(length)
+        d = {
+           'theta': np.arccos((self.df['z'] / self.norm['norm']).to_numpy())
+        }
+        return pd.DataFrame(d)
 
     @classmethod
-    def from_polar(cls, norm: float, phi: float) -> Vector2D:
+    def from_polar(cls, polar: DataFrame[PolarSchema]) -> Vectors2D:
         """3D vector cannot be created from polar.
 
         Raises:
@@ -180,25 +120,30 @@ class Vector3D(Vector2D):
         raise AttributeError("Vector3D cannot be created by polar coordinates.")
 
     @classmethod
-    def from_spherical(cls, norm: float, phi: float, theta: float) -> Vector3D:
+    @check_input(SphericalSchema.to_schema())
+    def from_spherical(cls, spherical: DataFrame[SphericalSchema]) -> Vectors3D:
         """Create 3D vector based on spherical coordinates.
 
         Args:
-            norm: length of the vector
-            phi: azimutal angle
-            theta: elevation angle
+            spherical: Dataframe with columns (norm, phi, theta)
 
         Raises:
             AttributeError: A creation from polar coordinates is not possible
         """
-        x = norm * np.sin(theta) * np.cos(phi)
-        y = norm * np.sin(theta) * np.sin(phi)
-        z = norm * np.cos(theta)
-
-        return cls(x=x, y=y, z=z)
+        np_spherical = spherical.to_numpy()
+        np_norm = np_spherical[0]
+        np_phi = np_spherical[1]
+        np_theta = np_spherical[2]
+        d = {
+            'x': np.cos(np_phi) * np.sin(np_theta) * np_norm,
+            'y': np.sin(np_phi) * np.sin(np_theta) * np_norm,
+            'z': np.cos(np_theta) * np_norm
+        }
+        df = pd.DataFrame(d)
+        return cls(df=df)
 
     @classmethod
-    def from_numpy(cls, numpy_array: npt.NDArray[Any]) -> Vector3D: # type: ignore
+    def from_numpy(cls, numpy_array: npt.NDArray[Any]) -> Vectors3D:  # type: ignore
         """Creates 3d vector out of numpy array.
 
         Args:
@@ -208,56 +153,28 @@ class Vector3D(Vector2D):
             3d vector by given numpy array
 
         """
-        return cls(
-            x=numpy_array[0],
-            y=numpy_array[1],
-            z=numpy_array[2]
-        )
+        d = {
+            'x': numpy_array[0],
+            'y': numpy_array[1],
+            'z': numpy_array[2]
+        }
+        df = pd.DataFrame(d)
+        return cls(df=df)
 
 
-@dataclass
-class LocatedObject(ScientificSequence):
+class LocatedObjects(DataFrameFacade):
     """Object that has a location."""
+    df: DataFrame[LocatedObjectSchema]
 
-    #: Location of the object
-    location: Vector3D
-
-    def to_pandas(self) -> pd.DataFrame:
-        """Gets the dataframe of the oriented located object class.
-
-        Generates a list of the dataframes of the strings.
-
-        Returns:
-            Dataframe containing pmt information
-
-        """
-        dataframe = self.location.to_pandas()
-        return dataframe.rename(columns={
-            'x': 'location_x',
-            'y': 'location_y',
-            'z': 'location_z',
-        })
+    @property
+    def locations(self) -> Vectors3D:
+        return df_columns_to_vectors3d(self.df, prefix='location_')
 
 
-@dataclass
-class OrientedLocatedObject(LocatedObject):
+class OrientedLocatedObjects(LocatedObjects):
     """Object that has a location and orientation."""
+    df: DataFrame[OrientedLocatedObjectSchema]
 
-    #: Orientation of the object
-    orientation: Vector3D
-
-    def to_pandas(self) -> pd.DataFrame:
-        """Gets the dataframe of the oriented located object class.
-
-        Generates a list of the dataframes of the strings.
-
-        Returns:
-            Dataframe containing pmt information
-
-        """
-        dataframe = super().to_pandas()
-        return dataframe.assign(
-            orientation_x=self.orientation.x,
-            orientation_y=self.orientation.y,
-            orientation_z=self.orientation.z,
-        )
+    @property
+    def orientations(self) -> Vectors3D:
+        return df_columns_to_vectors3d(self.df, prefix='orientation_')

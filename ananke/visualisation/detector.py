@@ -2,7 +2,6 @@
 
 from typing import List
 
-import numpy
 import numpy as np
 import plotly.graph_objects as go
 
@@ -10,7 +9,7 @@ from ananke.models.detector import Detector
 
 
 def get_detector_scatter3ds(
-    detector: Detector, include_pmts: bool = False
+        detector: Detector, include_pmts: bool = False
 ) -> List[go.Scatter3d]:
     """Paint the detectors modules and eventually strings onto a 3d-scatter trace.
 
@@ -23,9 +22,7 @@ def get_detector_scatter3ds(
     """
     traces = []
 
-    module_coordinates = np.array(
-        detector.module_locations
-    )  # type: numpy.typing.NDArray[numpy.float64]
+    module_coordinates = detector.module_locations.to_numpy(np.float32)
     traces.append(
         go.Scatter3d(
             x=module_coordinates[:, 0],
@@ -43,9 +40,7 @@ def get_detector_scatter3ds(
     )
 
     if include_pmts:
-        pmt_coordinates = np.array(
-            detector.pmt_locations
-        )  # type: numpy.typing.NDArray[numpy.float64]
+        pmt_coordinates = detector.pmt_locations.to_numpy(np.float32)
         traces.append(
             go.Scatter3d(
                 x=pmt_coordinates[:, 0],

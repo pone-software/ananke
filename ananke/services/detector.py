@@ -2,18 +2,21 @@
 import itertools
 
 from abc import ABC, abstractmethod
-from typing import List, Mapping, Type, Optional, TypeVar
+from typing import Mapping, Type, Optional, TypeVar
 
 import numpy as np
-import scipy
+import pandas as pd
+from pandera import check_output
+from pandera.typing import DataFrame
 
-from ananke.models.detector import PMT, Detector, Module, String
-from ananke.models.geometry import Vector3D
+from ananke.models.detector import Detector
+from ananke.models.geometry import Vectors3D
+from ananke.utils import vectors3d_to_df_columns, get_repeated_df
 from ananke.schemas.detector import (
     DetectorConfiguration,
     DetectorGeometries,
     LengthGeometryConfiguration,
-    SidedGeometryConfiguration,
+    SidedGeometryConfiguration, StringSchema,
 )
 
 
@@ -44,7 +47,7 @@ class AbstractDetectorBuilder(ABC):
             self.detector_class = detector_subclass
 
     @abstractmethod
-    def _get_string_locations(self) -> List[Vector3D]:
+    def _get_string_locations(self) -> Vectors3D:
         """Abstract method supposed to return an array of string locations.
 
         Returns:
@@ -70,16 +73,60 @@ class AbstractDetectorBuilder(ABC):
                 and self.configuration.pmt.gamma_scale > 0
         ):
             noise_rate = (
-                    scipy.stats.gamma.rvs(
-                        1, self.configuration.pmt.gamma_scale, random_state=self.rng
-                    )
+                    self.rng.gamma(1, self.configuration.pmt.gamma_scale, 1)
                     * self.configuration.pmt.noise_rate
             )
         return noise_rate
 
-    def _get_pmts_for_module_location(
-            self, module_location: Vector3D, module_as_PMT=False
-    ) -> List[PMT]:
+    @staticmethod
+    def _get_pmt_orientations(module_as_pmt: bool = False) -> Vectors3D:
+        """Gets pmt orientations within a module.
+
+        Args:
+            module_as_pmt: Whether each module consists of one pmt only
+
+        Returns:
+            Vectors3D of PMT orientations
+        """
+
+        orientations = []  # type:
+
+        if module_as_pmt:
+            orientations.append({
+                'norm': 1,
+                'phi': 0,
+                'theta': 0
+            })
+        else:
+            for i in range(8):
+                phi = 2 * np.pi / 8 * i
+                if i % 2:
+                    theta = (1 - 57.5 / 90) * np.pi / 2
+                else:
+                    theta = (1 - 25 / 90) * np.pi / 2
+
+                theta_start = np.pi / 2
+
+                orientations.append({
+                    'norm': 1,
+                    'phi': phi,
+                    'theta': theta_start + theta
+                })
+
+                orientations.append({
+                    'norm': 1,
+                    'phi': phi,
+                    'theta': theta_start - theta
+                })
+        orientations_df = pd.DataFrame(orientations)
+
+        orientations_vectors = Vectors3D.from_spherical(orientations_df)
+
+        return orientations_vectors
+
+    def _extend_df_by_pmts(
+            self, modules_df: pd.DataFrame, module_as_pmt=False
+    ) -> pd.DataFrame:
         """Build the PMTs for a given module.
 
         The method is as follows. At the moment, we have two layers at each half of
@@ -90,142 +137,84 @@ class AbstractDetectorBuilder(ABC):
         16 PMTs are generated as we have two halves
 
         Args:
-            module_location: Location of the general for which to generate PMTs
-            module_as_PMT: When there should only be one PMT at module position
+            modules_df: DataFrame containing module information.
+            module_as_pmt: When there should only be one PMT at module position
 
         Returns:
-            List containing all PMTs for a given module
+            DataFrame extended by the PMTs information.
         """
-        # Return only one central PMT if module should not contain any
-        if module_as_PMT:
-            return [
-                PMT(
-                    location=module_location,
-                    orientation=Vector3D(x=0, y=0, z=0),
-                    noise_rate=self.__get_noise_rate_for_pmt(),
-                    efficiency=self.configuration.pmt.efficiency,
-                    area=self.configuration.pmt.area,
-                    ID=0
-                )
-            ]
-        module_radius = self.configuration.module.radius  # TODO: Better place?
+        # get orientations of the pmts
+        pmt_df = self._get_pmt_orientations(module_as_pmt=module_as_pmt)
+        pmt_df = vectors3d_to_df_columns(pmt_df, 'pmt_orientation_')
 
-        # We start with having the module "flat" as the ring is horizontal.
-        # Afterwards we upright the module otherwise my head explodes :D
+        # get relevant numbers for replicating rows
+        number_of_pmts = len(pmt_df.index)
+        number_of_modules = len(modules_df.index)
+        # Assign constant PMT properties
+        pmt_df.assign(pmt_id=range(number_of_pmts))
+        pmt_df.assign(pmt_efficiency=self.configuration.pmt.efficiency)
+        pmt_df.assign(area=self.configuration.pmt.area)
+        # Scale PMT DataFrame to number of modules
+        extended_pmt_df = pd.concat([pmt_df] * number_of_modules)
+        extended_pmt_df.assign(pmt_noise_rate=lambda: self.__get_noise_rate_for_pmt())
 
-        orientations = []  # type: List[Vector3D]
+        # Scale module Locations to number of PMTs
+        extended_module_locations_df = get_repeated_df(modules_df, number_of_pmts)
 
-        for i in range(8):
-            phi = 2 * np.pi / 8 * i
-            if i % 2:
-                theta = (1 - 57.5 / 90) * np.pi / 2
-            else:
-                theta = (1 - 25 / 90) * np.pi / 2
+        # Combine both dataframes
+        complete_df = pd.concat([extended_module_locations_df, extended_pmt_df], axis=0, ignore_index=True)
 
-            theta_start = np.pi / 2
+        # Add PMT Locations
 
-            original_vector_top = Vector3D.from_spherical(
-                module_radius, phi, theta_start + theta
-            )
-            original_vector_bottom = Vector3D.from_spherical(
-                module_radius, phi, theta_start - theta
-            )
+        module_radius = self.configuration.module.radius
+        complete_df.assign(pmt_location_x=lambda x: x.module_location_x + module_radius * x.pmt_orientation_x)
+        complete_df.assign(pmt_location_y=lambda x: x.module_location_y + module_radius * x.pmt_orientation_y)
+        complete_df.assign(pmt_location_z=lambda x: x.module_location_z + module_radius * x.pmt_orientation_z)
 
-            # rotate 90° around y-axis (x,y,z) -> (-z, y, x)
+        return complete_df
 
-            rotated_vector_top = Vector3D(
-                x=-original_vector_top.z,
-                y=original_vector_top.y,
-                z=original_vector_top.x,
-            )
-
-            rotated_vector_bottom = Vector3D(
-                x=-original_vector_bottom.z,
-                y=original_vector_bottom.y,
-                z=original_vector_bottom.x,
-            )
-
-            orientations.append(rotated_vector_top)
-            orientations.append(rotated_vector_bottom)
-
-        PMTs = []
-
-        for ID, orientation in enumerate(orientations):
-            PMTs.append(
-                PMT(
-                    ID=ID,
-                    location=module_location,
-                    orientation=orientation,
-                    efficiency=self.configuration.pmt.efficiency,
-                    noise_rate=self.__get_noise_rate_for_pmt(),
-                    area=self.configuration.pmt.area
-                )
-            )
-
-        return PMTs
-
-    def _get_modules_for_string_location(
-            self, string_location: Vector3D
-    ) -> List[Module]:
+    def _extend_df_by_modules(
+            self, strings_df: pd.DataFrame
+    ) -> pd.DataFrame:
         """Build the modules for a given string.
 
         Args:
-            string_location: location of the string for which to generate modules.
+            strings_df: DataFrame containing strings properties
 
         Returns:
             List containing all Modules for a given string
 
         """
         string_configuration = self.configuration.string
+        number_of_modules = string_configuration.module_number
+        extended_strings_df = get_repeated_df(strings_df, number_of_modules)
+        total_number_of_modules = len(extended_strings_df.index)
+        module_ids = np.array([x % number_of_modules for x in range(total_number_of_modules)], dtype=np.int)
+        extended_strings_df.assign(module_id=module_ids)
+        module_z_locations = module_ids * string_configuration.module_distance + string_configuration.z_offset
+        extended_strings_df['module_location_x'] = extended_strings_df.loc[:, 'string_location_x']
+        extended_strings_df['module_location_y'] = extended_strings_df.loc[:, 'string_location_y']
+        extended_strings_df.assign(module_location_z=module_z_locations)
 
-        modules = []
+        extended_strings_df.assign(module_radius=self.configuration.module.radius)
+        return extended_strings_df
 
-        for module_ID in range(0, string_configuration.module_number):
-            z_location = (
-                    module_ID * string_configuration.module_distance
-                    + string_configuration.z_offset
-            )
-            module_location = Vector3D(
-                x=string_location.x, y=string_location.y, z=z_location
-            )
-            PMTs = self._get_pmts_for_module_location(
-                module_location=module_location,
-                module_as_PMT=self.configuration.module.module_as_PMT
-            )
-
-            module = Module(
-                ID=module_ID,
-                location=module_location,
-                radius=self.configuration.module.radius,
-                PMTs=PMTs,
-            )
-            modules.append(module)
-
-        return modules
-
-    def _get_strings(self, string_locations: List[Vector3D]) -> List[String]:
-        """Build the strings for a detector.
-
-        Args:
-            string_locations: List of string locations
+    @check_output(StringSchema.to_schema())
+    def _get_strings_df(self) -> DataFrame[StringSchema]:
+        """Build the strings dataframe for a detector.
 
         Returns:
-            List containing all strings for a set of given string locations
+            DataFrame containing all strings
 
         """
         locations = self._get_string_locations()
+        strings_df = vectors3d_to_df_columns(locations, 'string_location_')
+        strings_df.assign(string_id=range(len(locations)))
 
-        strings = []
+        strings_df = self._extend_df_by_modules(strings_df)
+        strings_df = self._extend_df_by_pmts(strings_df)
 
-        for index, location in enumerate(locations):
-            string = String(
-                ID=index,
-                location=location,
-                modules=self._get_modules_for_string_location(location),
-            )
-            strings.append(string)
-
-        return strings
+        return strings_df
 
     def get(self) -> Detector:
         """Builds a detector based on a given configuration.
@@ -234,30 +223,30 @@ class AbstractDetectorBuilder(ABC):
             Detector containing all strings and modules
 
         """
-        string_locations = self._get_string_locations()
         return self.detector_class(
-            strings=self._get_strings(string_locations=string_locations)
+            df=self._get_strings_df(),
+            configuration=self.configuration
         )
 
 
 class SingleStringDetectorBuilder(AbstractDetectorBuilder):
     """Implementation of the detector builder for one string detectors."""
 
-    def _get_string_locations(self) -> List[Vector3D]:
+    def _get_string_locations(self) -> Vectors3D:
         """Get string locations for string detector."""
-        position = Vector3D(
-            x=self.configuration.geometry.start_position.x,
-            y=self.configuration.geometry.start_position.y,
-            z=0.0,
-        )
+        positions = pd.DataFrame([{
+            'x': 0,
+            'y': 0,
+            'z': 0
+        }])
 
-        return [position]
+        return Vectors3D(df=positions)
 
 
 class TriangularDetectorBuilder(AbstractDetectorBuilder):
     """Implementation of the detector builder for triangular detectors."""
 
-    def _get_string_locations(self) -> List[Vector3D]:
+    def _get_string_locations(self) -> Vectors3D:
         """Get string locations for triangular detector.
 
         Returns:
@@ -272,17 +261,31 @@ class TriangularDetectorBuilder(AbstractDetectorBuilder):
 
         height = np.sqrt(side_length ** 2 - (side_length / 2) ** 2)
         z_position = 0.0
-        return [
-            Vector3D(x=-side_length / 2, y=-height / 3, z=z_position),
-            Vector3D(x=+side_length / 2, y=-height / 3, z=z_position),
-            Vector3D(x=0, y=+height * 2 / 3, z=z_position),
-        ]
+
+        positions = pd.DataFrame([
+            {
+                'x': -side_length / 2,
+                'y': -height / 3,
+                'z': z_position
+            },
+            {
+                'x': side_length / 2,
+                'y': -height / 3,
+                'z': z_position
+            },
+            {
+                'x': 0,
+                'y': height * 2 / 3,
+                'z': z_position
+            },
+        ])
+        return Vectors3D(df=positions)
 
 
 class HexagonalDetectorBuilder(AbstractDetectorBuilder):
     """Implementation of the detector builder for hexagonal detectors."""
 
-    def _get_string_locations(self) -> List[Vector3D]:
+    def _get_string_locations(self) -> Vectors3D:
         """Get string locations for hexagonal detector.
 
         Returns:
@@ -297,6 +300,8 @@ class HexagonalDetectorBuilder(AbstractDetectorBuilder):
         number_per_side = self.configuration.geometry.number_of_strings_per_side
         distance_between_strings = self.configuration.geometry.distance_between_strings
 
+        z_position = 0.0
+
         for row_index in range(0, number_per_side):
             i_this_row = 2 * (number_per_side - 1) - row_index
             x_positions = np.linspace(
@@ -306,7 +311,11 @@ class HexagonalDetectorBuilder(AbstractDetectorBuilder):
             )
             y_position = row_index * distance_between_strings * np.sqrt(3) / 2
             for x_position in x_positions:
-                string_locations.append(Vector3D(x=x_position, y=y_position, z=0.0))
+                string_locations.append({
+                    'x': x_position,
+                    'y': y_position,
+                    'z': z_position
+                })
 
             if row_index != 0:
                 x_positions = np.linspace(
@@ -317,15 +326,19 @@ class HexagonalDetectorBuilder(AbstractDetectorBuilder):
                 y_position = -row_index * distance_between_strings * np.sqrt(3) / 2
 
                 for x_position in x_positions:
-                    string_locations.append(Vector3D(x=x_position, y=y_position, z=0.0))
+                    string_locations.append({
+                        'x': x_position,
+                        'y': y_position,
+                        'z': z_position
+                    })
 
-        return string_locations
+        return Vectors3D(df=pd.DataFrame(string_locations))
 
 
 class RhombusDetectorBuilder(AbstractDetectorBuilder):
     """Implementation of the detector builder for rhombus detectors."""
 
-    def _get_string_locations(self) -> List[Vector3D]:
+    def _get_string_locations(self) -> Vectors3D:
         """Get string locations for rhombus detector.
 
         Returns:
@@ -338,18 +351,20 @@ class RhombusDetectorBuilder(AbstractDetectorBuilder):
             raise ValueError("Rhombus Geometry needs LengthGeometryConfiguration")
         side_length = self.configuration.geometry.side_length
         z_position = 0.0
-        return [
-            Vector3D(x=-side_length / 2, y=-0.0, z=z_position),
-            Vector3D(x=+side_length / 2, y=0.0, z=z_position),
-            Vector3D(x=0, y=np.sqrt(3) / 2 * side_length, z=z_position),
-            Vector3D(x=0, y=-np.sqrt(3) / 2 * side_length, z=z_position),
-        ]
+        positions = pd.DataFrame([
+            {'x': -side_length / 2, 'y': -0.0, 'z': z_position},
+            {'x': +side_length / 2, 'y': 0.0, 'z': z_position},
+            {'x': 0, 'y': np.sqrt(3) / 2 * side_length, 'z': z_position},
+            {'x': 0, 'y': -np.sqrt(3) / 2 * side_length, 'z': z_position},
+        ])
+
+        return Vectors3D(df=positions)
 
 
 class GridDetectorBuilder(AbstractDetectorBuilder):
     """Implementation of the detector builder for grid detectors."""
 
-    def _get_string_locations(self) -> List[Vector3D]:
+    def _get_string_locations(self) -> Vectors3D:
         """Get string locations for grid detector.
 
         Returns:
@@ -371,11 +386,14 @@ class GridDetectorBuilder(AbstractDetectorBuilder):
         y_positions = x_positions
 
         for x_position, y_position in itertools.product(x_positions, y_positions):
-            string_locations.append(Vector3D(x=x_position, y=y_position, z=0.0))
+            string_locations.append({'x': x_position, 'y': y_position, 'z': 0.0})
 
-        return string_locations
+        return Vectors3D(df=pd.DataFrame(string_locations))
+
 
 DetectorTypeVar = TypeVar('DetectorTypeVar', bound=Detector)
+
+
 class DetectorBuilderService:
     """Class responsible for building detectors."""
 
