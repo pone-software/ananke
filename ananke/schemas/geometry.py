@@ -14,12 +14,12 @@ class SphericalSchema(PolarSchema):
 
 
 class Vector2DSchema(pa.SchemaModel):
-    x: Series[float]
-    y: Series[float]
+    x: Series[float] = pa.Field(coerce=True)
+    y: Series[float] = pa.Field(coerce=True)
 
 
 class Vector3DSchema(Vector2DSchema):
-    z: Series[float]
+    z: Series[float] = pa.Field(coerce=True)
 
 
 class LocatedObjectSchema(pa.SchemaModel):

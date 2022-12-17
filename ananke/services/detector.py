@@ -2,7 +2,7 @@
 import itertools
 
 from abc import ABC, abstractmethod
-from typing import Mapping, Type, Optional, TypeVar
+from typing import Mapping, Type, Optional, TypeVar, Dict, List
 
 import numpy as np
 import pandas as pd
@@ -11,12 +11,13 @@ from pandera.typing import DataFrame
 
 from ananke.models.detector import Detector
 from ananke.models.geometry import Vectors3D
-from ananke.utils import vectors3d_to_df_columns, get_repeated_df
-from ananke.schemas.detector import (
+from ananke.utils import get_repeated_df
+from ananke.schemas.detector import StringSchema
+from ananke.configurations.detector import (
     DetectorConfiguration,
     DetectorGeometries,
     LengthGeometryConfiguration,
-    SidedGeometryConfiguration, StringSchema,
+    SidedGeometryConfiguration,
 )
 
 
@@ -59,8 +60,11 @@ class AbstractDetectorBuilder(ABC):
         """
         raise NotImplementedError("get string locations not implemented")
 
-    def __get_noise_rate_for_pmt(self) -> float:
+    def __get_noise_rate_for_pmt(self, number_of_pmts: int) -> float:
         """Generates a noise rate based on input or gamma distribution.
+
+        Args:
+            number_of_pmts: Number of noise rates that should be drawn
 
         Returns:
             Noise rate for a PMT
@@ -73,7 +77,11 @@ class AbstractDetectorBuilder(ABC):
                 and self.configuration.pmt.gamma_scale > 0
         ):
             noise_rate = (
-                    self.rng.gamma(1, self.configuration.pmt.gamma_scale, 1)
+                    self.rng.gamma(
+                        1,
+                        self.configuration.pmt.gamma_scale,
+                        number_of_pmts
+                    )
                     * self.configuration.pmt.noise_rate
             )
         return noise_rate
@@ -89,14 +97,16 @@ class AbstractDetectorBuilder(ABC):
             Vectors3D of PMT orientations
         """
 
-        orientations = []  # type:
+        orientations = []  # type: List[Dict[str, float]]
 
         if module_as_pmt:
-            orientations.append({
-                'norm': 1,
-                'phi': 0,
-                'theta': 0
-            })
+            orientations.append(
+                {
+                    'norm': 1.0,
+                    'phi': 0.0,
+                    'theta': 0.0
+                }
+            )
         else:
             for i in range(8):
                 phi = 2 * np.pi / 8 * i
@@ -107,17 +117,21 @@ class AbstractDetectorBuilder(ABC):
 
                 theta_start = np.pi / 2
 
-                orientations.append({
-                    'norm': 1,
-                    'phi': phi,
-                    'theta': theta_start + theta
-                })
+                orientations.append(
+                    {
+                        'norm': 1.0,
+                        'phi': phi,
+                        'theta': theta_start + theta
+                    }
+                )
 
-                orientations.append({
-                    'norm': 1,
-                    'phi': phi,
-                    'theta': theta_start - theta
-                })
+                orientations.append(
+                    {
+                        'norm': 1.0,
+                        'phi': phi,
+                        'theta': theta_start - theta
+                    }
+                )
         orientations_df = pd.DataFrame(orientations)
 
         orientations_vectors = Vectors3D.from_spherical(orientations_df)
@@ -144,32 +158,50 @@ class AbstractDetectorBuilder(ABC):
             DataFrame extended by the PMTs information.
         """
         # get orientations of the pmts
-        pmt_df = self._get_pmt_orientations(module_as_pmt=module_as_pmt)
-        pmt_df = vectors3d_to_df_columns(pmt_df, 'pmt_orientation_')
+        pmt_vectors = self._get_pmt_orientations(module_as_pmt=module_as_pmt)
+        pmt_df = pmt_vectors.get_df_with_prefix('pmt_orientation_')
 
         # get relevant numbers for replicating rows
         number_of_pmts = len(pmt_df.index)
         number_of_modules = len(modules_df.index)
+        total_number_of_rows = number_of_modules * number_of_pmts
         # Assign constant PMT properties
-        pmt_df.assign(pmt_id=range(number_of_pmts))
-        pmt_df.assign(pmt_efficiency=self.configuration.pmt.efficiency)
-        pmt_df.assign(area=self.configuration.pmt.area)
+        pmt_df['pmt_id'] = range(number_of_pmts)
+        pmt_df['pmt_efficiency'] = self.configuration.pmt.efficiency
+        pmt_df['pmt_area'] = self.configuration.pmt.area
         # Scale PMT DataFrame to number of modules
         extended_pmt_df = pd.concat([pmt_df] * number_of_modules)
-        extended_pmt_df.assign(pmt_noise_rate=lambda: self.__get_noise_rate_for_pmt())
+        extended_pmt_df['pmt_noise_rate'] = self.__get_noise_rate_for_pmt(
+            total_number_of_rows
+        )
 
         # Scale module Locations to number of PMTs
         extended_module_locations_df = get_repeated_df(modules_df, number_of_pmts)
 
+        extended_module_locations_df.reset_index(inplace=True, drop=True)
+        extended_pmt_df.reset_index(inplace=True, drop=True)
+
         # Combine both dataframes
-        complete_df = pd.concat([extended_module_locations_df, extended_pmt_df], axis=0, ignore_index=True)
+        complete_df = pd.concat(
+            [extended_module_locations_df, extended_pmt_df],
+            axis=1
+        )
 
         # Add PMT Locations
 
         module_radius = self.configuration.module.radius
-        complete_df.assign(pmt_location_x=lambda x: x.module_location_x + module_radius * x.pmt_orientation_x)
-        complete_df.assign(pmt_location_y=lambda x: x.module_location_y + module_radius * x.pmt_orientation_y)
-        complete_df.assign(pmt_location_z=lambda x: x.module_location_z + module_radius * x.pmt_orientation_z)
+        complete_df = complete_df.assign(
+            pmt_location_x=lambda
+                x: x.module_location_x + module_radius * x.pmt_orientation_x
+        )
+        complete_df = complete_df.assign(
+            pmt_location_y=lambda
+                x: x.module_location_y + module_radius * x.pmt_orientation_y
+        )
+        complete_df = complete_df.assign(
+            pmt_location_z=lambda
+                x: x.module_location_z + module_radius * x.pmt_orientation_z
+        )
 
         return complete_df
 
@@ -189,14 +221,19 @@ class AbstractDetectorBuilder(ABC):
         number_of_modules = string_configuration.module_number
         extended_strings_df = get_repeated_df(strings_df, number_of_modules)
         total_number_of_modules = len(extended_strings_df.index)
-        module_ids = np.array([x % number_of_modules for x in range(total_number_of_modules)], dtype=np.int)
-        extended_strings_df.assign(module_id=module_ids)
+        module_ids = np.array(
+            [x % number_of_modules for x in range(total_number_of_modules)],
+            dtype=np.int
+        )
+        extended_strings_df['module_id'] = module_ids
         module_z_locations = module_ids * string_configuration.module_distance + string_configuration.z_offset
-        extended_strings_df['module_location_x'] = extended_strings_df.loc[:, 'string_location_x']
-        extended_strings_df['module_location_y'] = extended_strings_df.loc[:, 'string_location_y']
-        extended_strings_df.assign(module_location_z=module_z_locations)
-
-        extended_strings_df.assign(module_radius=self.configuration.module.radius)
+        extended_strings_df['module_location_x'] \
+            = extended_strings_df.loc[:, 'string_location_x']
+        extended_strings_df['module_location_y'] \
+            = extended_strings_df.loc[:, 'string_location_y']
+        extended_strings_df['module_location_z'] \
+            = module_z_locations
+        extended_strings_df['module_radius'] = self.configuration.module.radius
         return extended_strings_df
 
     @check_output(StringSchema.to_schema())
@@ -207,9 +244,9 @@ class AbstractDetectorBuilder(ABC):
             DataFrame containing all strings
 
         """
-        locations = self._get_string_locations()
-        strings_df = vectors3d_to_df_columns(locations, 'string_location_')
-        strings_df.assign(string_id=range(len(locations)))
+        location_vectors = self._get_string_locations()
+        strings_df = location_vectors.get_df_with_prefix('string_location_')
+        strings_df['string_id'] = range(len(location_vectors))
 
         strings_df = self._extend_df_by_modules(strings_df)
         strings_df = self._extend_df_by_pmts(strings_df)
@@ -234,11 +271,13 @@ class SingleStringDetectorBuilder(AbstractDetectorBuilder):
 
     def _get_string_locations(self) -> Vectors3D:
         """Get string locations for string detector."""
-        positions = pd.DataFrame([{
-            'x': 0,
-            'y': 0,
-            'z': 0
-        }])
+        positions = pd.DataFrame(
+            [{
+                'x': 0,
+                'y': 0,
+                'z': 0
+            }]
+        )
 
         return Vectors3D(df=positions)
 
@@ -262,23 +301,25 @@ class TriangularDetectorBuilder(AbstractDetectorBuilder):
         height = np.sqrt(side_length ** 2 - (side_length / 2) ** 2)
         z_position = 0.0
 
-        positions = pd.DataFrame([
-            {
-                'x': -side_length / 2,
-                'y': -height / 3,
-                'z': z_position
-            },
-            {
-                'x': side_length / 2,
-                'y': -height / 3,
-                'z': z_position
-            },
-            {
-                'x': 0,
-                'y': height * 2 / 3,
-                'z': z_position
-            },
-        ])
+        positions = pd.DataFrame(
+            [
+                {
+                    'x': -side_length / 2,
+                    'y': -height / 3,
+                    'z': z_position
+                },
+                {
+                    'x': side_length / 2,
+                    'y': -height / 3,
+                    'z': z_position
+                },
+                {
+                    'x': 0,
+                    'y': height * 2 / 3,
+                    'z': z_position
+                },
+            ]
+        )
         return Vectors3D(df=positions)
 
 
@@ -311,11 +352,13 @@ class HexagonalDetectorBuilder(AbstractDetectorBuilder):
             )
             y_position = row_index * distance_between_strings * np.sqrt(3) / 2
             for x_position in x_positions:
-                string_locations.append({
-                    'x': x_position,
-                    'y': y_position,
-                    'z': z_position
-                })
+                string_locations.append(
+                    {
+                        'x': x_position,
+                        'y': y_position,
+                        'z': z_position
+                    }
+                )
 
             if row_index != 0:
                 x_positions = np.linspace(
@@ -326,11 +369,13 @@ class HexagonalDetectorBuilder(AbstractDetectorBuilder):
                 y_position = -row_index * distance_between_strings * np.sqrt(3) / 2
 
                 for x_position in x_positions:
-                    string_locations.append({
-                        'x': x_position,
-                        'y': y_position,
-                        'z': z_position
-                    })
+                    string_locations.append(
+                        {
+                            'x': x_position,
+                            'y': y_position,
+                            'z': z_position
+                        }
+                    )
 
         return Vectors3D(df=pd.DataFrame(string_locations))
 
@@ -351,12 +396,14 @@ class RhombusDetectorBuilder(AbstractDetectorBuilder):
             raise ValueError("Rhombus Geometry needs LengthGeometryConfiguration")
         side_length = self.configuration.geometry.side_length
         z_position = 0.0
-        positions = pd.DataFrame([
-            {'x': -side_length / 2, 'y': -0.0, 'z': z_position},
-            {'x': +side_length / 2, 'y': 0.0, 'z': z_position},
-            {'x': 0, 'y': np.sqrt(3) / 2 * side_length, 'z': z_position},
-            {'x': 0, 'y': -np.sqrt(3) / 2 * side_length, 'z': z_position},
-        ])
+        positions = pd.DataFrame(
+            [
+                {'x': -side_length / 2, 'y': -0.0, 'z': z_position},
+                {'x': +side_length / 2, 'y': 0.0, 'z': z_position},
+                {'x': 0, 'y': np.sqrt(3) / 2 * side_length, 'z': z_position},
+                {'x': 0, 'y': -np.sqrt(3) / 2 * side_length, 'z': z_position},
+            ]
+        )
 
         return Vectors3D(df=positions)
 

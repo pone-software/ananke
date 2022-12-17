@@ -13,8 +13,7 @@ class DataFrameFacade(BaseModel):
     df: DataFrame
 
     def to_numpy(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
-        array = self.df.to_numpy(dtype=dtype)  # type: npt.NDArray[Any]
-        return array.flatten()
+        return self.df.to_numpy(dtype=dtype)
 
     def __array__(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
         """Make class numpy array castable.
@@ -50,4 +49,4 @@ class DataFrameFacade(BaseModel):
         for facade in facades_to_concat:
             dfs.append(facade.df)
 
-        return pd.concat(dfs)
+        return cls(df=pd.concat(dfs))

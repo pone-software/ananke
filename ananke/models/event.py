@@ -1,7 +1,9 @@
 """This module contains all event and photon source related structures."""
 from __future__ import annotations
+
+import numpy as np
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Callable
 
 import numpy.typing as npt
 import pandas as pd
@@ -10,7 +12,12 @@ from pandera.typing import DataFrame
 from ananke.models.detector import Detector
 from ananke.models.geometry import OrientedLocatedObjects
 from ananke.models.interfaces import DataFrameFacade
-from ananke.schemas.event import RecordSchema, SourceRecordSchema, EventRecordSchema, HitSchema
+from ananke.schemas.event import (
+    RecordSchema,
+    SourceRecordSchema,
+    EventRecordSchema,
+    HitSchema,
+)
 
 
 class Records(OrientedLocatedObjects):
@@ -23,7 +30,7 @@ class SourceRecords(Records):
     df: DataFrame[SourceRecordSchema]
 
     # TODO: Fix THis
-    #angle_distribution: Optional[npt.ArrayLike] = None
+    # angle_distribution: Optional[npt.ArrayLike] = None
 
     @property
     def number_of_photons(self) -> pd.DataFrame:
@@ -43,6 +50,7 @@ class SourceRecords(Records):
 class EventRecords(Records):
     """Record of an event that happened."""
     df: DataFrame[EventRecordSchema]
+
 
 
 class Hits(DataFrameFacade):

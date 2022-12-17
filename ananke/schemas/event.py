@@ -31,28 +31,29 @@ class HitType(Enum):
 
 
 class EventIdSchema(pa.SchemaModel):
-    event_id: Series[int]
+    event_id: Series[int] = pa.Field(coerce=True)
 
 
-class HitSchema(EventIdSchema):
-    string_id: Series[int]
-    module_id: Series[int]
-    pmt_id: Series[int]
-    time: Series[float]
-    type: Series[HitType]
+class RecordSchema(EventIdSchema):
+    time: Series[float] = pa.Field(coerce=True)
 
 
-class RecordSchema(OrientedLocatedObjectSchema, EventIdSchema):
-    time: Series[float]
-    type: Series[Enum]
+class HitSchema(RecordSchema):
+    string_id: Series[int] = pa.Field(coerce=True)
+    module_id: Series[int] = pa.Field(coerce=True)
+    pmt_id: Series[int] = pa.Field(coerce=True)
+
+class OrientedRecordSchema(OrientedLocatedObjectSchema, RecordSchema):
+    pass
 
 
-class SourceRecordSchema(RecordSchema):
-    number_of_photons: Series[int]
-    type: Series[SourceType]
+class SourceRecordSchema(OrientedRecordSchema):
+    number_of_photons: Series[int] = pa.Field(coerce=True)
+    type: Series[int] = pa.Field(isin=[x.value for x in SourceType])
 
 
-class EventRecordSchema(RecordSchema):
-    energy: Series[float]
-    type: Series[EventType]
-    length: Optional[Series[float]]
+class EventRecordSchema(OrientedRecordSchema):
+    energy: Series[float] = pa.Field(coerce=True)
+    type: Series[int] = pa.Field(isin=[x.value for x in EventType])
+    particle_id: Series[int] = pa.Field(coerce=True)
+    length: Optional[Series[float]] = pa.Field(coerce=True)

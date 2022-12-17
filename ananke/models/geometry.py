@@ -7,12 +7,17 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 from pandera.typing import DataFrame
-from pandera import check_input
+from pandera import check_types
 
 from ananke.models.interfaces import DataFrameFacade
-from ananke.utils import df_columns_to_vectors3d
-from ananke.schemas.geometry import Vector2DSchema, PolarSchema, Vector3DSchema, SphericalSchema, LocatedObjectSchema, \
-    OrientedLocatedObjectSchema
+from ananke.schemas.geometry import (
+    Vector2DSchema,
+    PolarSchema,
+    Vector3DSchema,
+    SphericalSchema,
+    LocatedObjectSchema,
+    OrientedLocatedObjectSchema,
+)
 
 
 class Vectors2D(DataFrameFacade):
@@ -23,7 +28,7 @@ class Vectors2D(DataFrameFacade):
     def phi(self) -> pd.DataFrame:
         """Phi coordinate in radial units."""
         d = {
-           'phi': np.arctan((self.df['y'] / self.df['x']).to_numpy())
+            'phi': np.arctan((self.df['y'] / self.df['x']).to_numpy())
         }
         return pd.DataFrame(d)
 
@@ -32,7 +37,7 @@ class Vectors2D(DataFrameFacade):
         """Returns L2-norm of 2D vector."""
         numpy_array = self.df.to_numpy(dtype=np.float)
         d = {
-           'norm': np.linalg.norm(numpy_array, axis=1)
+            'norm': np.linalg.norm(numpy_array, axis=1)
         }
         return pd.DataFrame(d)
 
@@ -59,8 +64,8 @@ class Vectors2D(DataFrameFacade):
         self.df = self.df.mul(factor)
 
     @classmethod
-    @check_input(PolarSchema.to_schema())
-    def from_polar(cls, polar: DataFrame[PolarSchema]) -> Vectors2D:
+    @check_types(with_pydantic=True)
+    def from_polar(cls, polar: DataFrame[PolarSchema]) -> 'Vectors2D':
         """Creates a 2D vector from polar coordinates.
 
         Args:
@@ -70,8 +75,8 @@ class Vectors2D(DataFrameFacade):
             2D Vector with the given properties.
         """
         np_polar = polar.to_numpy()
-        np_norm = np_polar[0]
-        np_phi = np_polar[1]
+        np_norm = np_polar[:, 0]
+        np_phi = np_polar[:, 1]
         d = {
             'x': np.cos(np_phi) * np_norm,
             'y': np.sin(np_phi) * np_norm,
@@ -91,8 +96,8 @@ class Vectors2D(DataFrameFacade):
 
         """
         d = {
-            'x': numpy_array[0],
-            'y': numpy_array[1],
+            'x': numpy_array[:, 0],
+            'y': numpy_array[:, 1],
         }
         df = pd.DataFrame(d)
         return cls(df=df)
@@ -105,12 +110,14 @@ class Vectors3D(Vectors2D):
     @property
     def theta(self) -> pd.DataFrame:
         """Phi coordinate in radial units."""
+        np_ratio = (self.df['z'] / self.norm['norm']).to_numpy()
         d = {
-           'theta': np.arccos((self.df['z'] / self.norm['norm']).to_numpy())
+            'theta': np.arccos(np_ratio)
         }
         return pd.DataFrame(d)
 
     @classmethod
+    @check_types(with_pydantic=True)
     def from_polar(cls, polar: DataFrame[PolarSchema]) -> Vectors2D:
         """3D vector cannot be created from polar.
 
@@ -120,8 +127,8 @@ class Vectors3D(Vectors2D):
         raise AttributeError("Vector3D cannot be created by polar coordinates.")
 
     @classmethod
-    @check_input(SphericalSchema.to_schema())
-    def from_spherical(cls, spherical: DataFrame[SphericalSchema]) -> Vectors3D:
+    @check_types(with_pydantic=True)
+    def from_spherical(cls, spherical: DataFrame[SphericalSchema]) -> 'Vectors3D':
         """Create 3D vector based on spherical coordinates.
 
         Args:
@@ -131,9 +138,9 @@ class Vectors3D(Vectors2D):
             AttributeError: A creation from polar coordinates is not possible
         """
         np_spherical = spherical.to_numpy()
-        np_norm = np_spherical[0]
-        np_phi = np_spherical[1]
-        np_theta = np_spherical[2]
+        np_norm = np_spherical[:, 0]
+        np_phi = np_spherical[:, 1]
+        np_theta = np_spherical[:, 2]
         d = {
             'x': np.cos(np_phi) * np.sin(np_theta) * np_norm,
             'y': np.sin(np_phi) * np.sin(np_theta) * np_norm,
@@ -154,12 +161,50 @@ class Vectors3D(Vectors2D):
 
         """
         d = {
-            'x': numpy_array[0],
-            'y': numpy_array[1],
-            'z': numpy_array[2]
+            'x': numpy_array[:, 0],
+            'y': numpy_array[:, 1],
+            'z': numpy_array[:, 2]
         }
         df = pd.DataFrame(d)
         return cls(df=df)
+
+    @classmethod
+    def from_df(cls, df: pd.DataFrame, prefix: str = '') -> Vectors3D:
+        """Returns a DataFrame of 3d vectors.
+
+        As many of the classes have a prefix in front of the coordinates,
+        this method strips the prefix and returns a valid 3dVectors object
+
+        Args:
+            df: DataFrame with columns
+            prefix: prefix to be stripped
+
+        Returns:
+            Valid Vectors3D Object
+        """
+        mapping = {
+            prefix + 'x': 'x',
+            prefix + 'y': 'y',
+            prefix + 'z': 'z',
+        }
+        renamed_df = df[mapping.keys()].rename(columns=mapping)
+        return Vectors3D(df=renamed_df)
+
+    def get_df_with_prefix(self, prefix: str = '') -> pd.DataFrame:
+        """Gets DataFrame from Vectors with prefixed columns for later use.
+
+        Args:
+            prefix: prefix to prepend (x,y,z)-columns
+
+        Returns:
+            DataFrame with prefixed columns.
+        """
+        mapping = {
+            'x': prefix + 'x',
+            'y': prefix + 'y',
+            'z': prefix + 'z',
+        }
+        return self.df[mapping.keys()].rename(columns=mapping)
 
 
 class LocatedObjects(DataFrameFacade):
@@ -168,7 +213,7 @@ class LocatedObjects(DataFrameFacade):
 
     @property
     def locations(self) -> Vectors3D:
-        return df_columns_to_vectors3d(self.df, prefix='location_')
+        return Vectors3D.from_df(self.df, prefix='location_')
 
 
 class OrientedLocatedObjects(LocatedObjects):
@@ -177,4 +222,4 @@ class OrientedLocatedObjects(LocatedObjects):
 
     @property
     def orientations(self) -> Vectors3D:
-        return df_columns_to_vectors3d(self.df, prefix='orientation_')
+        return Vectors3D.from_df(self.df, prefix='orientation_')
