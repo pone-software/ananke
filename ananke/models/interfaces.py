@@ -1,7 +1,7 @@
 """Place for all interfaces used in the package."""
 from __future__ import annotations
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 from typing import Any, List
 import numpy.typing as npt
 from pandera.typing import DataFrame
@@ -49,4 +49,5 @@ class DataFrameFacade(BaseModel):
         for facade in facades_to_concat:
             dfs.append(facade.df)
 
-        return cls(df=pd.concat(dfs))
+        full_df = pd.concat(dfs)
+        return cls.construct(cls.__fields_set__, df=full_df)

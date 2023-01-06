@@ -12,7 +12,7 @@ from pandera.typing import DataFrame
 from ananke.models.detector import Detector
 from ananke.models.geometry import Vectors3D
 from ananke.utils import get_repeated_df
-from ananke.schemas.detector import StringSchema
+from ananke.schemas.detector import DetectorSchema
 from ananke.configurations.detector import (
     DetectorConfiguration,
     DetectorGeometries,
@@ -236,8 +236,8 @@ class AbstractDetectorBuilder(ABC):
         extended_strings_df['module_radius'] = self.configuration.module.radius
         return extended_strings_df
 
-    @check_output(StringSchema.to_schema())
-    def _get_strings_df(self) -> DataFrame[StringSchema]:
+    @check_output(DetectorSchema.to_schema())
+    def _get_strings_df(self) -> DataFrame[DetectorSchema]:
         """Build the strings dataframe for a detector.
 
         Returns:

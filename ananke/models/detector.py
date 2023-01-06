@@ -8,7 +8,7 @@ from pandera.typing import DataFrame
 from ananke.models.geometry import Vectors3D
 from ananke.models.interfaces import DataFrameFacade
 from ananke.configurations.detector import DetectorConfiguration
-from ananke.schemas.detector import PMTSchema, ModuleSchema, StringSchema
+from ananke.schemas.detector import PMTSchema, ModuleSchema, DetectorSchema
 
 
 class PMTs(DataFrameFacade):
@@ -59,7 +59,7 @@ class Modules(PMTs):
 
 class Strings(Modules):
     """Python class representing individual string."""
-    df: DataFrame[StringSchema]
+    df: DataFrame[DetectorSchema]
 
     @property
     def string_locations(self) -> Vectors3D:

@@ -25,7 +25,7 @@ class ModuleSchema(PMTSchema):
     module_location_z: Series[float] = pa.Field(coerce=True)
 
 
-class StringSchema(ModuleSchema):
+class DetectorSchema(ModuleSchema):
     string_id: Series[int] = pa.Field(coerce=True)
     string_location_x: Series[float] = pa.Field(coerce=True)
     string_location_y: Series[float] = pa.Field(coerce=True)

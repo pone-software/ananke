@@ -25,7 +25,7 @@ class Records(OrientedLocatedObjects):
     df: DataFrame[RecordSchema]
 
 
-class SourceRecords(Records):
+class Sources(Records):
     """Record for a photon source."""
     df: DataFrame[SourceRecordSchema]
 
@@ -52,27 +52,37 @@ class EventRecords(Records):
     df: DataFrame[EventRecordSchema]
 
 
-
 class Hits(DataFrameFacade):
     """Record of an event that happened."""
     df: DataFrame[HitSchema]
 
 
 @dataclass
-class Events:
+class Collection:
     detector: Detector
-    sources: SourceRecords
-    events: EventRecords
+    records: Records
     hits: Hits
+    sources: Optional[Sources] = None
 
     @classmethod
-    def concat(cls, events_to_concat: List[Events]) -> Events:
-        if len(events_to_concat) == 0:
-            raise ValueError('You have to pass at least one Events object in list')
-        events = Events(
-            detector=events_to_concat[0].detector,
-            sources=SourceRecords.concat([x.sources for x in events_to_concat]),
-            events=EventRecords.concat([x.events for x in events_to_concat]),
-            hits=Hits.concat([x.hits for x in events_to_concat]),
+    def concat(cls, collections_to_concat: List[Collection]) -> Collection:
+        if len(collections_to_concat) == 0:
+            raise ValueError('You have to pass at least one Collection object in list')
+        sources_list = []
+        records_list = []
+        hits_list = []
+        for collection_to_concat in collections_to_concat:
+            if collection_to_concat.sources is not None:
+                sources_list.append(collection_to_concat.sources)
+            records_list.append(collection_to_concat.records)
+            hits_list.append(collection_to_concat.hits)
+
+        if len(sources_list) == 0:
+            sources_list = None
+        collection = Collection(
+            detector=collections_to_concat[0].detector,
+            sources=Sources.concat(sources_list),
+            records=Records.concat(records_list),
+            hits=Hits.concat(hits_list),
         )
-        return events
+        return collection

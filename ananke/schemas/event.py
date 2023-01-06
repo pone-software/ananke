@@ -1,4 +1,4 @@
-"""Module containing all schemas for Events"""
+"""Module containing all schemas for Collection"""
 from enum import Enum
 from typing import Optional
 
@@ -11,37 +11,35 @@ from ananke.schemas.geometry import OrientedLocatedObjectSchema
 class EventType(Enum):
     """Enum for different event types."""
 
-    STARTING_TRACK = 1
-    CASCADE = 2
-    REALISTIC_TRACK = 3
+    STARTING_TRACK = 'starting_track'
+    CASCADE = 'cascade'
+    REALISTIC_TRACK = 'realistic_track'
 
 
 class SourceType(Enum):
     """Enum for photon source types."""
 
-    STANDARD_CHERENKOV = 1
-    ISOTROPIC = 2
+    STANDARD_CHERENKOV = 'cherenkov'
+    ISOTROPIC = 'isotropic'
 
 
-class HitType(Enum):
-    STARTING_TRACK = EventType.STARTING_TRACK
-    CASCADE = EventType.CASCADE
-    REALISTIC_TRACK = EventType.REALISTIC_TRACK
-    NOISE = 4
+class RecordIdSchema(pa.SchemaModel):
+    record_id: Series[int] = pa.Field(coerce=True)
 
 
-class EventIdSchema(pa.SchemaModel):
-    event_id: Series[int] = pa.Field(coerce=True)
-
-
-class RecordSchema(EventIdSchema):
+class TimedSchema(pa.SchemaModel):
     time: Series[float] = pa.Field(coerce=True)
 
 
-class HitSchema(RecordSchema):
+class RecordSchema(RecordIdSchema, TimedSchema):
+    type: Series[str]
+
+
+class HitSchema(TimedSchema, RecordIdSchema):
     string_id: Series[int] = pa.Field(coerce=True)
     module_id: Series[int] = pa.Field(coerce=True)
     pmt_id: Series[int] = pa.Field(coerce=True)
+
 
 class OrientedRecordSchema(OrientedLocatedObjectSchema, RecordSchema):
     pass
@@ -49,11 +47,11 @@ class OrientedRecordSchema(OrientedLocatedObjectSchema, RecordSchema):
 
 class SourceRecordSchema(OrientedRecordSchema):
     number_of_photons: Series[int] = pa.Field(coerce=True)
-    type: Series[int] = pa.Field(isin=[x.value for x in SourceType])
+    type: Series[str] = pa.Field(isin=[x.value for x in SourceType])
 
 
 class EventRecordSchema(OrientedRecordSchema):
     energy: Series[float] = pa.Field(coerce=True)
-    type: Series[int] = pa.Field(isin=[x.value for x in EventType])
+    type: Series[str] = pa.Field(isin=[x.value for x in EventType])
     particle_id: Series[int] = pa.Field(coerce=True)
     length: Optional[Series[float]] = pa.Field(coerce=True)
