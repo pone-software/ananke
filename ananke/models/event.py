@@ -22,12 +22,12 @@ from ananke.schemas.event import (
 
 class Records(OrientedLocatedObjects):
     """General description of a record for events or sources."""
-    df: DataFrame[RecordSchema]
+    df: DataFrame[RecordSchema] = RecordSchema.example(size=0)
 
 
 class Sources(Records):
     """Record for a photon source."""
-    df: DataFrame[SourceRecordSchema]
+    df: DataFrame[SourceRecordSchema] = SourceRecordSchema.example(size=0)
 
     # TODO: Fix THis
     # angle_distribution: Optional[npt.ArrayLike] = None
@@ -46,15 +46,26 @@ class Sources(Records):
             'time'
         ]]
 
+    def get_by_record(self, record_id: int) -> Sources:
+        """Gets all sources by a record id.
+
+        Args:
+            record_id: ID of the record to get
+
+        Returns:
+            Sources of the record
+        """
+        return self.__class__(df=self.df[self.df['record_id']==record_id])
+
 
 class EventRecords(Records):
     """Record of an event that happened."""
-    df: DataFrame[EventRecordSchema]
+    df: DataFrame[EventRecordSchema] = EventRecordSchema.example(size=0)
 
 
 class Hits(DataFrameFacade):
     """Record of an event that happened."""
-    df: DataFrame[HitSchema]
+    df: DataFrame[HitSchema] = HitSchema.example(size=0)
 
 
 @dataclass

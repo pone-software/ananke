@@ -888,14 +888,6 @@ pytz = ">=2020.1"
 test = ["hypothesis (>=5.5.3)", "pytest (>=6.0)", "pytest-xdist (>=1.31)"]
 
 [[package]]
-name = "pandas-stubs"
-version = "1.2.0.62"
-description = "Type annotations for Pandas"
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
 name = "pandera"
 version = "0.13.4"
 description = "A light-weight and flexible data validation and testing tool for statistical data objects."
@@ -907,7 +899,6 @@ python-versions = ">=3.7"
 numpy = ">=1.19.0"
 packaging = ">=20.0"
 pandas = ">=1.2.0"
-pandas-stubs = {version = "<=1.4.3.220807", optional = true, markers = "extra == \"mypy\""}
 pydantic = "*"
 typing-inspect = ">=0.6.0"
 wrapt = "*"
@@ -1655,7 +1646,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "542e6727952893e8f332036ea3cabfee4573cfc5588986be25777ce649abd3f8"
+content-hash = "dbf61ce7ff68846c1e7c52eab05056dca254ea7e3b5e496940db5d568537abfb"
 
 [metadata.files]
 alabaster = [
@@ -2191,10 +2182,6 @@ pandas = [
     {file = "pandas-1.5.2-cp39-cp39-win32.whl", hash = "sha256:e7469271497960b6a781eaa930cba8af400dd59b62ec9ca2f4d31a19f2f91090"},
     {file = "pandas-1.5.2-cp39-cp39-win_amd64.whl", hash = "sha256:c218796d59d5abd8780170c937b812c9637e84c32f8271bbf9845970f8c1351f"},
     {file = "pandas-1.5.2.tar.gz", hash = "sha256:220b98d15cee0b2cd839a6358bd1f273d0356bf964c1a1aeb32d47db0215488b"},
-]
-pandas-stubs = [
-    {file = "pandas-stubs-1.2.0.62.tar.gz", hash = "sha256:89c022dad41d28e26a1290eb1585db1042ccb09e6951220bb5c9146e2f795147"},
-    {file = "pandas_stubs-1.2.0.62-py3-none-any.whl", hash = "sha256:32a9e04582173104d42c090135efacc64d70e08c003405455b7dfb1540bd7e6c"},
 ]
 pandera = [
     {file = "pandera-0.13.4-py3-none-any.whl", hash = "sha256:9e91687861406284270add1d467f204630377892e7a4b45809bb7546f0013153"},

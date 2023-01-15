@@ -12,7 +12,7 @@ numpy = "^1.23.4"
 pydantic = "^1.10.2"
 plotly = "^5.11.0"
 pandas = "^1.5.2"
-pandera = {extras = ["mypy"], version = "^0.13.4"}
+pandera = {extras = ["hypothesis"], version = "^0.13.4"}
 
 
 [tool.poetry.group.dev.dependencies]
