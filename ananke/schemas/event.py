@@ -22,35 +22,52 @@ class SourceType(Enum):
     STANDARD_CHERENKOV = 'cherenkov'
     ISOTROPIC = 'isotropic'
 
+class NoiseType(Enum):
+    """Enum for different noise types."""
+    ELECTRICAL = 'electrical'
+
+
 
 class RecordIdSchema(pa.SchemaModel):
+    """Schema for Dataframes having record ids."""
     record_id: Series[int] = pa.Field(coerce=True)
 
 
 class TimedSchema(pa.SchemaModel):
+    """Schema for Dataframes having some time constraint."""
     time: Series[float] = pa.Field(coerce=True)
+    duration: Optional[Series[float]] = pa.Field(coerce=True)
 
 
 class RecordSchema(RecordIdSchema, TimedSchema):
+    """Schema for a record of any type."""
     type: Series[str]
+
+class NoiseRecordSchema(RecordSchema):
+    """Schema for noise records."""
+    type: Series[str] = pa.Field(isin=[x.value for x in NoiseType])
 
 
 class HitSchema(TimedSchema, RecordIdSchema):
+    """Schema for individual hits."""
     string_id: Series[int] = pa.Field(coerce=True)
     module_id: Series[int] = pa.Field(coerce=True)
     pmt_id: Series[int] = pa.Field(coerce=True)
 
 
 class OrientedRecordSchema(OrientedLocatedObjectSchema, RecordSchema):
+    """Schema for records that have a location and orientation."""
     pass
 
 
 class SourceRecordSchema(OrientedRecordSchema):
+    """Schema for photon sources."""
     number_of_photons: Series[int] = pa.Field(coerce=True)
     type: Series[str] = pa.Field(isin=[x.value for x in SourceType])
 
 
 class EventRecordSchema(OrientedRecordSchema):
+    """Schema for event records."""
     energy: Series[float] = pa.Field(coerce=True)
     type: Series[str] = pa.Field(isin=[x.value for x in EventType])
     particle_id: Series[int] = pa.Field(coerce=True)

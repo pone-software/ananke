@@ -45,6 +45,8 @@ class DataFrameFacade(BaseModel):
             Concatenated Facade
 
         """
+        if len(facades_to_concat) == 0:
+            return cls()
         dfs = []
         for facade in facades_to_concat:
             dfs.append(facade.df)

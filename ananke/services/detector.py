@@ -69,11 +69,12 @@ class AbstractDetectorBuilder(ABC):
         Returns:
             Noise rate for a PMT
         """
-        noise_rate = 0
+        noise_rate = self.configuration.pmt.noise_rate
 
         # Randomize noise level with given parameters
+        # TODO: Adapt Noise rate variation
         if (
-                self.configuration.pmt.noise_rate > 0
+                noise_rate > 0
                 and self.configuration.pmt.gamma_scale > 0
         ):
             noise_rate = (
@@ -82,7 +83,7 @@ class AbstractDetectorBuilder(ABC):
                         self.configuration.pmt.gamma_scale,
                         number_of_pmts
                     )
-                    * self.configuration.pmt.noise_rate
+                    * noise_rate
             )
         return noise_rate
 

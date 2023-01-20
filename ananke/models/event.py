@@ -17,36 +17,18 @@ from ananke.schemas.event import (
     SourceRecordSchema,
     EventRecordSchema,
     HitSchema,
+    OrientedRecordSchema,
+    RecordIdSchema,
+    TimedSchema,
+    NoiseRecordSchema,
 )
 
 
-class Records(OrientedLocatedObjects):
-    """General description of a record for events or sources."""
-    df: DataFrame[RecordSchema] = RecordSchema.example(size=0)
+class RecordIds(DataFrameFacade):
+    """General description of a record ids."""
+    df: DataFrame[RecordIdSchema] = RecordIdSchema.example(size=0)
 
-
-class Sources(Records):
-    """Record for a photon source."""
-    df: DataFrame[SourceRecordSchema] = SourceRecordSchema.example(size=0)
-
-    # TODO: Fix THis
-    # angle_distribution: Optional[npt.ArrayLike] = None
-
-    @property
-    def number_of_photons(self) -> pd.DataFrame:
-        """Gets DataFrame with all numbers of photons."""
-        return self.df[[
-            'number_of_photons'
-        ]]
-
-    @property
-    def times(self) -> pd.DataFrame:
-        """Gets DataFrame with all times."""
-        return self.df[[
-            'time'
-        ]]
-
-    def get_by_record(self, record_id: int) -> Sources:
+    def get_by_record(self, record_id: int) -> RecordIds:
         """Gets all sources by a record id.
 
         Args:
@@ -55,15 +37,53 @@ class Sources(Records):
         Returns:
             Sources of the record
         """
-        return self.__class__(df=self.df[self.df['record_id']==record_id])
+        return self.__class__(df=self.df[self.df['record_id'] == record_id])
 
 
-class EventRecords(Records):
+class RecordTimes(DataFrameFacade):
+    """General description of intervals."""
+    df: DataFrame[TimedSchema] = TimedSchema.example(size=0)
+
+    @property
+    def times(self) -> pd.Series:
+        """Gets DataFrame with all times."""
+        return self.df['time']
+
+
+class Records(RecordIds, RecordTimes):
+    """General description of a record for events or sources."""
+    df: DataFrame[RecordSchema] = RecordSchema.example(size=0)
+
+
+class OrientedRecords(OrientedLocatedObjects, Records):
+    """General description of a record for events or sources."""
+    df: DataFrame[OrientedRecordSchema] = OrientedRecordSchema.example(size=0)
+
+
+class Sources(OrientedRecords):
+    """Record for a photon source."""
+    df: DataFrame[SourceRecordSchema] = SourceRecordSchema.example(size=0)
+
+    # TODO: Fix THis
+    # angle_distribution: Optional[npt.ArrayLike] = None
+
+    @property
+    def number_of_photons(self) -> pd.Series:
+        """Gets DataFrame with all numbers of photons."""
+        return self.df['number_of_photons']
+
+
+class EventRecords(OrientedRecords):
     """Record of an event that happened."""
     df: DataFrame[EventRecordSchema] = EventRecordSchema.example(size=0)
 
 
-class Hits(DataFrameFacade):
+class NoiseRecords(Records):
+    """Record of an event that happened."""
+    df: DataFrame[NoiseRecordSchema] = NoiseRecordSchema.example(size=0)
+
+
+class Hits(RecordTimes, RecordIds):
     """Record of an event that happened."""
     df: DataFrame[HitSchema] = HitSchema.example(size=0)
 
