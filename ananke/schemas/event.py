@@ -53,7 +53,7 @@ class RecordSchema(RecordIdSchema, TimedSchema):
     """Schema for a timed record with an ID and type."""
     type: Series[str] = pa.Field(
         coerce=True,
-        isin=[x for x in RecordType]
+        isin=[x.value for x in RecordType]
     )
 
 
@@ -61,7 +61,7 @@ class NoiseRecordSchema(RecordSchema):
     """Schema for noise records."""
     type: Series[str] = pa.Field(
         coerce=True,
-        isin=[x for x in NoiseType]
+        isin=[x.value for x in NoiseType]
     )
 
 
@@ -69,7 +69,7 @@ class HitSchema(RecordSchema):
     """Schema for individual hits."""
     type: Series[str] = pa.Field(
         coerce=True,
-        isin=[x for x in RecordType]
+        isin=[x.value for x in RecordType]
     )
     string_id: Series[int] = pa.Field(coerce=True)
     module_id: Series[int] = pa.Field(coerce=True)
