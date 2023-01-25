@@ -1,14 +1,17 @@
 """This module contains all event and photon source related structures."""
 from __future__ import annotations
 
-import numpy as np
 from dataclasses import dataclass
-from typing import Optional, List, Callable
+from typing import Optional, List
 
-import numpy.typing as npt
+import numpy as np
 import pandas as pd
 from pandera.typing import DataFrame
 
+from ananke.configurations.events import (
+    RedistributionConfiguration,
+    EventRedistributionMode,
+)
 from ananke.models.detector import Detector
 from ananke.models.geometry import OrientedLocatedObjects
 from ananke.models.interfaces import DataFrameFacade
@@ -22,6 +25,7 @@ from ananke.schemas.event import (
     TimedSchema,
     NoiseRecordSchema,
 )
+from ananke.utils import percentile
 
 
 class RecordIds(DataFrameFacade):
@@ -38,6 +42,11 @@ class RecordIds(DataFrameFacade):
             Sources of the record
         """
         return self.__class__(df=self.df[self.df['record_id'] == record_id])
+
+    @property
+    def record_ids(self) -> pd.Series:
+        """Gets all the record ids of the current df."""
+        return self.df['record_id']
 
 
 class RecordTimes(DataFrameFacade):
@@ -83,7 +92,7 @@ class NoiseRecords(Records):
     df: DataFrame[NoiseRecordSchema] = NoiseRecordSchema.example(size=0)
 
 
-class Hits(RecordTimes, RecordIds):
+class Hits(Records):
     """Record of an event that happened."""
     df: DataFrame[HitSchema] = HitSchema.example(size=0)
 
@@ -117,3 +126,67 @@ class Collection:
             hits=Hits.concat(hits_list),
         )
         return collection
+
+    def redistribute(self, redistribution_config: RedistributionConfiguration):
+        rng = np.random.default_rng(redistribution_config.seed)
+
+        modification_df = self.records.df[[
+            'record_id',
+            'time'
+        ]]
+
+        mode = redistribution_config.mode
+        interval = redistribution_config.interval
+
+        if mode == EventRedistributionMode.START_TIME.value:
+            modification_df['start'] = interval.start
+            modification_df['end'] = interval.end
+        else:
+            if mode == EventRedistributionMode.CONTAINS_PERCENTAGE:
+                beginning_percentile = 0.5 - redistribution_config.percentile / 2.
+                ending_percentile = 0.5 + redistribution_config.percentile / 2.
+                aggregations = [
+                    percentile(beginning_percentile, 'min'),
+                    percentile(ending_percentile, 'max'),
+                ]
+            else:
+                aggregations = ['min', 'max']
+
+            grouped_hits = self.hits.df.groupby('record_id').agg(
+                {
+                    'time': aggregations
+                }
+            )
+            modification_df = modification_df.merge(
+                grouped_hits,
+                on='record_id',
+                how='left'
+            )
+
+        if mode == EventRedistributionMode.CONTAINS_HIT.value:
+            modification_df['start'] = interval.start - modification_df['max'] + \
+                                       modification_df['time']
+            modification_df['end'] = interval.end - modification_df['min'] + \
+                                     modification_df['time']
+
+        if (
+                mode == EventRedistributionMode.CONTAINS_EVENT.value
+                or mode == EventRedistributionMode.CONTAINS_PERCENTAGE.value
+        ):
+            modification_df['length'] = modification_df['max'] - modification_df['min']
+            modification_df['offset'] = modification_df['min'] - modification_df['time']
+            modification_df['start'] = interval.start - modification_df['offset']
+            modification_df['end'] = interval.end - modification_df['offset'] - \
+                                     modification_df['length']
+
+        # What happens when the event is having an error
+        modification_df[modification_df['end'] < modification_df['start']] = \
+            modification_df['start'] + 1
+
+        modification_df['new_time'] = rng.uniform(
+            modification_df['start'],
+            modification_df['end']
+        )
+
+        modification_df['difference'] = \
+            modification_df['time'] - modification_df['new_time']

@@ -10,6 +10,7 @@ from pydantic import (
     confloat,
 )
 
+from ..defaults import seed
 
 class DetectorGeometries(str, Enum):
     """Possible detector geometries."""
@@ -46,6 +47,7 @@ class GeometryConfiguration(BaseModel):
     #: Start position of the current geometry
     start_position: Position = Position(x=0.0, y=0.0)
 
+    #: type of the configuration
     type: str
 
 
@@ -146,4 +148,4 @@ class DetectorConfiguration(BaseModel):
     pmt: PMTConfiguration
 
     #: Seed for the random generators used within detector
-    seed: int = 1337
+    seed: int = seed
