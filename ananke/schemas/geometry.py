@@ -28,7 +28,7 @@ class LocatedObjectSchema(pa.SchemaModel):
     location_z: Series[float] = pa.Field(coerce=True)
 
 
-class OrientedLocatedObjectSchema(pa.SchemaModel):
+class OrientedLocatedObjectSchema(LocatedObjectSchema):
     orientation_x: Series[float] = pa.Field(coerce=True)
     orientation_y: Series[float] = pa.Field(coerce=True)
     orientation_z: Series[float] = pa.Field(coerce=True)
