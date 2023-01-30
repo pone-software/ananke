@@ -1,15 +1,14 @@
-"""Module containing all utils for the models"""
+"""Module containing all utils for the models."""
 from __future__ import annotations
 
-from typing import Optional, Callable, Any
+from typing import Any, Callable, Optional
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def get_repeated_df(
-        df_to_repeat: pd.DataFrame,
-        number_of_replications: int
+    df_to_repeat: pd.DataFrame, number_of_replications: int
 ) -> pd.DataFrame:
     """Repeats each row x times.
 
@@ -26,6 +25,7 @@ def get_repeated_df(
     extended_df.columns = df_to_repeat.columns
     return extended_df
 
+
 def percentile(n: float, name: Optional[str] = None) -> Callable[[Any], Any]:
     """Helper function to aggregate DFs bei percentile.
 
@@ -36,10 +36,12 @@ def percentile(n: float, name: Optional[str] = None) -> Callable[[Any], Any]:
     Returns:
         callable that aggregates by quantile with a name
     """
+
     def percentile_(x):
         return x.quantile(n)
+
     if name is None:
-        percentile_.__name__ = 'percentile_{:2.0f}'.format(n*100)
+        percentile_.__name__ = "percentile_{:2.0f}".format(n * 100)
     else:
         percentile_.__name__ = name
     return percentile_

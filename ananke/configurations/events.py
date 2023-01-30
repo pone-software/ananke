@@ -1,31 +1,34 @@
-from enum import Enum
-from typing import Tuple
+"""Module containing all the configuration definitions for events."""
 import math
 
-from pydantic import BaseModel
+from enum import Enum
+from typing import Tuple
 
-from ..defaults import seed
+import ananke.defaults as defaults
+
+from pydantic import BaseModel
 
 
 class EventRedistributionMode(str, Enum):
     """Enum for all the different redistribution modes."""
+
     # I want the start time be that it is in the interval
     # ..............start....first_hit....last_hit........
     # ...........[..............................]..............
-    START_TIME = 'start_time'
+    START_TIME = "start_time"
     # I want the new start time be that the at least one hit overlaps with the time
     # ....start....first_hit....last_hit........
     # ...........[.................].................
-    CONTAINS_HIT = 'containts_hit'
+    CONTAINS_HIT = "containts_hit"
     # I want the new start time be that all hits overlap with the time
     # ....start....first_hit....last_hit........
     # ...........[..............................]....
-    CONTAINS_EVENT = 'containts_event'
+    CONTAINS_EVENT = "containts_event"
     # I want the new start time to be that x percent of the event are included
     # I want the new start time be that all hits overlap with the time
     # ....start....first_hit....last_hit........
     # ....................[..............]...........
-    CONTAINS_PERCENTAGE = 'containts_percentage'
+    CONTAINS_PERCENTAGE = "containts_percentage"
 
 
 class Interval(BaseModel):
@@ -59,6 +62,7 @@ class Interval(BaseModel):
         right = self.end is not None and value < self.end
         return left and right
 
+
 class HistogramConfiguration(Interval):
     """Subclass of Interval adding tht bin size to configure a histogram."""
 
@@ -85,7 +89,7 @@ class RedistributionConfiguration(BaseModel):
     mode: str
 
     #: Seed for redistribution
-    seed: int = seed
+    seed: int = defaults.seed
 
     #: Percentile of hits in interval
-    percentile: float = .5
+    percentile: float = 0.5

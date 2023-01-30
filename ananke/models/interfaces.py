@@ -1,18 +1,33 @@
 """Place for all interfaces used in the package."""
 from __future__ import annotations
 
-from pydantic import BaseModel
-from typing import Any, List
+from typing import Any, List, TypeVar
+
 import numpy.typing as npt
-from pandera.typing import DataFrame
 import pandas as pd
+
+from pandera.typing import DataFrame
+from pydantic import BaseModel
+
+
+T_ = TypeVar("T_")
+DataFrameFacade_ = TypeVar("DataFrameFacade_", bound="DataFrameFacade")
 
 
 class DataFrameFacade(BaseModel):
     """Interface for making a class numpy representable."""
-    df: DataFrame
+
+    df: DataFrame[T_]
 
     def to_numpy(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:
+        """Converts data frame to numpy array.
+
+        Args:
+            dtype: Type of the final dataframe.
+
+        Returns:
+            Numpy array based on data frame.
+        """
         return self.df.to_numpy(dtype=dtype)
 
     def __array__(self, dtype: npt.DTypeLike = None) -> npt.NDArray[Any]:

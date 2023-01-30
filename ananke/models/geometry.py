@@ -6,39 +6,36 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from pandera.typing import DataFrame
-from pandera import check_types
 
 from ananke.models.interfaces import DataFrameFacade
 from ananke.schemas.geometry import (
-    Vector2DSchema,
-    PolarSchema,
-    Vector3DSchema,
-    SphericalSchema,
     LocatedObjectSchema,
     OrientedLocatedObjectSchema,
+    PolarSchema,
+    SphericalSchema,
+    Vector2DSchema,
+    Vector3DSchema,
 )
+from pandera import check_types
+from pandera.typing import DataFrame
 
 
 class Vectors2D(DataFrameFacade):
     """A 2D vector with interface to radial and cartesian coordinates."""
+
     df: DataFrame[Vector2DSchema] = Vector2DSchema.example(size=0)
 
     @property
     def phi(self) -> pd.DataFrame:
         """Phi coordinate in radial units."""
-        d = {
-            'phi': np.arctan((self.df['y'] / self.df['x']).to_numpy())
-        }
+        d = {"phi": np.arctan((self.df["y"] / self.df["x"]).to_numpy())}
         return pd.DataFrame(d)
 
     @property
     def norm(self) -> pd.DataFrame:
         """Returns L2-norm of 2D vector."""
         numpy_array = self.df.to_numpy(dtype=np.float)
-        d = {
-            'norm': np.linalg.norm(numpy_array, axis=1)
-        }
+        d = {"norm": np.linalg.norm(numpy_array, axis=1)}
         return pd.DataFrame(d)
 
     def _get_scaling_factor_for_length(self, length: float) -> pd.DataFrame:
@@ -65,7 +62,7 @@ class Vectors2D(DataFrameFacade):
 
     @classmethod
     @check_types(with_pydantic=True)
-    def from_polar(cls, polar: DataFrame[PolarSchema]) -> 'Vectors2D':
+    def from_polar(cls, polar: DataFrame[PolarSchema]) -> "Vectors2D":
         """Creates a 2D vector from polar coordinates.
 
         Args:
@@ -78,8 +75,8 @@ class Vectors2D(DataFrameFacade):
         np_norm = np_polar[:, 0]
         np_phi = np_polar[:, 1]
         d = {
-            'x': np.cos(np_phi) * np_norm,
-            'y': np.sin(np_phi) * np_norm,
+            "x": np.cos(np_phi) * np_norm,
+            "y": np.sin(np_phi) * np_norm,
         }
         df = pd.DataFrame(d)
         return cls(df=df)
@@ -96,8 +93,8 @@ class Vectors2D(DataFrameFacade):
 
         """
         d = {
-            'x': numpy_array[:, 0],
-            'y': numpy_array[:, 1],
+            "x": numpy_array[:, 0],
+            "y": numpy_array[:, 1],
         }
         df = pd.DataFrame(d)
         return cls(df=df)
@@ -105,15 +102,14 @@ class Vectors2D(DataFrameFacade):
 
 class Vectors3D(Vectors2D):
     """A 3D vector with interface to radial and spherical coordinates."""
+
     df: DataFrame[Vector3DSchema] = Vector3DSchema.example(size=0)
 
     @property
     def theta(self) -> pd.DataFrame:
         """Phi coordinate in radial units."""
-        np_ratio = (self.df['z'] / self.norm['norm']).to_numpy()
-        d = {
-            'theta': np.arccos(np_ratio)
-        }
+        np_ratio = (self.df["z"] / self.norm["norm"]).to_numpy()
+        d = {"theta": np.arccos(np_ratio)}
         return pd.DataFrame(d)
 
     @classmethod
@@ -128,7 +124,7 @@ class Vectors3D(Vectors2D):
 
     @classmethod
     @check_types(with_pydantic=True)
-    def from_spherical(cls, spherical: DataFrame[SphericalSchema]) -> 'Vectors3D':
+    def from_spherical(cls, spherical: DataFrame[SphericalSchema]) -> "Vectors3D":
         """Create 3D vector based on spherical coordinates.
 
         Args:
@@ -142,15 +138,15 @@ class Vectors3D(Vectors2D):
         np_phi = np_spherical[:, 1]
         np_theta = np_spherical[:, 2]
         d = {
-            'x': np.cos(np_phi) * np.sin(np_theta) * np_norm,
-            'y': np.sin(np_phi) * np.sin(np_theta) * np_norm,
-            'z': np.cos(np_theta) * np_norm
+            "x": np.cos(np_phi) * np.sin(np_theta) * np_norm,
+            "y": np.sin(np_phi) * np.sin(np_theta) * np_norm,
+            "z": np.cos(np_theta) * np_norm,
         }
         df = pd.DataFrame(d)
         return cls(df=df)
 
     @classmethod
-    def from_numpy(cls, numpy_array: npt.NDArray[Any]) -> Vectors3D:  # type: ignore
+    def from_numpy(cls, numpy_array: npt.NDArray[Any]) -> Vectors3D:
         """Creates 3d vector out of numpy array.
 
         Args:
@@ -160,16 +156,12 @@ class Vectors3D(Vectors2D):
             3d vector by given numpy array
 
         """
-        d = {
-            'x': numpy_array[:, 0],
-            'y': numpy_array[:, 1],
-            'z': numpy_array[:, 2]
-        }
+        d = {"x": numpy_array[:, 0], "y": numpy_array[:, 1], "z": numpy_array[:, 2]}
         df = pd.DataFrame(d)
         return cls(df=df)
 
     @classmethod
-    def from_df(cls, df: pd.DataFrame, prefix: str = '') -> Vectors3D:
+    def from_df(cls, df: pd.DataFrame, prefix: str = "") -> Vectors3D:
         """Returns a DataFrame of 3d vectors.
 
         As many of the classes have a prefix in front of the coordinates,
@@ -183,14 +175,15 @@ class Vectors3D(Vectors2D):
             Valid Vectors3D Object
         """
         mapping = {
-            prefix + 'x': 'x',
-            prefix + 'y': 'y',
-            prefix + 'z': 'z',
+            prefix + "x": "x",
+            prefix + "y": "y",
+            prefix + "z": "z",
         }
-        renamed_df = df[mapping.keys()].rename(columns=mapping)
+        keys = list(mapping.keys())
+        renamed_df = df[keys].rename(columns=mapping)
         return Vectors3D(df=renamed_df)
 
-    def get_df_with_prefix(self, prefix: str = '') -> pd.DataFrame:
+    def get_df_with_prefix(self, prefix: str = "") -> pd.DataFrame:
         """Gets DataFrame from Vectors with prefixed columns for later use.
 
         Args:
@@ -200,26 +193,33 @@ class Vectors3D(Vectors2D):
             DataFrame with prefixed columns.
         """
         mapping = {
-            'x': prefix + 'x',
-            'y': prefix + 'y',
-            'z': prefix + 'z',
+            "x": prefix + "x",
+            "y": prefix + "y",
+            "z": prefix + "z",
         }
-        return self.df[mapping.keys()].rename(columns=mapping)
+        keys = list(mapping.keys())
+        return self.df[keys].rename(columns=mapping)
 
 
 class LocatedObjects(DataFrameFacade):
     """Object that has a location."""
+
     df: DataFrame[LocatedObjectSchema] = LocatedObjectSchema.example(size=0)
 
     @property
     def locations(self) -> Vectors3D:
-        return Vectors3D.from_df(self.df, prefix='location_')
+        """Gets the 3D vectors data frame of the locations."""
+        return Vectors3D.from_df(self.df, prefix="location_")
 
 
 class OrientedLocatedObjects(LocatedObjects):
     """Object that has a location and orientation."""
-    df: DataFrame[OrientedLocatedObjectSchema] = OrientedLocatedObjectSchema.example(size=0)
+
+    df: DataFrame[OrientedLocatedObjectSchema] = OrientedLocatedObjectSchema.example(
+        size=0
+    )
 
     @property
     def orientations(self) -> Vectors3D:
-        return Vectors3D.from_df(self.df, prefix='orientation_')
+        """Gets the 3D vectors data frame of the orientations."""
+        return Vectors3D.from_df(self.df, prefix="orientation_")

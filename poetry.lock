@@ -888,6 +888,17 @@ pytz = ">=2020.1"
 test = ["hypothesis (>=5.5.3)", "pytest (>=6.0)", "pytest-xdist (>=1.31)"]
 
 [[package]]
+name = "pandas-stubs"
+version = "1.5.2.230105"
+description = "Type annotations for pandas"
+category = "dev"
+optional = false
+python-versions = ">=3.8,<3.12"
+
+[package.dependencies]
+types-pytz = ">=2022.1.1"
+
+[[package]]
 name = "pandera"
 version = "0.13.4"
 description = "A light-weight and flexible data validation and testing tool for statistical data objects."
@@ -1554,6 +1565,14 @@ docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
 test = ["pre-commit", "pytest"]
 
 [[package]]
+name = "types-pytz"
+version = "2022.7.1.0"
+description = "Typing stubs for pytz"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.4.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -1645,8 +1664,8 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.8"
-content-hash = "dbf61ce7ff68846c1e7c52eab05056dca254ea7e3b5e496940db5d568537abfb"
+python-versions = ">=3.8,<3.12"
+content-hash = "93c839c8ca632f395222e555654f4790f758964b2bb7beb6fcb4c2c1fb55b16f"
 
 [metadata.files]
 alabaster = [
@@ -2183,6 +2202,10 @@ pandas = [
     {file = "pandas-1.5.2-cp39-cp39-win_amd64.whl", hash = "sha256:c218796d59d5abd8780170c937b812c9637e84c32f8271bbf9845970f8c1351f"},
     {file = "pandas-1.5.2.tar.gz", hash = "sha256:220b98d15cee0b2cd839a6358bd1f273d0356bf964c1a1aeb32d47db0215488b"},
 ]
+pandas-stubs = [
+    {file = "pandas_stubs-1.5.2.230105-py3-none-any.whl", hash = "sha256:b2874d26eabcaecb83aa8435d47e41f1b5f90ad04f3e1e70c3c8604027490225"},
+    {file = "pandas_stubs-1.5.2.230105.tar.gz", hash = "sha256:c78e433aca82577ce4a9fefc0d78cd26828dd95f8b1612416babff1b6957a22a"},
+]
 pandera = [
     {file = "pandera-0.13.4-py3-none-any.whl", hash = "sha256:9e91687861406284270add1d467f204630377892e7a4b45809bb7546f0013153"},
     {file = "pandera-0.13.4.tar.gz", hash = "sha256:6ef2b7ee00d3439ac815d4347984421a08502da1020cec60c06dd0135e8aee2f"},
@@ -2569,6 +2592,10 @@ tornado = [
 traitlets = [
     {file = "traitlets-5.5.0-py3-none-any.whl", hash = "sha256:1201b2c9f76097195989cdf7f65db9897593b0dfd69e4ac96016661bb6f0d30f"},
     {file = "traitlets-5.5.0.tar.gz", hash = "sha256:b122f9ff2f2f6c1709dab289a05555be011c87828e911c0cf4074b85cb780a79"},
+]
+types-pytz = [
+    {file = "types-pytz-2022.7.1.0.tar.gz", hash = "sha256:918f9c3e7a950ba7e7d6f84b18a7cacabc8886cb7125fb1927ff1c752b4b59de"},
+    {file = "types_pytz-2022.7.1.0-py3-none-any.whl", hash = "sha256:10ec7d009a02340f1cecd654ac03f0c29b6088a03b63d164401fc52df45936b2"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},

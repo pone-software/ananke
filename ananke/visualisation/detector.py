@@ -9,7 +9,7 @@ from ananke.models.detector import Detector
 
 
 def get_detector_scatter3ds(
-        detector: Detector, include_pmts: bool = False
+    detector: Detector, include_pmts: bool = False
 ) -> List[go.Scatter3d]:
     """Paint the detectors modules and eventually strings onto a 3d-scatter trace.
 

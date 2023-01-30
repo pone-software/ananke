@@ -1,6 +1,9 @@
-"""Module containing all configurations for a detector"""
+"""Module containing all configurations for a detector."""
 from enum import Enum
 from typing import Literal, Union
+
+import ananke.defaults as defaults
+
 from pydantic import (
     BaseModel,
     Field,
@@ -10,7 +13,6 @@ from pydantic import (
     confloat,
 )
 
-from ..defaults import seed
 
 class DetectorGeometries(str, Enum):
     """Possible detector geometries."""
@@ -148,4 +150,4 @@ class DetectorConfiguration(BaseModel):
     pmt: PMTConfiguration
 
     #: Seed for the random generators used within detector
-    seed: int = seed
+    seed: int = defaults.seed
