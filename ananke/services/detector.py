@@ -16,6 +16,7 @@ from ananke.configurations.detector import (
 from ananke.models.detector import Detector
 from ananke.models.geometry import Vectors3D
 from ananke.schemas.detector import DetectorSchema
+from ananke.schemas.geometry import SphericalSchema
 from ananke.utils import get_repeated_df
 from pandera import check_output
 from pandera.typing import DataFrame
@@ -111,7 +112,7 @@ class AbstractDetectorBuilder(ABC):
                 orientations.append(
                     {"norm": 1.0, "phi": phi, "theta": theta_start - theta}
                 )
-        orientations_df = pd.DataFrame(orientations)
+        orientations_df = DataFrame[SphericalSchema](orientations)
 
         orientations_vectors = Vectors3D.from_spherical(orientations_df)
 
@@ -119,7 +120,7 @@ class AbstractDetectorBuilder(ABC):
 
     def _extend_df_by_pmts(
         self, modules_df: pd.DataFrame, module_as_pmt: bool = False
-    ) -> pd.DataFrame:
+    ) -> DataFrame[DetectorSchema]:
         """Build the PMTs for a given module.
 
         The method is as follows. At the moment, we have two layers at each half of

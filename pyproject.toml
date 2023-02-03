@@ -13,6 +13,9 @@ pydantic = "^1.10.2"
 plotly = "^5.11.0"
 pandas = "^1.5.2"
 pandera = {extras = ["hypothesis"], version = "^0.13.4"}
+h5py = "^3.8.0"
+tables = "^3.8.0"
+awkward = "^2.0.6"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -63,7 +66,9 @@ ignore_errors = true
 module = [
     "plotly",
     "plotly.*",
-    "scipy"
+    "scipy",
+    "tables",
+    "h5py"
 ]
 ignore_missing_imports = true
 

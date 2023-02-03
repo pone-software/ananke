@@ -27,17 +27,17 @@ class PMTs(DataFrameFacade):
         return Vectors3D.from_df(self.df, prefix="pmt_orientation_")
 
     @property
-    def pmt_areas(self) -> pd.Series[float]:
+    def pmt_areas(self) -> pd.Series:
         """Gets Dataframe with PMT area."""
         return self.df["pmt_area"]
 
     @property
-    def pmt_efficiencies(self) -> pd.Series[float]:
+    def pmt_efficiencies(self) -> pd.Series:
         """Gets Dataframe with PMT efficiencies."""
         return self.df["pmt_efficiency"]
 
     @property
-    def pmt_noise_rates(self) -> pd.Series[float]:
+    def pmt_noise_rates(self) -> pd.Series:
         """Gets Dataframe with PMT noise rates."""
         return self.df["pmt_noise_rate"]
 
@@ -53,7 +53,7 @@ class Modules(PMTs):
         return Vectors3D.from_df(self.df, prefix="module_location_")
 
     @property
-    def module_radius(self) -> pd.Series[float]:
+    def module_radius(self) -> pd.Series:
         """Gets Dataframe with Module radius."""
         return self.df["module_radius"]
 
