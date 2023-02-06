@@ -61,7 +61,7 @@ class Collection:
             override: Override existing data
         """
         file_extensions = (".hdf", ".h5")
-        if not data_path.lower().endswith(file_extensions):
+        if not str(data_path).lower().endswith(file_extensions):
             raise ValueError(
                 "Only {} and {} are supported file extensions".format(
                     file_extensions[0], file_extensions[1]

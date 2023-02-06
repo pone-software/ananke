@@ -50,6 +50,8 @@ class TimedSchema(pa.SchemaModel):
     time: Series[float] = pa.Field(coerce=True)
     duration: Optional[Series[float]] = pa.Field(coerce=True)
 
+# TODO: Switch string to Category
+
 
 class RecordSchema(RecordIdSchema, TimedSchema):
     """Schema for a timed record with an ID and type."""

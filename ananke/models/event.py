@@ -21,7 +21,7 @@ from pandera.typing import DataFrame
 class RecordIds(DataFrameFacade):
     """General description of a record ids."""
 
-    df: DataFrame[RecordIdSchema] = RecordIdSchema.example(size=0)
+    df: DataFrame[RecordIdSchema]
 
     def get_by_record(self, record_id: int) -> RecordIds:
         """Gets all sources by a record id.
@@ -43,7 +43,7 @@ class RecordIds(DataFrameFacade):
 class RecordTimes(DataFrameFacade):
     """General description of intervals."""
 
-    df: DataFrame[TimedSchema] = TimedSchema.example(size=0)
+    df: DataFrame[TimedSchema]
 
     @property
     def times(self) -> pd.Series:
@@ -54,19 +54,19 @@ class RecordTimes(DataFrameFacade):
 class Records(RecordIds, RecordTimes):
     """General description of a record for events or sources."""
 
-    df: DataFrame[RecordSchema] = RecordSchema.example(size=0)
+    df: DataFrame[RecordSchema]
 
 
 class OrientedRecords(OrientedLocatedObjects, Records):
     """General description of a record for events or sources."""
 
-    df: DataFrame[OrientedRecordSchema] = OrientedRecordSchema.example(size=0)
+    df: DataFrame[OrientedRecordSchema]
 
 
 class Sources(OrientedRecords):
     """Record for a photon source."""
 
-    df: DataFrame[SourceRecordSchema] = SourceRecordSchema.example(size=0)
+    df: DataFrame[SourceRecordSchema]
 
     # TODO: Fix THis
     # angle_distribution: Optional[npt.ArrayLike] = None
@@ -80,16 +80,16 @@ class Sources(OrientedRecords):
 class EventRecords(OrientedRecords):
     """Record of an event that happened."""
 
-    df: DataFrame[EventRecordSchema] = EventRecordSchema.example(size=0)
+    df: DataFrame[EventRecordSchema]
 
 
 class NoiseRecords(Records):
     """Record of an event that happened."""
 
-    df: DataFrame[NoiseRecordSchema] = NoiseRecordSchema.example(size=0)
+    df: DataFrame[NoiseRecordSchema]
 
 
 class Hits(Records):
     """Record of an event that happened."""
 
-    df: DataFrame[HitSchema] = HitSchema.example(size=0)
+    df: DataFrame[HitSchema]

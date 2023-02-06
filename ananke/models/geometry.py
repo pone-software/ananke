@@ -23,7 +23,7 @@ from pandera.typing import DataFrame
 class Vectors2D(DataFrameFacade):
     """A 2D vector with interface to radial and cartesian coordinates."""
 
-    df: DataFrame[Vector2DSchema] = Vector2DSchema.example(size=0)
+    df: DataFrame[Vector2DSchema] = Vector2DSchema
 
     @property
     def phi(self) -> pd.DataFrame:
@@ -103,7 +103,7 @@ class Vectors2D(DataFrameFacade):
 class Vectors3D(Vectors2D):
     """A 3D vector with interface to radial and spherical coordinates."""
 
-    df: DataFrame[Vector3DSchema] = Vector3DSchema.example(size=0)
+    df: DataFrame[Vector3DSchema]
 
     @property
     def theta(self) -> pd.DataFrame:
@@ -204,7 +204,7 @@ class Vectors3D(Vectors2D):
 class LocatedObjects(DataFrameFacade):
     """Object that has a location."""
 
-    df: DataFrame[LocatedObjectSchema] = LocatedObjectSchema.example(size=0)
+    df: DataFrame[LocatedObjectSchema]
 
     @property
     def locations(self) -> Vectors3D:
@@ -215,9 +215,7 @@ class LocatedObjects(DataFrameFacade):
 class OrientedLocatedObjects(LocatedObjects):
     """Object that has a location and orientation."""
 
-    df: DataFrame[OrientedLocatedObjectSchema] = OrientedLocatedObjectSchema.example(
-        size=0
-    )
+    df: DataFrame[OrientedLocatedObjectSchema]
 
     @property
     def orientations(self) -> Vectors3D:
