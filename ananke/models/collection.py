@@ -571,24 +571,15 @@ class GraphNetCollectionExporter(AbstractCollectionExporter):
             'pmt_id',
             'string_id',
             'module_id',
-            'pmt_location_x',
-            'pmt_location_y',
-            'pmt_location_z'
+            'time'
         ]].rename(
             columns={
                 'record_id': 'event_id',
                 'pmt_id': 'pmt_idx',
-                'module_id': 'module_idx',
-                'string_id': 'string_idx',
-                'pmt_location_x': 'pmt_x',
-                'pmt_location_y': 'pmt_y',
-                'pmt_location_z': 'pmt_z',
+                'module_id': 'dom_idx',
+                'string_id': 'string_idx'
             }
         )
-
-        orientations = hits.orientations
-        new_hits_df['azimuth'] = orientations.phi
-        new_hits_df['zenith'] = orientations.theta
 
         return new_hits_df
 
@@ -644,7 +635,19 @@ class GraphNetCollectionExporter(AbstractCollectionExporter):
         detector_responses = []
         batch = 0
 
-        # detector_df =
+        detector = collection.get_detector()
+
+        indices = detector.indices.rename(columns={
+            'string_id': 'string_idx',
+            'module_id': 'dom_idx',
+            'pmt_id': 'pmt_idx',
+        })
+        orientations = detector.pmt_orientations
+        locations = detector.pmt_locations.get_df_with_prefix('pmt_')
+
+        merge_detector_df = pd.concat([indices, locations], axis=1)
+        merge_detector_df['pmt_azimuth'] = orientations.phi
+        merge_detector_df['pmt_zenith'] = orientations.theta
 
         for index in range(number_of_records):
             current_record = new_records.iloc[index]
@@ -653,17 +656,22 @@ class GraphNetCollectionExporter(AbstractCollectionExporter):
             current_hits = collection.get_hits(record_id=current_record_id)
 
             mapped_hits = self.__get_mapped_hits_df(current_hits)
+            mapped_hits = pd.merge(mapped_hits, merge_detector_df, how='inner', on=['string_idx', 'dom_idx', 'pmt_idx'])
 
-            mc_truths.append(current_record)
-            detector_responses.append(mapped_hits)
+
+
+            mc_truths.append(current_record.to_dict())
+            detector_responses.append(mapped_hits.to_dict(orient='records'))
 
             if (index + 1) % batch_size == 0 or index + 1 == number_of_records:
                 array = ak.Array(
                     {
                         'mc_truth': mc_truths,
-                        'detector_response': ak.concatenate(detector_responses)
+                        'detector_response': detector_responses
                     }
                 )
+                a = pd.DataFrame(ak.to_pandas(array['mc_truth']))
+                b = pd.DataFrame(ak.to_pandas(array['detector_response']))
                 ak.to_parquet(array, self.__get_file_path(batch), compression='GZIP')
                 mc_truths = []
                 detector_responses = []
@@ -679,4 +687,4 @@ class CollectionExporterFactory:
         if exporter == CollectionExporters.GRAPH_NET:
             return GraphNetCollectionExporter(file_path)
         else:
-            raise ValueError(f'Unsupported file format: {file_path}')
+            raise ValueError(f'Unsupported exporter {exporter.value}')
