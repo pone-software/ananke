@@ -48,7 +48,7 @@ class TimedSchema(pa.SchemaModel):
     """Schema for Dataframes having some time constraint."""
 
     time: Series[float] = pa.Field(coerce=True)
-    duration: Optional[Series[float]] = pa.Field(coerce=True)
+    duration: Optional[Series[float]] = pa.Field(coerce=True, nullable=True)
 
 # TODO: Switch string to Category
 
