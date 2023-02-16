@@ -20,7 +20,7 @@ class MergeContentConfiguration(BaseModel):
     primary_type: RecordType
 
     #: Number of records
-    number_of_records: PositiveInt
+    number_of_records: Optional[PositiveInt] = None
 
     #: Types to mix in
     secondary_types: Optional[List[RecordType]] = None

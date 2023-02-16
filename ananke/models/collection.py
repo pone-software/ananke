@@ -602,7 +602,10 @@ class Collection:
                 else:
                     new_collection_record_ids = []
                 # First load all primary records
-                number_of_records = content.number_of_records
+                if content.number_of_records is not None:
+                    number_of_records = content.number_of_records
+                else:
+                    number_of_records = len(new_collection_records)
                 interval = content.interval
                 primary_type = content.primary_type
                 primary_records = tmp_collection.get_records(
