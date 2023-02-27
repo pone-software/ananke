@@ -6,15 +6,15 @@ import os
 import shutil
 import uuid
 import warnings
-from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Callable, List, Optional, Type, TypeVar, Union
+from subprocess import call
+from typing import List, Optional, Type, TypeVar, Union
 
 import h5py
 import numpy as np
 import pandas as pd
-import awkward as ak
-from tables import NaturalNameWarning
+from tables import NaturalNameWarning, PerformanceWarning
+from tqdm import tqdm
 
 from ananke.configurations.collection import MergeConfiguration
 from ananke.configurations.events import (
@@ -22,13 +22,21 @@ from ananke.configurations.events import (
     RedistributionConfiguration, Interval,
 )
 from ananke.models.detector import Detector
-from ananke.models.event import Hits, RecordIds, Records, Sources
-from ananke.models.geometry import Vectors3D
+from ananke.models.event import Hits, RecordIds, Records, Sources, RecordStatistics
 from ananke.models.interfaces import DataFrameFacade
-from ananke.schemas.event import RecordType
-from ananke.utils import percentile
+from ananke.schemas.event import EventTypes, EventType
+from ananke.services.collection.exporters import (
+    CollectionExporters,
+    CollectionExporterFactory,
+)
+from ananke.services.collection.importers import (
+    CollectionImporterFactory,
+    CollectionImporters,
+)
+from ananke.utils import get_64_bit_signed_uuid_int, save_configuration
 
 warnings.filterwarnings("ignore", category=NaturalNameWarning)
+warnings.filterwarnings("ignore", category=PerformanceWarning)
 
 
 class CollectionKeys(str, Enum):
@@ -43,7 +51,7 @@ class CollectionKeys(str, Enum):
 DataFrameFacade_ = TypeVar("DataFrameFacade_", bound=DataFrameFacade)
 
 
-# TODO: Check Closing
+# TODO: Implement smooth opening and closing of file.
 class Collection:
     """Class combining all data frames to a complete record collection."""
 
@@ -53,7 +61,9 @@ class Collection:
             records: Optional[Records] = None,
             detector: Optional[Detector] = None,
             complevel: int = 3,
+            complib: str = 'lzo',
             override: bool = False,
+            read_only: bool = False
     ):
         """Constructor for the collection.
 
@@ -62,7 +72,9 @@ class Collection:
             records: Optional records to store directly
             detector: Optional detector to store directly
             complevel: Compression level for data file
+            complib: Compression Algorithm to use
             override: Override existing data
+            read_only: Ensure that no data is written
         """
         logging.debug('Instantiated collection with path {}'.format(data_path))
         file_extensions = (".hdf", ".h5")
@@ -84,6 +96,8 @@ class Collection:
 
         self.data_path = data_path
         self.complevel = complevel
+        self.complib = complib
+        self.read_only = read_only
 
         self.store: pd.HDFStore = self.__get_store()
 
@@ -99,14 +113,17 @@ class Collection:
         Returns:
             stored hdf object.
         """
-        return pd.HDFStore(self.data_path)
+        mode = 'a'
+        if self.read_only:
+            mode = 'r'
+        return pd.HDFStore(self.data_path, mode=mode)
 
     def __del__(self):
         """Close store on delete."""
         self.store.close()
 
     def __get_hdf_path(
-            self, collection_key: CollectionKeys, record_id: int | str
+            self, collection_key: CollectionKeys, record_id: int | str | pd.Series
     ) -> str:
         """Gets a proper hdf path for all subgrouped datasets.
 
@@ -122,9 +139,13 @@ class Collection:
                 or collection_key == CollectionKeys.SOURCES
         ):
             raise ValueError("Paths only possible for hits and sources.")
-        return "/{key}/{record_id}".format(
-            key=collection_key.value, record_id=record_id
-        )
+        if type(record_id) == pd.Series:
+            record_id = record_id.astype(str)
+        elif type(record_id) != str:
+            record_id = str(record_id)
+        return "/{key}/".format(
+            key=collection_key.value
+        ) + record_id
 
     def __get_data(
             self,
@@ -168,6 +189,9 @@ class Collection:
             append: Append to existing data if necessary
             override: Override existing data yes or no.
         """
+        if self.read_only:
+            raise ValueError('Class cannot write as its opened in read only mode.')
+
         get_data = self.__get_data(
             key=key,
             facade_class=type(data)
@@ -216,8 +240,8 @@ class Collection:
             format="t",
             min_itemsize=min_itemsize,  # TODO: Make clever
             complevel=self.complevel,
+            complib=self.complib,
             data_columns=True,
-            # append=append,
             index=False,
         )
 
@@ -234,7 +258,12 @@ class Collection:
 
     def get_records(
             self,
-            record_type: Optional[RecordType] = None
+            record_type: Optional[
+                Union[
+                    List[EventTypes],
+                    EventTypes
+                ]
+            ] = None
     ) -> Optional[Records]:
 
         """Gets records of the collection.
@@ -245,15 +274,44 @@ class Collection:
         Returns:
             Records of the collection.
         """
-        # TODO: Fix Where Caching
         where = None
         if record_type is not None:
-            where = '(type={})'.format(record_type)
+            if type(record_type) is not list:
+                record_type = [record_type]
+
+            wheres = ['type={}'.format(current_type) for current_type in record_type]
+            where = '({})'.format(' & '.join(wheres))
         return self.__get_data(
             key=CollectionKeys.RECORDS,
             facade_class=Records,
             where=where
         )
+
+    def __drop_records_without_hits_in_interval(
+            self,
+            records: Records,
+            interval: Interval
+    ) -> Records:
+        """Drops all records without hits in intverval.
+
+        Args:
+            records: Records to drop without hits in interval from
+            interval: Interval for interval in question
+
+        Returns:
+
+        """
+        record_ids_without_hits_in_interval = []
+        current_record_ids = records.record_ids
+        for index, record_id in current_record_ids.items():
+            if self.get_hits(record_id=record_id, interval=interval) is None:
+                record_ids_without_hits_in_interval.append(record_id)
+
+        records.df = records.df[
+            ~current_record_ids.isin(record_ids_without_hits_in_interval)
+        ]
+
+        return records
 
     def __get_subgroup_dataset(
             self,
@@ -329,6 +387,50 @@ class Collection:
             record_id=record_id,
             interval=interval
         )
+
+    def get_new_by_record_ids(
+            self,
+            data_path: Union[str, bytes, os.PathLike],
+            record_ids: pd.Series[int],
+            record_type: Optional[
+                Union[
+                    List[EventTypes],
+                    EventTypes
+                ]
+            ] = None
+    ) -> Collection:
+        """Gets a new collection based on a subset of the current one.
+
+        Args:
+            data_path: path for the new collection
+            record_ids: record ids of the records to keep for the collection
+            record_type: optional type of the records to account for
+
+        Returns:
+            Collection with only the records of the included ids.
+        """
+        records = self.get_records(record_type=record_type)
+        new_collection = self.__class__(data_path)
+        detector = self.get_detector()
+        if detector is not None:
+            new_collection.set_detector(detector)
+
+        records.df = records.df[records.record_ids.isin(record_ids)]
+        new_collection.set_records(records)
+
+        with tqdm(total=record_ids.size, mininterval=0.5) as pbar:
+
+            for index, record_id in record_ids.items():
+                record_hits = self.get_hits(record_id=record_id)
+                if record_hits is not None:
+                    new_collection.set_hits(record_hits)
+                record_sources = self.get_sources(record_id=record_id)
+                if record_sources is not None:
+                    new_collection.set_sources(record_sources)
+
+                pbar.update()
+
+        return new_collection
 
     def set_detector(
             self, detector: Detector, override: bool = False
@@ -433,17 +535,25 @@ class Collection:
     def append(
             self,
             collection_to_append: Collection,
+            with_hits_only: bool = True,
             interval: Optional[Interval] = None
     ) -> None:
         """Concatenate multiple connections.
 
         Args:
             collection_to_append: Collection to append to current one.
+            with_hits_only: Only take records with hits.
             interval: interval to consider for appending
 
         Returns:
             A single collection combining the previous ones.
         """
+        logging.info(
+            'Starting to append collection {} to {}.'.format(
+                collection_to_append.data_path,
+                self.data_path
+            )
+        )
         append_detector = collection_to_append.get_detector()
         own_detector = self.get_detector()
 
@@ -453,25 +563,51 @@ class Collection:
         if own_detector is None:
             self.set_detector(append_detector)
 
-        append_records = collection_to_append.get_records()
+        keys = collection_to_append.store.keys()
+
+        records_with_hits = collection_to_append.get_records_with_hits(keys=keys)
+        if records_with_hits is not None:
+            records_with_hits_record_ids = records_with_hits.record_ids.values
+        else:
+            records_with_hits_record_ids = []
+
+        if with_hits_only:
+            append_records = records_with_hits
+        else:
+            append_records = collection_to_append.get_records()
+
+        records_with_sources = collection_to_append.get_records_with_sources(keys=keys)
+        if records_with_sources is not None:
+            records_with_sources_record_ids = records_with_sources.record_ids.values
+        else:
+            records_with_sources_record_ids = []
 
         if append_records is not None:
             self.set_records(append_records, append=True)
 
-        for (index, record_id) in append_records.record_ids.items():
-            current_hits = collection_to_append.get_hits(
-                record_id=record_id,
-                interval=interval
-            )
-            if current_hits is not None:
-                self.set_hits(current_hits)
+        with tqdm(total=len(append_records), mininterval=.5) as pbar:
 
-            current_sources = collection_to_append.get_sources(
-                record_id=record_id,
-                interval=interval
+            for (index, record_id) in append_records.record_ids.items():
+                if record_id in records_with_hits_record_ids:
+                    current_hits = collection_to_append.get_hits(
+                        record_id=record_id,
+                        interval=interval
+                    )
+                    self.set_hits(current_hits)
+
+                if record_id in records_with_sources_record_ids:
+                    current_sources = collection_to_append.get_sources(
+                        record_id=record_id,
+                        interval=interval
+                    )
+                    self.set_sources(current_sources)
+                pbar.update()
+        logging.info(
+            'Finished to append collection {} to {}.'.format(
+                collection_to_append.data_path,
+                self.data_path
             )
-            if current_sources is not None:
-                self.set_sources(current_sources)
+        )
 
     def export(
             self,
@@ -492,96 +628,169 @@ class Collection:
         )
         exporter.export(collection=self, **kwargs)
 
-    # TODO: Adapt to new
+    @classmethod
+    def import_data(
+            cls,
+            collection_path: Union[str, bytes, os.PathLike],
+            import_path: Union[str, bytes, os.PathLike],
+            importer: CollectionImporters,
+            **kwargs
+    ) -> Optional[Collection]:
+        """Export the current collection by a given exporter
+
+        Args:
+            collection: Collection or Path of the final collection
+            import_path: path to export to
+            importer: importer to choose
+            **kwargs: additional arguments for exporter
+        """
+        collection = cls(data_path=collection_path)
+        importer = CollectionImporterFactory.create_importer(
+            collection=collection,
+            importer=importer
+        )
+        return importer.import_data(import_path=import_path, **kwargs)
+
     def redistribute(
             self,
-            redistribution_configuration: RedistributionConfiguration
+            redistribution_configuration: RedistributionConfiguration,
+            record_type: Optional[
+                Union[
+                    List[EventTypes],
+                    EventTypes
+                ]
+            ] = None
     ) -> None:
         """Redistributes the events records according to the configuration.
 
         Args:
             redistribution_configuration: Configuration to redistribute by
+            record_type: Record type to be redistributed.
         """
         rng = np.random.default_rng(redistribution_configuration.seed)
 
+        if record_type is None:
+            record_type = [e for e in EventType]
+
+        if type(record_type) is not list:
+            record_type = [record_type]
+
+        record_type = [e.value for e in record_type]
         records = self.get_records()
-
-        if records is None:
-            raise ValueError("No records to redistribute")
-
-        modification_df = records.df[["record_id", "time"]]
 
         mode = redistribution_configuration.mode
         interval = redistribution_configuration.interval
 
-        if mode == EventRedistributionMode.START_TIME.value:
-            modification_df["start"] = interval.start
-            modification_df["end"] = interval.end
-        else:
-            if mode == EventRedistributionMode.CONTAINS_PERCENTAGE:
-                beginning_percentile = 0.5 - redistribution_configuration.percentile / 2.0
-                ending_percentile = 0.5 + redistribution_configuration.percentile / 2.0
-                aggregations: List[Union[str, Callable[[Any], Any]]] = [
-                    percentile(beginning_percentile, "min"),
-                    percentile(ending_percentile, "max"),
-                ]
-            else:
-                aggregations = ["min", "max"]
-
-            grouped_hits = self.hits.df.groupby("record_id").agg({"time": aggregations})
-            modification_df = modification_df.merge(
-                grouped_hits, on="record_id", how="left"
-            )
-
-        if mode == EventRedistributionMode.CONTAINS_HIT.value:
-            modification_df["start"] = (
-                    interval.start - modification_df["max"] + modification_df["time"]
-            )
-            modification_df["end"] = (
-                    interval.end - modification_df["min"] + modification_df["time"]
-            )
-
-        if (
-                mode == EventRedistributionMode.CONTAINS_EVENT.value
-                or mode == EventRedistributionMode.CONTAINS_PERCENTAGE.value
-        ):
-            modification_df["length"] = modification_df["max"] - modification_df["min"]
-            modification_df["offset"] = modification_df["min"] - modification_df["time"]
-            modification_df["start"] = interval.start - modification_df["offset"]
-            modification_df["end"] = (
-                    interval.end - modification_df["offset"] - modification_df["length"]
-            )
-
-        # What happens when the event is having an error
-        modification_df[modification_df["end"] < modification_df["start"]] = (
-                modification_df["start"] + 1
+        new_differences = []
+        logging.info('Starting to redistribute with mode: {}'.format(mode))
+        logging.debug(
+            'Redistribution interval: [{},{})'.format(interval.start, interval.end)
         )
 
-        modification_df["new_time"] = rng.uniform(
-            modification_df["start"], modification_df["end"]
-        )
+        if records is None:
+            raise ValueError("No records to redistribute")
 
-        modification_df["difference"] = (
-                modification_df["time"] - modification_df["new_time"]
-        )
+        with tqdm(total=len(records), mininterval=.5) as pbar:
+            for record in records.df.itertuples():
+                current_record_id = getattr(record, 'record_id')
+                current_record_type = getattr(record, 'type')
+                current_sources = self.get_sources(record_id=current_record_id)
+                current_hits = self.get_hits(record_id=current_record_id)
+                current_time = getattr(record, 'time')
+                current_start = interval.start
+                current_end = interval.end
+                skip_record = False
+
+                if current_record_type not in record_type:
+                    skip_record = True
+
+                if current_hits is None:
+                    skip_record = True
+                    logging.info(
+                        'No hits for event {}. Skipping!'.format(current_record_id)
+                    )
+
+                if skip_record:
+                    new_differences.append(0)
+                    continue
+
+                if mode != EventRedistributionMode.START_TIME:
+                    percentile = None
+                    if mode == EventRedistributionMode.CONTAINS_PERCENTAGE:
+                        percentile = redistribution_configuration.percentile
+
+                    hits_statistics = current_hits.get_statistics(percentile=percentile)
+
+                    current_min = hits_statistics.min
+                    current_max = hits_statistics.max
+
+                    if mode == EventRedistributionMode.CONTAINS_HIT:
+                        current_start = interval.start - current_max + current_time
+                        current_end = interval.end - current_min + current_time
+
+                    if (
+                            mode == EventRedistributionMode.CONTAINS_EVENT
+                            or mode == EventRedistributionMode.CONTAINS_PERCENTAGE
+                    ):
+                        current_length = current_max - current_min
+                        current_offset = current_min - current_time
+                        current_start = interval.start - current_offset
+                        current_end = interval.end - current_offset - current_length
+
+                # What happens when the event is having an error
+                if current_end < current_start:
+                    current_end = current_start + 1
+
+                # What happens when the event is having an error
+                new_time = rng.uniform(current_start, current_end)
+                new_difference = new_time - current_time
+                current_hits.add_time(new_difference)
+                self.set_hits(current_hits, override=True)
+                if current_sources is not None:
+                    current_sources.add_time(new_difference)
+                    self.set_sources(current_sources, override=True)
+
+                new_differences.append(new_difference)
+            pbar.update()
+
+        records.add_time(new_differences)
+        self.set_records(records=records, override=True)
+        logging.info('Finished to redistribute with mode: {}'.format(mode))
 
     @classmethod
     def from_merge(cls, merge_configuration: MergeConfiguration) -> Collection:
+        logging.info('Starting to merge collections with config.')
         collection_paths = merge_configuration.collection_paths
         if len(collection_paths) == 0:
             raise ValueError('No collection paths passed')
-        tmp_path = os.path.join(os.path.dirname(merge_configuration.out_path), '_tmp')
-        tmp_file = os.path.join(tmp_path, 'data.h5')
-        os.makedirs(tmp_path, exist_ok=False)
+        dirname = os.path.dirname(merge_configuration.out_path)
+        tmp_file = os.path.join(
+            dirname,
+            '_tmp_' + str(uuid.uuid4()) + 'data.h5'
+        )
+        os.makedirs(dirname, exist_ok=True)
+        save_configuration(
+            os.path.join(dirname, 'configuration.json'),
+            merge_configuration
+        )
         rng = np.random.default_rng(merge_configuration.seed)
-        shutil.copy(collection_paths[0], tmp_file)
-        tmp_collection = cls(data_path=tmp_file)
+        if len(collection_paths) > 1:
+            logging.info('Starting to create joined temporary collection.')
+            shutil.copy(collection_paths[0], tmp_file)
+            tmp_collection = cls(data_path=tmp_file)
 
-        for sub_collection_path in collection_paths[1:]:
-            sub_collection = Collection(data_path=sub_collection_path)
-            tmp_collection.append(
-                collection_to_append=sub_collection
-            )
+            for sub_collection_path in collection_paths[1:]:
+                sub_collection = Collection(
+                    data_path=sub_collection_path,
+                    read_only=True
+                )
+                tmp_collection.append(
+                    collection_to_append=sub_collection
+                )
+                tmp_collection.read_only = True
+            logging.info('Finished creating joined temporary collection.')
+        else:
+            tmp_collection = Collection(collection_paths[0], read_only=True)
 
         if merge_configuration.redistribution is not None:
             tmp_collection.redistribute(
@@ -589,12 +798,22 @@ class Collection:
             )
 
         if merge_configuration.content is None:
-            shutil.move(tmp_file, merge_configuration.out_path)
+            shutil.copy(tmp_file, merge_configuration.out_path)
             new_collection = cls(data_path=merge_configuration.out_path)
         else:
             new_collection = cls(data_path=merge_configuration.out_path)
             new_collection.set_detector(tmp_collection.get_detector())
             for content in merge_configuration.content:
+                logging.info(
+                    'Starting to create {} {} records'.format(
+                        content.number_of_records,
+                        content.primary_type
+                    )
+                )
+                if content.secondary_types is not None:
+                    logging.info(
+                        'Secondary types: {}'.format(', '.join(content.secondary_types))
+                    )
                 # Collect for duplicate ID
                 new_collection_records = new_collection.get_records()
                 if new_collection_records is not None:
@@ -632,92 +851,99 @@ class Collection:
                 misses = 0
                 misses_break_number = 50
 
-                # TODO: Check Perfornance
-                while len(
-                        added_record_ids
-                ) < number_of_records and misses < misses_break_number:
-                    current_primary_record = primary_records.sample(
-                        n=1,
-                        random_state=rng
-                    )
-                    current_primary_record_id = current_primary_record \
-                        .record_ids.iloc[0]
-                    # First set the primary hits and sources
-                    primary_hits = tmp_collection.get_hits(
-                        current_primary_record_id,
-                        interval=interval
-                    )
+                with tqdm(total=number_of_records, mininterval=.5) as pbar:
 
-                    current_sources_list: List[Sources] = []
-                    current_hits_list: List[Hits] = []
-
-                    # skip primary records without hits
-                    if primary_hits is None and content.filter_no_hits:
-                        misses += 1
-                        continue
-                    else:
-                        current_hits_list.append(primary_hits)
-                        primary_sources = tmp_collection.get_sources(
+                    # TODO: Check Performance
+                    while len(
+                            added_record_ids
+                    ) < number_of_records and misses < misses_break_number:
+                        current_primary_record = primary_records.sample(
+                            n=1,
+                            random_state=rng
+                        )
+                        current_primary_record_id = current_primary_record \
+                            .record_ids.iloc[0]
+                        # First set the primary hits and sources
+                        primary_hits = tmp_collection.get_hits(
                             current_primary_record_id,
                             interval=interval
                         )
-                        if primary_sources is not None:
-                            current_sources_list.append(primary_sources)
 
-                    for secondary_records in secondary_records_list:
-                        if secondary_records is None:
+                        current_sources_list: List[Sources] = []
+                        current_hits_list: List[Hits] = []
+
+                        # skip primary records without hits
+                        if primary_hits is None and content.filter_no_hits:
+                            misses += 1
                             continue
-                        current_secondary_record_id = secondary_records.sample(
-                            n=1,
-                            random_state=rng
-                        ).record_ids.iloc[0]
-
-                        current_sources = tmp_collection.get_sources(
-                            record_id=current_secondary_record_id,
-                            interval=interval
-                        )
-                        current_hits = tmp_collection.get_hits(
-                            record_id=current_secondary_record_id,
-                            interval=interval
-                        )
-                        if current_hits is not None:
-                            current_hits_list.append(current_hits)
-                        if current_sources is not None:
-                            current_sources_list.append(current_sources)
-
-                    combined_current_sources = Sources.concat(current_sources_list)
-                    combined_current_hits = Hits.concat(current_hits_list)
-
-                    if current_primary_record_id in added_record_ids or \
-                            current_primary_record_id in new_collection_record_ids:
-                        # TODO: Discuss what happens if record_id already added?
-                        new_record_id = uuid.uuid1().int >> 64
-                        logging.warning(
-                            'Record id {} already added: Renaming to {}'.format(
+                        else:
+                            current_hits_list.append(primary_hits)
+                            primary_sources = tmp_collection.get_sources(
                                 current_primary_record_id,
-                                new_record_id
+                                interval=interval
                             )
-                        )
-                    else:
-                        new_record_id = current_primary_record_id
+                            if primary_sources is not None:
+                                current_sources_list.append(primary_sources)
 
+                        for secondary_records in secondary_records_list:
+                            if secondary_records is None:
+                                continue
+                            current_secondary_record_id = secondary_records.sample(
+                                n=1,
+                                random_state=rng
+                            ).record_ids.iloc[0]
 
-                    if new_record_id == 8173088588305338368:
-                        print('cool')
+                            current_sources = tmp_collection.get_sources(
+                                record_id=current_secondary_record_id,
+                                interval=interval
+                            )
+                            current_hits = tmp_collection.get_hits(
+                                record_id=current_secondary_record_id,
+                                interval=interval
+                            )
+                            if current_hits is not None:
+                                current_hits_list.append(current_hits)
+                            if current_sources is not None:
+                                current_sources_list.append(current_sources)
 
-                    # Set all ids
-                    current_primary_record.df['record_id'] = new_record_id
-                    combined_current_hits.df['record_id'] = new_record_id
+                        combined_current_sources = Sources.concat(current_sources_list)
+                        combined_current_hits = Hits.concat(current_hits_list)
 
-                    new_collection.set_records(current_primary_record, append=True)
-                    new_collection.set_hits(combined_current_hits)
+                        if current_primary_record_id in added_record_ids or \
+                                current_primary_record_id in new_collection_record_ids:
+                            # TODO: Discuss what happens if record_id already added?
+                            new_record_id = get_64_bit_signed_uuid_int()
+                            logging.debug(
+                                'Record id {} already added: Renaming to {}'.format(
+                                    current_primary_record_id,
+                                    new_record_id
+                                )
+                            )
+                        else:
+                            new_record_id = current_primary_record_id
 
-                    if combined_current_sources is not None:
-                        combined_current_sources.df['record_id'] = new_record_id
-                        new_collection.set_sources(combined_current_sources)
+                        new_record_id = np.int(new_record_id)
 
-                    added_record_ids.append(new_record_id)
-                    misses = 0
+                        # Set all ids
+                        current_primary_record.df['record_id'] = new_record_id
+                        combined_current_hits.df['record_id'] = new_record_id
+
+                        new_collection.set_records(current_primary_record, append=True)
+                        new_collection.set_hits(combined_current_hits)
+
+                        if combined_current_sources is not None:
+                            combined_current_sources.df['record_id'] = new_record_id
+                            new_collection.set_sources(combined_current_sources)
+
+                        added_record_ids.append(new_record_id)
+                        misses = 0
+                        if new_collection.get_hits(
+                                new_collection.get_records().record_ids.iloc[0]
+                        ) is None:
+                            print(current_primary_record_id)
+                            print(new_record_id)
+
+                        pbar.update()
 
                 if misses == misses_break_number:
                     raise ValueError(
@@ -726,187 +952,231 @@ class Collection:
                         )
                     )
 
-        shutil.rmtree(tmp_path)
+                logging.info(
+                    'Finished to create {} {} records'.format(
+                        content.number_of_records,
+                        content.primary_type
+                    )
+                )
+
+        if os.path.isfile(tmp_file):
+            os.remove(tmp_file)
+        logging.info('Finished to merge collections with config.')
         return new_collection
 
-
-class CollectionExporters(Enum):
-    """Enum for possible exporters"""
-    GRAPH_NET = 'graph_net'
-
-
-class AbstractCollectionExporter(ABC):
-    """Abstract parent class for collection exporters."""
-
-    def __init__(self, file_path: Union[str, bytes, os.PathLike]):
-        """Constructor of the Abstract Collection Exporter.
-
-        Args:
-            file_path: Filepath to store data at
-        """
-        self.file_path = file_path
-
-    @abstractmethod
-    def export(self, collection: Collection, **kwargs) -> None:
-        """Abstract stub for the export of a collection.
-
-        Args:
-            collection: Collection to be exported
-            kwargs: Additional exporter args
-        """
-        pass
-
-
-class GraphNetCollectionExporter(AbstractCollectionExporter):
-    """Concrete implementation for Graph Net exports."""
-
-    def __get_file_path(self, batch_number: int) -> str:
-        """Generates a batches file path.
-
-        Args:
-            batch_number: number of the batch of file.
-
-        Returns:
-            complete path of current file.
-        """
-        return os.path.join(self.file_path, 'batch_{}.parquet'.format(batch_number))
-
-    @staticmethod
-    def __get_mapped_hits_df(hits: Hits) -> pd.DataFrame:
-        """Return hits mapped to graph nets columns and format.
-
-        Args:
-            hits: Hits to map
-
-        Returns:
-            Data frame with mapped hits
-        """
-        new_hits_df = hits.df[[
-            'record_id',
-            'pmt_id',
-            'string_id',
-            'module_id',
-            'time'
-        ]].rename(
-            columns={
-                'record_id': 'event_id',
-                'pmt_id': 'pmt_idx',
-                'module_id': 'dom_idx',
-                'string_id': 'string_idx'
-            }
-        )
-
-        return new_hits_df
-
-    def export(self, collection: Collection, batch_size=20, **kwargs) -> None:
-        """Graph net export of a collection.
-
-        Args:
-            collection: Collection to be exported
-            batch_size: Events per file
-            kwargs: Additional exporter args
-        """
-        records = collection.get_records()
-
-        # TODO: Properly implement interaction type
-        new_records = pd.DataFrame(
-            {
-                'event_id': records.df['record_id'],
-                'interaction_type': 0
-            },
-            dtype='int'
-        )
-
-        if 'orientation_x' in records.df:
-            orientations = Vectors3D.from_df(records.df, prefix='orientation_')
-            new_records['azimuth'] = orientations.phi
-            new_records['zenith'] = orientations.theta
-
-        if 'location_x' in records.df:
-            new_records['interaction_x'] = records.df['location_x']
-            new_records['interaction_y'] = records.df['location_y']
-            new_records['interaction_z'] = records.df['location_z']
-
-        if 'energy' in records.df:
-            new_records['energy'] = records.df['energy']
-
-        if 'particle_id' in records.df:
-            new_records['pid'] = records.df['particle_id']
-
-        mandatory_columns = [
-            'azimuth', 'zenith', 'interaction_x', 'interaction_y',
-            'interaction_z', 'energy'
+    def recompress(self):
+        dir = os.path.dirname(self.data_path)
+        tmp_file = os.path.join(dir, '{}.h5'.format(str(uuid.uuid4())))
+        self.store.close()
+        command = [
+            "ptrepack",
+            "-o",
+            "--chunkshape=auto",
+            "--propindexes",
+            "--complevel={}".format(self.complevel),
+            self.data_path,
+            tmp_file
         ]
+        call(command)
+        os.remove(self.data_path)
+        shutil.move(tmp_file, self.data_path)
+        self.store: pd.HDFStore = self.__get_store()
 
-        for mandatory_column in mandatory_columns:
-            if mandatory_column not in new_records:
-                new_records[mandatory_column] = -1
+    def __get_records_where_path_exists(
+            self,
+            collection_key: CollectionKeys,
+            record_type: Optional[
+                Union[
+                    List[EventTypes],
+                    EventTypes
+                ]
+            ] = None,
+            invert: bool = False,
+            interval: Optional[Interval] = None,
+            keys: Optional[List[str]] = None
+    ) -> Optional[Records]:
+        """Returns records where the path exists in store.
 
-        new_records.fillna(-1, inplace=True)
-        new_records_event_ids = new_records['event_id']
+        Args:
+            collection_key: Collection key to return records for
+            record_type: Type of Record to get
+            invert: Get records where path does not exist
+            interval: Interval to get have hits in.
+            keys: Cached store keys instead of regenerating (Optimization)
 
-        os.makedirs(self.file_path, exist_ok=True)
-
-        number_of_records = len(records)
-        mc_truths = []
-        detector_responses = []
-        batch = 0
-
-        detector = collection.get_detector()
-
-        indices = detector.indices.rename(
-            columns={
-                'string_id': 'string_idx',
-                'module_id': 'dom_idx',
-                'pmt_id': 'pmt_idx',
-            }
+        Returns:
+            Records that have a path within the collection
+        """
+        records = self.get_records(record_type=record_type)
+        if records is None:
+            return None
+        column_name = '_tmp_data_path'
+        records.df[column_name] = self.__get_hdf_path(
+            collection_key,
+            records.record_ids
         )
-        orientations = detector.pmt_orientations
-        locations = detector.pmt_locations.get_df_with_prefix('pmt_')
+        if keys is None:
+            keys = self.store.keys()
+        record_in_keys = records.df[column_name].isin(keys)
+        if not invert:
+            records.df = records.df[record_in_keys]
+        else:
+            records.df = records.df[~record_in_keys]
+        records.df.drop(columns=[column_name], inplace=True)
 
-        merge_detector_df = pd.concat([indices, locations], axis=1)
-        merge_detector_df['pmt_azimuth'] = orientations.phi
-        merge_detector_df['pmt_zenith'] = orientations.theta
-
-        for index, row in enumerate(new_records.itertuples(index=False)):
-            current_record_id = getattr(row, 'event_id')
-
-            current_hits = collection.get_hits(record_id=current_record_id)
-
-            if current_hits is None:
-                continue
-
-            mapped_hits = self.__get_mapped_hits_df(current_hits)
-            mapped_hits = pd.merge(
-                mapped_hits,
-                merge_detector_df,
-                how='inner',
-                on=['string_idx', 'dom_idx', 'pmt_idx']
+        if interval is not None:
+            records = self.__drop_records_without_hits_in_interval(
+                records=records,
+                interval=interval
             )
 
-            mc_truths.append(row._asdict())
-            detector_responses.append(mapped_hits.to_dict(orient='records'))
+        if len(records) == 0:
+            return None
 
-            if (index + 1) % batch_size == 0 or index + 1 == number_of_records:
-                array = ak.Array(
-                    {
-                        'mc_truth': mc_truths,
-                        'detector_response': detector_responses
-                    }
+        return records
+
+    def get_records_with_hits(
+            self,
+            record_type: Optional[
+                Union[
+                    List[EventTypes],
+                    EventTypes
+                ]
+            ] = None,
+            invert: bool = False,
+            interval: Optional[Interval] = None,
+            keys: Optional[List[str]] = None
+    ) -> Optional[Records]:
+        """Gets all records that have hits.
+
+        Args:
+            invert: Get records without hits instead.
+            record_type: Type of Record to get
+            interval: Interval to get have hits in.
+            keys: Cached store keys instead of regenerating (Optimization)
+
+        Returns:
+            Records that have a hit dataset in store
+        """
+        return self.__get_records_where_path_exists(
+            collection_key=CollectionKeys.HITS,
+            record_type=record_type,
+            invert=invert,
+            interval=interval,
+            keys=keys
+        )
+
+    def get_records_with_sources(
+            self,
+            record_type: Optional[
+                Union[
+                    List[EventTypes],
+                    EventTypes
+                ]
+            ] = None,
+            invert: bool = False,
+            interval: Optional[Interval] = None,
+            keys: Optional[List[str]] = None
+    ) -> Optional[Records]:
+        """Gets all records that have sources.
+
+        Args:
+            record_type: Type of Record to get
+            invert: Get records without sources instead.
+            interval: Interval to get have hits in.
+            keys: Cached store keys instead of regenerating (Optimization)
+
+        Returns:
+            Records that have a source dataset in store
+        """
+        return self.__get_records_where_path_exists(
+            collection_key=CollectionKeys.SOURCES,
+            record_type=record_type,
+            invert=invert,
+            interval=interval,
+            keys=keys
+        )
+
+    def drop_no_hit_records(self) -> None:
+        """Deletes all the records without hits."""
+        logging.info('Dropping no hit records')
+        keys = self.store.keys()
+        records_without_hits = self.get_records_with_hits(invert=True, keys=keys)
+        if records_without_hits is None:
+            return
+        records_with_sources = self.get_records_with_sources(keys=keys)
+        if records_with_sources is not None:
+            records_with_sources.df = records_with_sources.df[
+                records_with_sources.record_ids.isin(records_without_hits.record_ids)
+            ]
+            for index, record_id in records_with_sources.record_ids.items():
+                sources_path = self.__get_hdf_path(
+                    collection_key=CollectionKeys.SOURCES,
+                    record_id=record_id
                 )
-                ak.to_parquet(array, self.__get_file_path(batch), compression='GZIP')
-                mc_truths = []
-                detector_responses = []
-                batch += 1
-
-
-class CollectionExporterFactory:
-    @staticmethod
-    def create_exporter(
-            file_path,
-            exporter: CollectionExporters
-    ) -> AbstractCollectionExporter:
-        if exporter == CollectionExporters.GRAPH_NET:
-            return GraphNetCollectionExporter(file_path)
+                del self.store[sources_path]
+        logging.info('Dropped {} records'.format(len(records_without_hits)))
+        all_records = self.get_records()
+        all_records.df = all_records.df[
+            ~all_records.record_ids.isin(records_without_hits.record_ids)
+        ]
+        if len(all_records) == 0:
+            self.store.remove(CollectionKeys.RECORDS.value)
         else:
-            raise ValueError(f'Unsupported exporter {exporter.value}')
+            self.set_records(all_records, override=True)
+
+    def get_record_statistics(self) -> Optional[RecordStatistics]:
+        """Gets all the statistics added to the current records.
+
+        Returns:
+            RecordStatistics enriched by counts and first and last sources and hits.
+        """
+        records = self.get_records()
+        if records is None:
+            return None
+        hits_counts = []
+        sources_counts = []
+        first_sources = []
+        last_sources = []
+        first_hits = []
+        last_hits = []
+        number_records = len(records)
+        empty_hits = 0
+        empty_sources = 0
+        with tqdm(total=number_records, mininterval=0.5) as pbar:
+            for index, record_id in records.record_ids.items():
+                record_hits = self.get_hits(record_id=record_id)
+                if record_hits is None:
+                    hits_counts.append(np.nan)
+                    first_hits.append(np.nan)
+                    last_hits.append(np.nan)
+                    empty_hits += 1
+                else:
+                    hits_statistics = record_hits.get_statistics()
+                    hits_counts.append(hits_statistics.count)
+                    first_hits.append(hits_statistics.min)
+                    last_hits.append(hits_statistics.max)
+                record_sources = self.get_sources(record_id=record_id)
+                if record_sources is None:
+                    sources_counts.append(np.nan)
+                    first_sources.append(np.nan)
+                    last_sources.append(np.nan)
+                    empty_sources += 1
+                else:
+                    sources_statistics = record_sources.get_statistics()
+                    sources_counts.append(sources_statistics.count)
+                    first_sources.append(sources_statistics.min)
+                    last_sources.append(sources_statistics.max)
+                pbar.update()
+
+        df = records.df
+        if empty_hits != number_records:
+            df['hit_count'] = hits_counts
+            df['first_hit'] = first_hits
+            df['last_hit'] = last_hits
+        if empty_sources != number_records:
+            df['source_count'] = sources_counts
+            df['first_source'] = first_sources
+            df['last_source'] = last_sources
+
+        return RecordStatistics(df=df)

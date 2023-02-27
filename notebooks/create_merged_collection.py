@@ -2,17 +2,52 @@ from ananke.models.collection import Collection
 from ananke.configurations.collection import MergeConfiguration
 from ananke.schemas.event import RecordType
 
+# configuration = MergeConfiguration.parse_obj(
+#     {
+#         'collection_paths': [
+#             '../../data/merge/combined_noise.h5',
+#             '../../data/feasable_cascades_data_all_noise/data.h5'
+#         ],
+#         'out_path': '../../data/allcombined/data.h5',
+#         'content': [
+#             # {
+#             #     'primary_type': RecordType.ELECTRICAL.value,
+#             #     'secondary_types': [RecordType.BIOLUMINESCENCE.value],
+#             #     'number_of_records': 10000,
+#             #     'interval': {
+#             #         'start': 0,
+#             #         'end': 1000
+#             #     }
+#             # },
+#             # {
+#             #     'primary_type': RecordType.ELECTRICAL.value,
+#             #     'number_of_records': 500,
+#             #     'interval': {
+#             #         'start': 0,
+#             #         'end': 1000
+#             #     }
+#             #
+#             # }
+#         ]
+#     }
+# )
+
+
+
 configuration = MergeConfiguration.parse_obj(
     {
         'collection_paths': [
-            '../../data/merge/data.h5',
+            '../../data/allcombined/data.h5'
         ],
-        'out_path': '../../data/merge/merge503.h5',
+        'out_path': '../../data/combined_10_20/data.h5',
         'content': [
             {
                 'primary_type': RecordType.CASCADE.value,
-                'secondary_types': [RecordType.ELECTRICAL.value],
-                'number_of_records': 50,
+                'secondary_types': [
+                    RecordType.BIOLUMINESCENCE.value,
+                    RecordType.ELECTRICAL.value
+                ],
+                'number_of_records': 10000,
                 'interval': {
                     'start': 0,
                     'end': 1000
@@ -20,7 +55,10 @@ configuration = MergeConfiguration.parse_obj(
             },
             {
                 'primary_type': RecordType.ELECTRICAL.value,
-                'number_of_records': 500,
+                'secondary_types': [
+                    RecordType.BIOLUMINESCENCE.value,
+                ],
+                'number_of_records': 20000,
                 'interval': {
                     'start': 0,
                     'end': 1000
@@ -32,3 +70,5 @@ configuration = MergeConfiguration.parse_obj(
 )
 
 collection = Collection.from_merge(configuration)
+
+print(len(collection.get_records()))

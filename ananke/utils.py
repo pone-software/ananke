@@ -1,14 +1,36 @@
 """Module containing all utils for the models."""
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+import os
+import uuid
+from typing import Any, Callable, Optional, Union
 
 import numpy as np
 import pandas as pd
+from pydantic import BaseModel
+
+
+def get_64_bit_signed_uuid_int(clock: Optional[int] = None) -> int:
+    """Generates and returns 64 bitwise selector of uuid1
+
+    Args:
+        clock: Clock to fix uuid sequence.
+
+    Returns:
+        Integer based on uuid1
+    """
+    # TODO: Evaluate usages and maybe replace with something else
+    # Due to its size, type conversions to float and back change value
+    # in Pandas DataFrames
+    return int.from_bytes(
+        uuid.uuid1(clock_seq=clock).bytes,
+        byteorder='big',
+        signed=True
+    ) >> 64
 
 
 def get_repeated_df(
-    df_to_repeat: pd.DataFrame, number_of_replications: int
+        df_to_repeat: pd.DataFrame, number_of_replications: int
 ) -> pd.DataFrame:
     """Repeats each row x times.
 
@@ -45,3 +67,15 @@ def percentile(n: float, name: Optional[str] = None) -> Callable[[Any], Any]:
     else:
         percentile_.__name__ = name
     return percentile_
+
+
+def save_configuration(
+        file: Union[str, bytes, os.PathLike],
+        configuration: BaseModel
+) -> None:
+    """Saves configuration."""
+    dir = os.path.dirname(file)
+    os.makedirs(dir, exist_ok=True)
+
+    with open(file, 'w') as f:
+        f.write(configuration.json(indent=2))

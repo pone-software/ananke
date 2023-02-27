@@ -16,6 +16,7 @@ pandera = {extras = ["hypothesis"], version = "^0.13.4"}
 h5py = "^3.8.0"
 tables = "^3.8.0"
 awkward = "^2.0.6"
+pyarrow = "^11.0.0"
 
 
 [tool.poetry.group.dev.dependencies]

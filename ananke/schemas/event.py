@@ -1,6 +1,6 @@
 """Module containing all schemas for Collection."""
 from enum import Enum
-from typing import Optional
+from typing import Optional, Union
 
 import pandera as pa
 
@@ -15,6 +15,7 @@ class RecordType(str, Enum):
     CASCADE = "cascade"
     REALISTIC_TRACK = "realistic_track"
     ELECTRICAL = "electrical"
+    BIOLUMINESCENCE = "bioluminescence"
 
 
 class EventType(str, Enum):
@@ -29,6 +30,7 @@ class NoiseType(str, Enum):
     """Enum for different noise types."""
 
     ELECTRICAL = RecordType.ELECTRICAL.value
+    BIOLUMINESCENCE = RecordType.BIOLUMINESCENCE.value
 
 
 class SourceType(str, Enum):
@@ -36,6 +38,9 @@ class SourceType(str, Enum):
 
     STANDARD_CHERENKOV = "cherenkov"
     ISOTROPIC = "isotropic"
+
+
+EventTypes = Union[EventType, NoiseType, SourceType, RecordType]
 
 
 class RecordIdSchema(pa.SchemaModel):
@@ -50,6 +55,7 @@ class TimedSchema(pa.SchemaModel):
     time: Series[float] = pa.Field(coerce=True)
     duration: Optional[Series[float]] = pa.Field(coerce=True, nullable=True)
 
+
 # TODO: Switch string to Category
 
 
@@ -57,6 +63,17 @@ class RecordSchema(RecordIdSchema, TimedSchema):
     """Schema for a timed record with an ID and type."""
 
     type: Series[str] = pa.Field(coerce=True, isin=[x.value for x in RecordType])
+
+
+class RecordStatisticsSchema(RecordSchema):
+    """Schema for a timed record with an ID and type."""
+
+    hit_count: Optional[Series[pa.Int]] = pa.Field(coerce=True, ge=0, nullable=True)
+    first_hit: Optional[Series[pa.Float]] = pa.Field(coerce=True, nullable=True)
+    last_hit: Optional[Series[pa.Float]] = pa.Field(coerce=True, nullable=True)
+    source_count: Optional[Series[pa.Int]] = pa.Field(coerce=True, ge=0, nullable=True)
+    first_source: Optional[Series[pa.Float]] = pa.Field(coerce=True, nullable=True)
+    last_source: Optional[Series[pa.Float]] = pa.Field(coerce=True, nullable=True)
 
 
 class NoiseRecordSchema(RecordSchema):

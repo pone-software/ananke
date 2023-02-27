@@ -1,7 +1,11 @@
 """This module contains all event and photon source related structures."""
 from __future__ import annotations
 
+from typing import Optional
+
 import pandas as pd
+import numpy as np
+from pydantic import BaseModel, NonNegativeInt
 
 from ananke.models.geometry import OrientedLocatedObjects
 from ananke.models.interfaces import DataFrameFacade
@@ -13,8 +17,10 @@ from ananke.schemas.event import (
     RecordIdSchema,
     RecordSchema,
     SourceRecordSchema,
-    TimedSchema,
+    TimedSchema, RecordStatisticsSchema,
 )
+from ananke.utils import percentile as percentile_func
+import numpy.typing as npt
 from pandera.typing import DataFrame
 
 
@@ -40,6 +46,12 @@ class RecordIds(DataFrameFacade):
         return self.df["record_id"]
 
 
+class TimeStatistics(BaseModel):
+    count: NonNegativeInt
+    min: float
+    max: float
+
+
 class RecordTimes(DataFrameFacade):
     """General description of intervals."""
 
@@ -50,11 +62,56 @@ class RecordTimes(DataFrameFacade):
         """Gets DataFrame with all times."""
         return self.df["time"]
 
+    def add_time(self, time_difference: npt.ArrayLike) -> None:
+        """Adds time to the data frame.
+
+        Args:
+            time_difference: time to add
+        """
+        self.df["time"] = self.df["time"] + time_difference
+
+    def get_statistics(self, percentile: Optional[float] = None) -> TimeStatistics:
+        """Returns the Statistics of the current hits.
+
+        Args:
+            percentile: Float between 0 and one to give percentile of included rows.
+
+        Returns:
+            TimeStatistics Object containing min, max, and count
+        """
+        count = len(self)
+        if percentile is not None:
+            if percentile < 0 or percentile > 1:
+                raise ValueError('Percentiles can only be between 0 and 1.')
+            beginning_percentile = 0.5 - percentile / 2.0
+            ending_percentile = 0.5 + percentile / 2.0
+            aggregations = [
+                percentile_func(beginning_percentile, "min"),
+                percentile_func(ending_percentile, "max"),
+            ]
+            count = int(np.round(count * percentile))
+        else:
+            aggregations = ["min", "max"]
+
+        grouped_hits = self.df.agg({"time": aggregations})
+
+        return TimeStatistics(
+            count=count,
+            min=grouped_hits.at['min', 'time'],
+            max=grouped_hits.at['max', 'time']
+        )
+
 
 class Records(RecordIds, RecordTimes):
     """General description of a record for events or sources."""
 
     df: DataFrame[RecordSchema]
+
+
+class RecordStatistics(Records):
+    """General description of a record for events or sources."""
+
+    df: DataFrame[RecordStatisticsSchema]
 
 
 class OrientedRecords(OrientedLocatedObjects, Records):

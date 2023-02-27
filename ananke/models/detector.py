@@ -1,5 +1,5 @@
 """Contains all the classes for representing a detector."""
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 import numpy as np
 import pandas as pd
@@ -74,10 +74,12 @@ class Detector(Strings):
 
     configuration: Optional[DetectorConfiguration]
 
+    id_columns: List[str] = ["string_id", "module_id", "pmt_id"]
+
     @property
     def indices(self) -> pd.DataFrame:
         """Returns all indices of the PMTs."""
-        return self.df[["string_id", "module_id", "pmt_id"]]
+        return self.df[self.id_columns]
 
     @property
     def outer_radius(self) -> float:
@@ -93,3 +95,32 @@ class Detector(Strings):
             float(np.linalg.norm(module_locations[:, :2], axis=1).max()),
             float(2 * np.abs(module_locations[:, 2].max())),
         )
+
+    def __number_of_ids(
+            self,
+            slice: slice = slice(0, 3)
+    ) -> int:
+        """Returns number of elements based on the column id slice.
+
+        Args:
+            slice: slice by which to select columns
+
+        Returns:
+            number of unique combinations for given id columns
+        """
+        return len(self.df.groupby(self.id_columns[slice]).index)
+
+    @property
+    def number_of_pmts(self) -> int:
+        """Gets total number of pmts."""
+        return self.__number_of_ids(slice(0, 3))
+
+    @property
+    def number_of_modules(self) -> int:
+        """Gets total number of modules."""
+        return self.__number_of_ids(slice(0, 2))
+
+    @property
+    def number_of_strings(self) -> int:
+        """Gets total number of strings."""
+        return self.__number_of_ids(slice(0, 1))

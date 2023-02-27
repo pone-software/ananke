@@ -86,7 +86,7 @@ class RedistributionConfiguration(BaseModel):
     interval: Interval
 
     #: Mode by which to redistribute
-    mode: str
+    mode: EventRedistributionMode
 
     #: Seed for redistribution
     seed: int = defaults.seed

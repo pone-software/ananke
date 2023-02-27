@@ -1,5 +1,5 @@
 from ananke.models.collection import Collection, CollectionExporters
 
-collection = Collection(data_path='../../data/merge/noise_only.h5')
+collection = Collection(data_path='../../data/combined_10_20/data.h5')
 
-collection.export(export_path='../../data/graph_net/noise_random', exporter=CollectionExporters.GRAPH_NET)
+collection.export(export_path='../../data/graph_net/combined_10_20', exporter=CollectionExporters.GRAPH_NET)
