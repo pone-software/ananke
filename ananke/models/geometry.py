@@ -62,7 +62,7 @@ class Vectors2D(DataFrameFacade):
 
     @classmethod
     @check_types(with_pydantic=True)
-    def from_polar(cls, polar: DataFrame[PolarSchema]) -> "Vectors2D":
+    def from_polar(cls, polar: DataFrame[PolarSchema]) -> Vectors2D:
         """Creates a 2D vector from polar coordinates.
 
         Args:
