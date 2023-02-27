@@ -19,6 +19,8 @@ from ananke.schemas.geometry import (
 from pandera import check_types
 from pandera.typing import DataFrame
 
+# TODO: Reimplement from_ functions type hints (deactivated due to vms problems)
+
 
 class Vectors2D(DataFrameFacade):
     """A 2D vector with interface to radial and cartesian coordinates."""
@@ -62,7 +64,7 @@ class Vectors2D(DataFrameFacade):
 
     @classmethod
     @check_types(with_pydantic=True)
-    def from_polar(cls, polar: DataFrame[PolarSchema]) -> Vectors2D:
+    def from_polar(cls, polar: DataFrame[PolarSchema]):
         """Creates a 2D vector from polar coordinates.
 
         Args:
@@ -82,7 +84,7 @@ class Vectors2D(DataFrameFacade):
         return cls(df=df)
 
     @classmethod
-    def from_numpy(cls, numpy_array: npt.NDArray[Any]) -> Vectors2D:
+    def from_numpy(cls, numpy_array: npt.NDArray[Any]):
         """Creates 2d vector out of numpy array.
 
         Args:
@@ -114,7 +116,7 @@ class Vectors3D(Vectors2D):
 
     @classmethod
     @check_types(with_pydantic=True)
-    def from_polar(cls, polar: DataFrame[PolarSchema]) -> Vectors2D:
+    def from_polar(cls, polar: DataFrame[PolarSchema]):
         """3D vector cannot be created from polar.
 
         Raises:
@@ -124,7 +126,7 @@ class Vectors3D(Vectors2D):
 
     @classmethod
     @check_types(with_pydantic=True)
-    def from_spherical(cls, spherical: DataFrame[SphericalSchema]) -> "Vectors3D":
+    def from_spherical(cls, spherical: DataFrame[SphericalSchema]):
         """Create 3D vector based on spherical coordinates.
 
         Args:
@@ -146,7 +148,7 @@ class Vectors3D(Vectors2D):
         return cls(df=df)
 
     @classmethod
-    def from_numpy(cls, numpy_array: npt.NDArray[Any]) -> Vectors3D:
+    def from_numpy(cls, numpy_array: npt.NDArray[Any]):
         """Creates 3d vector out of numpy array.
 
         Args:
@@ -161,7 +163,7 @@ class Vectors3D(Vectors2D):
         return cls(df=df)
 
     @classmethod
-    def from_df(cls, df: pd.DataFrame, prefix: str = "") -> Vectors3D:
+    def from_df(cls, df: pd.DataFrame, prefix: str = ""):
         """Returns a DataFrame of 3d vectors.
 
         As many of the classes have a prefix in front of the coordinates,

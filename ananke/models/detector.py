@@ -108,7 +108,7 @@ class Detector(Strings):
         Returns:
             number of unique combinations for given id columns
         """
-        return len(self.df.groupby(self.id_columns[slice]).index)
+        return len(self.df.groupby(self.id_columns[slice]))
 
     @property
     def number_of_pmts(self) -> int:
