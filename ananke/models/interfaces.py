@@ -1,7 +1,8 @@
 """Place for all interfaces used in the package."""
 from __future__ import annotations
 
-from typing import Any, List, TypeVar, Optional
+from collections.abc import Iterator
+from typing import Any, List, TypeVar, Optional, Iterable, Generic
 
 import numpy as np
 import numpy.typing as npt
@@ -12,6 +13,34 @@ from pydantic import BaseModel
 
 T_ = TypeVar("T_")
 DataFrameFacade_ = TypeVar("DataFrameFacade_", bound="DataFrameFacade")
+
+
+class DataFrameFacadeIterator(Iterator):
+    """Class serving as iterator for the DataFrameFacade's"""
+
+    def __init__(self, facade: DataFrameFacade_, batch_size: int = 1) -> None:
+        """Constructor of the Iterator.
+
+        Args:
+            facade: Facade to iterate over
+            batch_size: Batch size of each individual iteration
+        """
+        self.facade: DataFrameFacade_ = facade
+        self.__number_of_items = len(self.facade)
+        self.__facade_class = facade.__class__
+        self.__batch_size = batch_size
+        self.__current = 0
+
+    def __iter__(self) -> DataFrameFacadeIterator:
+        return self
+
+    def __next__(self) -> DataFrameFacade_:
+        current_index = self.__current
+        if current_index > self.__number_of_items:
+            raise StopIteration
+        next_index = current_index + self.__batch_size
+        self.__current = next_index
+        return self.__facade_class(df=self.facade.df.iloc[current_index:next_index])
 
 
 class DataFrameFacade(BaseModel):
@@ -93,3 +122,25 @@ class DataFrameFacade(BaseModel):
         if len(self) < n:
             raise ValueError('Only {} of needed {} rows available'.format(len(self), n))
         return self.__class__(df=self.df.sample(n=n, random_state=random_state))
+
+    def iterbatches(self, batch_size: int = 1) -> DataFrameFacadeIterator:
+        """Get iterator of current facade
+
+        Args:
+            batch_size: How many rows in each iteration
+
+        Returns:
+
+        """
+        return DataFrameFacadeIterator(facade=self, batch_size=batch_size)
+
+    def itertuples(self, index: bool = True) -> Iterable[tuple[Any, ...]]:
+        """Pass through itertuples from dataframe with name
+
+        Args:
+            index: Whether index should be part of the Tuple
+
+        Returns:
+
+        """
+        return self.df.itertuples(index=index, name=self.__class__.__name__)

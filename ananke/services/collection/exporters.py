@@ -1,9 +1,11 @@
 """Module containing all collection exporters."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar, Generic
 
 from tqdm import tqdm
+
+from ananke.configurations.collection import ExportConfiguration, GraphNetExportConfiguration
 
 if TYPE_CHECKING:
     from ananke.models.collection import Collection
@@ -11,29 +13,24 @@ if TYPE_CHECKING:
 
 import os
 from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Union
 import awkward as ak
 import pandas as pd
 
 from ananke.models.geometry import Vectors3D
 
-
-class CollectionExporters(Enum):
-    """Enum for possible exporters"""
-    GRAPH_NET = 'graph_net'
+ExportConfiguration_ = TypeVar('ExportConfiguration_', bound=ExportConfiguration)
 
 
-class AbstractCollectionExporter(ABC):
+class AbstractCollectionExporter(ABC, Generic[ExportConfiguration_]):
     """Abstract parent class for collection exporters."""
 
-    def __init__(self, file_path: Union[str, bytes, os.PathLike]):
+    def __init__(self, configuration: ExportConfiguration_):
         """Constructor of the Abstract Collection Exporter.
 
         Args:
-            file_path: Filepath to store data at
+            configuration: Configuration about storage
         """
-        self.file_path = file_path
+        self.configuration = configuration
 
     @abstractmethod
     def export(self, collection: Collection, **kwargs) -> None:
@@ -46,7 +43,7 @@ class AbstractCollectionExporter(ABC):
         pass
 
 
-class GraphNetCollectionExporter(AbstractCollectionExporter):
+class GraphNetCollectionExporter(AbstractCollectionExporter[GraphNetExportConfiguration]):
     """Concrete implementation for Graph Net exports."""
 
     def __get_file_path(self, batch_number: int) -> str:
@@ -58,7 +55,7 @@ class GraphNetCollectionExporter(AbstractCollectionExporter):
         Returns:
             complete path of current file.
         """
-        return os.path.join(self.file_path, 'batch_{}.parquet'.format(batch_number))
+        return os.path.join(self.configuration.data_path, 'batch_{}.parquet'.format(batch_number))
 
     @staticmethod
     def __get_mapped_hits_df(hits: Hits) -> pd.DataFrame:
@@ -136,7 +133,7 @@ class GraphNetCollectionExporter(AbstractCollectionExporter):
 
         new_records.fillna(-1, inplace=True)
 
-        os.makedirs(self.file_path, exist_ok=True)
+        os.makedirs(self.configuration.data_path, exist_ok=True)
 
         number_of_records = len(records)
         mc_truths = []
@@ -164,7 +161,7 @@ class GraphNetCollectionExporter(AbstractCollectionExporter):
             for index, row in enumerate(new_records.itertuples(index=False)):
                 current_record_id = getattr(row, 'event_id')
 
-                current_hits = collection.get_hits(record_id=current_record_id)
+                current_hits = collection.get_hits(record_ids=current_record_id)
 
                 if current_hits is None:
                     continue
@@ -193,15 +190,3 @@ class GraphNetCollectionExporter(AbstractCollectionExporter):
                     batch += 1
 
                 pbar.update()
-
-
-class CollectionExporterFactory:
-    @staticmethod
-    def create_exporter(
-            file_path,
-            exporter: CollectionExporters
-    ) -> AbstractCollectionExporter:
-        if exporter == CollectionExporters.GRAPH_NET:
-            return GraphNetCollectionExporter(file_path)
-        else:
-            raise ValueError(f'Unsupported exporter {exporter.value}')

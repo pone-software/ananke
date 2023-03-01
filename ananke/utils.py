@@ -26,7 +26,7 @@ def get_64_bit_signed_uuid_int(clock: Optional[int] = None) -> int:
         uuid.uuid1(clock_seq=clock).bytes,
         byteorder='big',
         signed=True
-    ) >> 64
+    ) >> 63
 
 
 def get_repeated_df(

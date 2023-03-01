@@ -16,7 +16,7 @@ from ananke.schemas.event import (
     OrientedRecordSchema,
     RecordIdSchema,
     RecordSchema,
-    SourceRecordSchema,
+    SourceSchema,
     TimedSchema, RecordStatisticsSchema,
 )
 from ananke.utils import percentile as percentile_func
@@ -123,7 +123,7 @@ class OrientedRecords(OrientedLocatedObjects, Records):
 class Sources(OrientedRecords):
     """Record for a photon source."""
 
-    df: DataFrame[SourceRecordSchema]
+    df: DataFrame[SourceSchema]
 
     # TODO: Fix THis
     # angle_distribution: Optional[npt.ArrayLike] = None
