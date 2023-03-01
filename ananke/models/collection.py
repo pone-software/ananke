@@ -751,7 +751,8 @@ class Collection:
                     self.set_sources(current_sources, override=True)
 
                 new_differences.append(new_difference)
-            pbar.update()
+
+                pbar.update()
 
         records.add_time(new_differences)
         self.set_records(records=records, override=True)
@@ -968,18 +969,21 @@ class Collection:
         dir = os.path.dirname(self.data_path)
         tmp_file = os.path.join(dir, '{}.h5'.format(str(uuid.uuid4())))
         self.store.close()
-        command = [
-            "ptrepack",
-            "-o",
-            "--chunkshape=auto",
-            "--propindexes",
-            "--complevel={}".format(self.complevel),
-            self.data_path,
-            tmp_file
-        ]
-        call(command)
-        os.remove(self.data_path)
-        shutil.move(tmp_file, self.data_path)
+        try:
+            command = [
+                "ptrepack",
+                "-o",
+                "--chunkshape=auto",
+                "--propindexes",
+                "--complevel={}".format(self.complevel),
+                self.data_path,
+                tmp_file
+            ]
+            call(command)
+            os.remove(self.data_path)
+            shutil.move(tmp_file, self.data_path)
+        except:
+            logging.warning('PTRepack not working. Skipping compression')
         self.store: pd.HDFStore = self.__get_store()
 
     def __get_records_where_path_exists(

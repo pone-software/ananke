@@ -19,16 +19,16 @@ class EventRedistributionMode(str, Enum):
     # I want the new start time be that the at least one hit overlaps with the time
     # ....start....first_hit....last_hit........
     # ...........[.................].................
-    CONTAINS_HIT = "containts_hit"
+    CONTAINS_HIT = "contains_hit"
     # I want the new start time be that all hits overlap with the time
     # ....start....first_hit....last_hit........
     # ...........[..............................]....
-    CONTAINS_EVENT = "containts_event"
+    CONTAINS_EVENT = "contains_event"
     # I want the new start time to be that x percent of the event are included
     # I want the new start time be that all hits overlap with the time
     # ....start....first_hit....last_hit........
     # ....................[..............]...........
-    CONTAINS_PERCENTAGE = "containts_percentage"
+    CONTAINS_PERCENTAGE = "contains_percentage"
 
 
 class Interval(BaseModel):
