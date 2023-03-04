@@ -8,14 +8,14 @@ from pandera.typing import Series
 class PolarSchema(pa.SchemaModel):
     """Schema for the polar coordinates data frame."""
 
-    norm: Series[float]
-    phi: Series[float]
+    norm: Series[float] = pa.Field(coerce=True, nullable=True)
+    phi: Series[float] = pa.Field(coerce=True, nullable=True)
 
 
 class SphericalSchema(PolarSchema):
     """Schema for the spherical coordinates data frame."""
 
-    theta: Series[float]
+    theta: Series[float] = pa.Field(coerce=True, nullable=True)
 
 
 class Vector2DSchema(pa.SchemaModel):

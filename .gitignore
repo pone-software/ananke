@@ -154,3 +154,4 @@ cython_debug/
 
 # Merge tmp databases
 _tmp/
+_tmp*.h5

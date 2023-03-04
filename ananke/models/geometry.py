@@ -19,26 +19,29 @@ from ananke.schemas.geometry import (
 from pandera import check_types
 from pandera.typing import DataFrame
 
+
 # TODO: Reimplement from_ functions type hints (deactivated due to vms problems)
 
 
 class Vectors2D(DataFrameFacade):
     """A 2D vector with interface to radial and cartesian coordinates."""
 
-    df: DataFrame[Vector2DSchema] = Vector2DSchema
+    df: DataFrame[Vector2DSchema]
 
     @property
-    def phi(self) -> pd.DataFrame:
+    def phi(self) -> pd.Series:
         """Phi coordinate in radial units."""
-        d = {"phi": np.arctan((self.df["y"] / self.df["x"]).to_numpy())}
-        return pd.DataFrame(d)
+        unsigned_angle = np.arccos((self.df['x'] / self.norm).to_numpy())
+        signs = np.sign(self.df['y'])
+        signs[signs == 0] = 1
+        return pd.Series(unsigned_angle * signs)
 
     @property
-    def norm(self) -> pd.DataFrame:
+    def norm(self) -> pd.Series:
         """Returns L2-norm of 2D vector."""
-        numpy_array = self.df.to_numpy(dtype=np.float)
-        d = {"norm": np.linalg.norm(numpy_array, axis=1)}
-        return pd.DataFrame(d)
+        numpy_array = self.df.to_numpy(dtype=float)
+        d = np.linalg.norm(numpy_array, axis=1)
+        return pd.Series(d)
 
     def _get_scaling_factor_for_length(self, length: float) -> pd.DataFrame:
         """Calculates the factor to scale by to get to length.
@@ -51,7 +54,8 @@ class Vectors2D(DataFrameFacade):
 
         """
         norm = self.norm
-        return length / norm
+        norm = np.nan_to_num((length / norm), True, 0.0, 0.0, 0.0)
+        return norm
 
     def scale_to_length(self, length: float) -> None:
         """Scaling the vector to a given length.
@@ -60,7 +64,7 @@ class Vectors2D(DataFrameFacade):
             length: length to scale the vector to.
         """
         factor = self._get_scaling_factor_for_length(length)
-        self.df = self.df.mul(factor)
+        self.df = self.df.mul(factor, axis='rows')
 
     @classmethod
     @check_types(with_pydantic=True)
@@ -108,11 +112,22 @@ class Vectors3D(Vectors2D):
     df: DataFrame[Vector3DSchema]
 
     @property
-    def theta(self) -> pd.DataFrame:
+    def theta(self) -> pd.Series:
         """Phi coordinate in radial units."""
-        np_ratio = (self.df["z"] / self.norm["norm"]).to_numpy()
-        d = {"theta": np.arccos(np_ratio)}
-        return pd.DataFrame(d)
+        np_ratio = (self.df["z"] / self.norm).to_numpy()
+        d = np.arccos(np_ratio)
+        return pd.Series(d)
+
+    @property
+    def phi(self) -> pd.Series:
+        """Phi coordinate in radial units."""
+        unsigned_angle = np.arccos(
+            (self.df['x'] / np.sqrt(self.df['x'] ** 2 + self.df['y'] ** 2)).to_numpy()
+        )
+        unsigned_angle = np.nan_to_num(unsigned_angle, True, 0.0, 0.0, 0.0)
+        signs = np.sign(self.df['y'])
+        signs[signs == 0] = 1
+        return pd.Series(unsigned_angle * signs)
 
     @classmethod
     @check_types(with_pydantic=True)

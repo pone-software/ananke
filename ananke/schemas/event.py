@@ -1,7 +1,8 @@
 """Module containing all schemas for Collection."""
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Union, List
 
+import pandas as pd
 import pandera as pa
 
 from ananke.schemas.geometry import OrientedLocatedObjectSchema
@@ -40,13 +41,17 @@ class SourceType(Enum):
     ISOTROPIC = 1
 
 
-EventTypes = Union[EventType, NoiseType, SourceType, RecordType]
+Types = Union[EventType, NoiseType, SourceType, RecordType]
+TypesTypes_ = Optional[Union[List[Types], Types]]
 
 
 class RecordIdSchema(pa.SchemaModel):
     """Schema for Dataframes having record ids."""
 
     record_id: Series[int] = pa.Field(coerce=True)
+
+
+RecordIdsTypes_ = Optional[Union[int, List[int], pd.Series]]
 
 
 class TimedSchema(pa.SchemaModel):

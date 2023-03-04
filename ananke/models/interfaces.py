@@ -28,6 +28,8 @@ class DataFrameFacadeIterator(Iterator):
         self.facade: DataFrameFacade_ = facade
         self.__number_of_items = len(self.facade)
         self.__facade_class = facade.__class__
+        if batch_size <= 0:
+            raise ValueError('Batch size must be positive int')
         self.__batch_size = batch_size
         self.__current = 0
 
@@ -40,7 +42,8 @@ class DataFrameFacadeIterator(Iterator):
             raise StopIteration
         next_index = current_index + self.__batch_size
         self.__current = next_index
-        return self.__facade_class(df=self.facade.df.iloc[current_index:next_index])
+        current_facade= self.__facade_class(df=self.facade.df.iloc[current_index:next_index])
+        return current_facade
 
 
 class DataFrameFacade(BaseModel):
@@ -78,6 +81,9 @@ class DataFrameFacade(BaseModel):
         """
         return len(self.df.index)
 
+    def __eq__(self, other: DataFrameFacade) -> bool:
+        return self.df.equals(other.df)
+
     @classmethod
     def concat(cls, facades_to_concat: List[Optional[DataFrameFacade]]) -> Optional[
         DataFrameFacade]:
@@ -96,9 +102,10 @@ class DataFrameFacade(BaseModel):
         for facade in facades_to_concat:
             if facade is not None:
                 dfs.append(facade.df)
-        if len(facades_to_concat) == 0 or len(dfs) == 0:
+        if len(dfs) == 0:
             return None
 
+        # TODO: Evaluate whether to drop index or not?
         full_df = pd.concat(dfs)
         return cls.construct(cls.__fields_set__, df=full_df)
 

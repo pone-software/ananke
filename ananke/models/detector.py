@@ -81,6 +81,7 @@ class Detector(Strings):
         """Returns all indices of the PMTs."""
         return self.df[self.id_columns]
 
+    # TODO: Ask Christian why two times for the cylinder?
     @property
     def outer_radius(self) -> float:
         """Returns the distance of the farthest out module."""

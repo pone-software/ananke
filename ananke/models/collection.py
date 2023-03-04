@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import warnings
 from enum import Enum
 from typing import List, Optional, Type, TypeVar, Union
@@ -12,14 +11,17 @@ import pandas as pd
 from tables import NaturalNameWarning, PerformanceWarning
 from tqdm import tqdm
 
-from ananke.configurations.collection import StorageConfiguration, ExportConfiguration, MergeConfiguration
+from ananke.configurations.collection import (
+    StorageConfiguration,
+    ExportConfiguration,
+    MergeConfiguration,
+)
 from ananke.configurations.events import (
     Interval, RedistributionConfiguration, EventRedistributionMode,
 )
-from ananke.models.detector import Detector
-from ananke.models.event import Hits, Records, Sources, RecordStatistics
+from ananke.models.event import Hits, Sources, RecordStatistics
 from ananke.models.interfaces import DataFrameFacade
-from ananke.schemas.event import EventTypes, EventType
+from ananke.schemas.event import Types, EventType
 from ananke.services.collection.exporters import (
     AbstractCollectionExporter,
 )
@@ -27,7 +29,6 @@ from ananke.services.collection.importers import (
     AbstractCollectionImporter,
 )
 from ananke.services.collection.storage import StorageFactory
-from ananke.utils import get_64_bit_signed_uuid_int
 
 warnings.filterwarnings("ignore", category=NaturalNameWarning)
 warnings.filterwarnings("ignore", category=PerformanceWarning)
@@ -67,8 +68,8 @@ class Collection:
             configuration: StorageConfiguration,
             record_types: Optional[
                 Union[
-                    List[EventTypes],
-                    EventTypes
+                    List[Types],
+                    Types
                 ]
             ] = None,
             record_ids: Optional[
@@ -92,7 +93,11 @@ class Collection:
         copy = self.__class__(configuration)
         copy.open()
         copy.storage.set_detector(self.storage.get_detector())
-        copy_records = self.storage.get_records(record_types=record_types, record_ids=record_ids, interval=interval)
+        copy_records = self.storage.get_records(
+            types=record_types,
+            record_ids=record_ids,
+            interval=interval
+        )
 
         copy.storage.set_records(copy_records)
 
@@ -146,8 +151,8 @@ class Collection:
             redistribution_configuration: RedistributionConfiguration,
             record_types: Optional[
                 Union[
-                    List[EventTypes],
-                    EventTypes
+                    List[Types],
+                    Types
                 ]
             ] = None
     ) -> None:
@@ -280,7 +285,9 @@ class Collection:
             records_with_hits_record_ids = []
 
         if with_hits_only:
-            append_records = collection_to_append.storage.get_records(record_ids=records_ids_with_hits)
+            append_records = collection_to_append.storage.get_records(
+                record_ids=records_ids_with_hits
+            )
         else:
             append_records = collection_to_append.storage.get_records()
 
@@ -417,7 +424,9 @@ class Collection:
             new_collection = cls(merge_configuration.out_collection)
             new_collection.open()
             tmp_collection.open()
-            new_collection.storage.set_detector(tmp_collection.storage.get_detector())
+            tmp_detector = tmp_collection.storage.get_detector()
+            if tmp_detector is not None:
+                new_collection.storage.set_detector(tmp_detector)
             for content in merge_configuration.content:
                 logging.info(
                     'Starting to create {} {} records'.format(
@@ -427,30 +436,39 @@ class Collection:
                 )
                 if content.secondary_types is not None:
                     logging.info(
-                        'Secondary types: {}'.format(', '.join(content.secondary_types))
-                    )
-                # Collect for duplicate ID
-                new_collection_records = new_collection.storage.get_records()
-                if new_collection_records is not None:
-                    new_collection_record_ids = new_collection_records.record_ids
-                else:
-                    new_collection_record_ids = []
-                # First load all primary records
-                if content.number_of_records is not None:
-                    number_of_records = content.number_of_records
-                else:
-                    number_of_records = len(new_collection_records)
-                interval = content.interval
-                primary_type = content.primary_type
-                primary_records = tmp_collection.storage.get_records(
-                    record_types=primary_type
-                )
-                if primary_records is None or len(primary_records) < number_of_records:
-                    raise ValueError(
-                        'Not enough primary records of type {} given'.format(
-                            primary_type
+                        'Secondary types: {}'.format(
+                            ', '.join(
+                                [
+                                    str(secondary_type.value) for secondary_type in
+                                    content.secondary_types
+                                ]
+                            )
                         )
                     )
+                    # Collect for duplicate ID
+                    new_collection_records = new_collection.storage.get_records()
+                    if new_collection_records is not None:
+                        new_collection_record_ids = new_collection_records.record_ids
+                    else:
+                        new_collection_record_ids = []
+                    # First load all primary records
+                    if content.number_of_records is not None:
+                        number_of_records = content.number_of_records
+                    else:
+                        number_of_records = len(new_collection_records)
+                    interval = content.interval
+                    primary_type = content.primary_type
+                    primary_records = tmp_collection.storage.get_records(
+                        types=primary_type
+                    )
+                    if primary_records is None or len(
+                            primary_records
+                    ) < number_of_records:
+                        raise ValueError(
+                            'Not enough primary records of type {} given'.format(
+                                primary_type
+                            )
+                        )
 
                 # Now all secondary records
                 secondary_records_list = []
@@ -458,7 +476,7 @@ class Collection:
                     for secondary_type in content.secondary_types:
                         secondary_records_list.append(
                             tmp_collection.storage.get_records(
-                                record_types=secondary_type
+                                types=secondary_type
                             )
                         )
 
@@ -527,7 +545,8 @@ class Collection:
                         if current_primary_record_id in added_record_ids or \
                                 current_primary_record_id in new_collection_record_ids:
                             # TODO: Discuss what happens if record_id already added?
-                            new_record_id = get_64_bit_signed_uuid_int()
+                            new_record_id = new_collection \
+                                .storage.get_next_record_ids(1)
                             logging.debug(
                                 'Record id {} already added: Renaming to {}'.format(
                                     current_primary_record_id,
@@ -543,7 +562,10 @@ class Collection:
                         current_primary_record.df['record_id'] = new_record_id
                         combined_current_hits.df['record_id'] = new_record_id
 
-                        new_collection.storage.set_records(current_primary_record, append=True)
+                        new_collection.storage.set_records(
+                            current_primary_record,
+                            append=True
+                        )
                         new_collection.storage.set_hits(combined_current_hits)
 
                         if combined_current_sources is not None:

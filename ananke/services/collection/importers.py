@@ -2,28 +2,21 @@
 from __future__ import annotations
 
 import logging
-import shutil
-import uuid
-from subprocess import call
 from typing import TYPE_CHECKING, Type, List, TypeVar
 
-import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from ananke.configurations.collection import MergeConfiguration
-from ananke.configurations.events import Interval, EventRedistributionMode
+from ananke.configurations.events import Interval
 from ananke.models.detector import Detector
-from ananke.models.event import RecordStatistics, Records, Sources, Hits, RecordIds
+from ananke.models.event import Records, Sources, Hits
 from ananke.models.interfaces import DataFrameFacade
-from ananke.schemas.event import EventTypes, RecordType, SourceType
-from ananke.utils import get_64_bit_signed_uuid_int, save_configuration
+from ananke.schemas.event import Types, RecordType, SourceType
 
 if TYPE_CHECKING:
-    from ananke.models.collection import Collection, CollectionKeys
+    from ananke.models.collection import Collection
 
 import os
-import pyarrow as pa
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Union, Optional
@@ -149,7 +142,7 @@ class LegacyCollection:
         self.store.close()
 
     def __get_hdf_path(
-            self, collection_key: CollectionKeys, record_id: int | str | pd.Series
+            self, collection_key: LegacyCollectionKeys, record_id: int | str | pd.Series
     ) -> str:
         """Gets a proper hdf path for all subgrouped datasets.
 
@@ -194,7 +187,7 @@ class LegacyCollection:
 
         try:
             store = self.store
-            df = store.select(key=key, where=where)
+            df = pd.DataFrame(store.select(key=key, where=where))
             if 'type' in df.columns:
                 new_dict = {}
                 for type in RecordType:
@@ -223,8 +216,8 @@ class LegacyCollection:
             self,
             record_type: Optional[
                 Union[
-                    List[EventTypes],
-                    EventTypes
+                    List[Types],
+                    Types
                 ]
             ] = None
     ) -> Optional[Records]:
@@ -278,7 +271,7 @@ class LegacyCollection:
 
     def __get_subgroup_dataset(
             self,
-            base_key: CollectionKeys,
+            base_key: LegacyCollectionKeys,
             facade_class: Type[DataFrameFacade_],
             record_id: int | str,
             interval: Optional[Interval] = None
@@ -355,28 +348,41 @@ class LegacyCollection:
 class LegacyCollectionImporter(AbstractCollectionImporter):
     """Class to import legacy collection to current one."""
 
-    def import_data(self, import_path: Union[str, bytes, os.PathLike], **kwargs) -> None:
-        self.logger.info('Starting Legacy import from path \'{}\''.format(str(import_path)))
+    def import_data(
+            self,
+            import_path: Union[str, bytes, os.PathLike],
+            **kwargs
+    ) -> None:
+        self.logger.info(
+            'Starting Legacy import from path \'{}\''.format(str(import_path))
+        )
         legacy_collection = LegacyCollection(import_path)
-
+        legacy_detector = legacy_collection.get_detector()
         legacy_records = legacy_collection.get_records()
         number_of_records = len(legacy_records)
         with self.collection:
+            if legacy_detector is not None:
+                self.collection.storage.set_detector(legacy_detector)
             new_ids = self.collection.storage.get_next_record_ids(number_of_records)
             legacy_records_ids = legacy_records.record_ids
             legacy_records.df['record_id'] = new_ids
-            self.collection.storage.set_records(legacy_records)
+            if legacy_records is not None:
+                self.collection.storage.set_records(legacy_records)
 
-            with tqdm(total=len(legacy_records), mininterval=0.5) as pbar:
-                for index, legacy_record_id in enumerate(legacy_records_ids):
-                    new_id = new_ids[index]
-                    legacy_hits = legacy_collection.get_hits(record_id=legacy_record_id)
-                    legacy_sources = legacy_collection.get_sources(record_id=legacy_record_id)
-                    if legacy_hits is not None:
-                        legacy_hits.df['record_id'] = new_id
-                        self.collection.storage.set_hits(legacy_hits)
-                    if legacy_sources is not None:
-                        legacy_sources.df['record_id'] = new_id
-                        self.collection.storage.set_sources(legacy_sources)
+                with tqdm(total=len(legacy_records), mininterval=0.5) as pbar:
+                    for index, legacy_record_id in enumerate(legacy_records_ids):
+                        new_id = new_ids[index]
+                        legacy_hits = legacy_collection.get_hits(
+                            record_id=legacy_record_id
+                        )
+                        legacy_sources = legacy_collection.get_sources(
+                            record_id=legacy_record_id
+                        )
+                        if legacy_hits is not None:
+                            legacy_hits.df['record_id'] = new_id
+                            self.collection.storage.set_hits(legacy_hits)
+                        if legacy_sources is not None:
+                            legacy_sources.df['record_id'] = new_id
+                            self.collection.storage.set_sources(legacy_sources)
 
-                    pbar.update()
+                        pbar.update()

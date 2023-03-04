@@ -13,16 +13,25 @@ import numpy as np
 import pandas as pd
 import pandera as pa
 
-from pandas.io.pytables import Term
-
-from ananke.configurations.collection import StorageConfiguration, HDF5StorageConfiguration
+from ananke.configurations.collection import (
+    StorageConfiguration,
+    HDF5StorageConfiguration,
+)
 from ananke.configurations.events import Interval
 from ananke.models.detector import Detector
-from ananke.models.event import Hits, Records, Sources, RecordIds
+from ananke.models.event import (
+    Hits,
+    Records,
+    Sources,
+    RecordIds,
+)
 from ananke.models.interfaces import DataFrameFacade
-from ananke.schemas.event import EventTypes
+from ananke.schemas.event import FullRecordSchema, TypesTypes_, RecordIdsTypes_
 
-CollectionStorageConfiguration_ = TypeVar("CollectionStorageConfiguration_", bound=StorageConfiguration)
+CollectionStorageConfiguration_ = TypeVar(
+    "CollectionStorageConfiguration_",
+    bound=StorageConfiguration
+)
 DataFrameFacade_ = TypeVar("DataFrameFacade_", bound=DataFrameFacade)
 
 
@@ -40,7 +49,7 @@ class AbstractCollectionStorage(ABC, Generic[CollectionStorageConfiguration_]):
             configuration: Configuration of the Collection Storage Interface
         """
         self.configuration = configuration
-        self.read_only = self.configuration.read_only
+        self._read_only = self.configuration.read_only
         self.logger = logging.getLogger(type(self).__name__)
 
     def __enter__(self):
@@ -92,19 +101,14 @@ class AbstractCollectionStorage(ABC, Generic[CollectionStorageConfiguration_]):
     @abstractmethod
     def get_records(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> Optional[Records]:
         """Gets the records of the current collection.
 
         Args:
-            record_types: Type of records to get
+            types: Type of records to get
             record_ids: record_ids to pick
             interval: only records in interval
 
@@ -130,19 +134,14 @@ class AbstractCollectionStorage(ABC, Generic[CollectionStorageConfiguration_]):
     @abstractmethod
     def del_records(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> None:
         """Deletes records of collection storage.
 
         Args:
-            record_types: Type of records to get
+            types: Type of records to get
             record_ids: record_ids to pick
             interval: only records in interval
         """
@@ -151,19 +150,14 @@ class AbstractCollectionStorage(ABC, Generic[CollectionStorageConfiguration_]):
     @abstractmethod
     def get_hits(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> Optional[Hits]:
         """Gets the hits of the current collection.
 
         Args:
-            record_types: Type of hits to get
+            types: Type of hits to get
             record_ids: record_ids to pick
             interval: only hits in interval
 
@@ -189,19 +183,14 @@ class AbstractCollectionStorage(ABC, Generic[CollectionStorageConfiguration_]):
     @abstractmethod
     def del_hits(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> None:
         """Deletes hits of collection storage.
 
         Args:
-            record_types: Type of hits to get
+            types: Type of hits to get
             record_ids: record_ids to pick
             interval: only hits in interval
         """
@@ -210,19 +199,14 @@ class AbstractCollectionStorage(ABC, Generic[CollectionStorageConfiguration_]):
     @abstractmethod
     def get_sources(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> Optional[Sources]:
         """Gets the sources of the current collection.
 
         Args:
-            record_types: Type of sources to get
+            types: Type of sources to get
             record_ids: record_ids to pick
             interval: only sources in interval
 
@@ -248,19 +232,14 @@ class AbstractCollectionStorage(ABC, Generic[CollectionStorageConfiguration_]):
     @abstractmethod
     def del_sources(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> None:
         """Deletes sources of collection storage.
 
         Args:
-            record_types: Type of sources to get
+            types: Type of sources to get
             record_ids: record_ids to pick
             interval: only sources in interval
         """
@@ -278,21 +257,21 @@ class AbstractCollectionStorage(ABC, Generic[CollectionStorageConfiguration_]):
         """
         raise NotImplementedError('Get next record ids not implemented')
 
+    @abstractmethod
+    def delete(self) -> None:
+        """Deletes current collection."""
+        raise NotImplementedError('Delete collection is not implemented')
+
     def get_record_ids_with_hits(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> pd.Series:
         """Gets all record ids with hits.
 
         Args:
-            record_types: Type of sources to get
+            types: Type of sources to get
             record_ids: record_ids to pick
             interval: only sources in interval
 
@@ -303,19 +282,14 @@ class AbstractCollectionStorage(ABC, Generic[CollectionStorageConfiguration_]):
 
     def get_record_ids_with_sources(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> pd.Series:
         """Gets all record ids with hits.
 
         Args:
-            record_types: Type of sources to get
+            types: Type of sources to get
             record_ids: record_ids to pick
             interval: only sources in interval
 
@@ -366,6 +340,11 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
     def close(self) -> None:
         self.__store.close()
 
+    def delete(self) -> None:
+        self.close()
+        if os.path.isfile(self.data_path):
+            os.remove(self.data_path)
+
     def get_detector(self) -> Optional[Detector]:
         return self.__get_data(
             key=HDF5StorageKeys.DETECTOR,
@@ -390,19 +369,14 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
 
     def get_records(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> Optional[Records]:
         return self.__get_data(
             key=HDF5StorageKeys.RECORDS,
             facade_class=Records,
-            record_types=record_types,
+            types=types,
             record_ids=record_ids,
             interval=interval
         )
@@ -415,42 +389,33 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
         return self.__set_data(
             key=HDF5StorageKeys.RECORDS,
             data=records,
-            append=append
+            append=append,
+            schema=FullRecordSchema
         )
 
     def del_records(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> None:
         return self.__del_data(
             key=HDF5StorageKeys.RECORDS,
-            record_types=record_types,
+            types=types,
             record_ids=record_ids,
             interval=interval
         )
 
     def get_hits(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> Optional[Hits]:
         return self.__get_data(
             key=HDF5StorageKeys.HITS,
             facade_class=Hits,
-            record_types=record_types,
+            types=types,
             record_ids=record_ids,
             interval=interval
         )
@@ -468,37 +433,27 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
 
     def del_hits(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> None:
         return self.__del_data(
             key=HDF5StorageKeys.HITS,
-            record_types=record_types,
+            types=types,
             record_ids=record_ids,
             interval=interval
         )
 
     def get_sources(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> Optional[Sources]:
         return self.__get_data(
             key=HDF5StorageKeys.SOURCES,
             facade_class=Sources,
-            record_types=record_types,
+            types=types,
             record_ids=record_ids,
             interval=interval
         )
@@ -516,18 +471,13 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
 
     def del_sources(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> None:
         return self.__del_data(
             key=HDF5StorageKeys.SOURCES,
-            record_types=record_types,
+            types=types,
             record_ids=record_ids,
             interval=interval
         )
@@ -539,13 +489,16 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             stored hdf object.
         """
         mode = 'a'
-        if self.read_only:
+        if self._read_only:
+            # TODO Make bulletproof on update of read only
             mode = 'r'
 
         data_path = self.data_path
 
         if not os.path.isfile(data_path):
-            os.makedirs(os.path.dirname(data_path), exist_ok=True)
+            dir_path = os.path.dirname(data_path)
+            if len(dir_path) > 0:
+                os.makedirs(os.path.dirname(data_path), exist_ok=True)
 
         return pd.HDFStore(
             self.data_path,
@@ -558,12 +511,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             self,
             key: HDF5StorageKeys,
             facade_class: Optional[Type[DataFrameFacade_]] = None,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
+            types: TypesTypes_ = None,
             record_ids: Optional[
                 Union[int, List[int], pd.Series]
             ] = None,
@@ -575,7 +523,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
         Args:
             key: Key to get data by
             facade_class: Data frame facade class to instantiate
-            record_types: Record types to filter by
+            types: Record types to filter by
             record_ids: Record ids to filter by
             interval: timeframe to filter by
 
@@ -588,7 +536,11 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
 
         str_key = str(key)
 
-        where = self.__get_where(record_types=record_types, record_ids=record_ids, interval=interval)
+        where = self.__get_where(
+            types=types,
+            record_ids=record_ids,
+            interval=interval
+        )
 
         try:
             store = self.store
@@ -606,22 +558,15 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
     def __del_data(
             self,
             key: HDF5StorageKeys,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[
-                Union[int, List[int], pd.Series]
-            ] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> None:
         """Delete rows that fit the criteria. If no criteria is passed, dataframe is deleted.
 
         Args:
             key: Key to delete data by
-            record_types: Record types to filter by
+            types: Record types to filter by
             record_ids: Record ids to filter by
             interval: Interval to filter by
         """
@@ -629,7 +574,11 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
 
         str_key = str(key)
 
-        where = self.__get_where(record_types=record_types, record_ids=record_ids, interval=interval)
+        where = self.__get_where(
+            types=types,
+            record_ids=record_ids,
+            interval=interval
+        )
 
         self.store.remove(key=str_key, where=where)
 
@@ -639,15 +588,15 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
         Raises:
               ValueError: When class not writable
         """
-        if self.read_only:
-            raise ValueError('Class cannot write as its opened in read only mode.')
+        if self._read_only:
+            raise PermissionError('Class cannot write as its opened in read only mode.')
 
     def __set_data(
             self,
             key: HDF5StorageKeys,
             data: DataFrameFacade,
             append: bool = True,
-            schema: Optional[pa.SchemaModel] = None
+            schema: Optional[Type[pa.SchemaModel]] = None
     ) -> None:
         """Sets data frame facade to file by a specific key.
 
@@ -695,21 +644,14 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
 
     def __get_where(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[
-                Union[int, List[int], pd.Series]
-            ] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> str:
         """Gets the where clause to select records by.
 
         Args:
-            record_types: Types to select
+            types: Types to select
             record_ids: record ids to select
             interval: Interval to filter by
 
@@ -718,11 +660,12 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
         """
         wheres = []
 
-        if record_types is not None:
-            if not issubclass(type(record_types), list):
-                record_types = [record_types]
-            record_types_wheres = ['type={}'.format(current_type.value) for current_type in record_types]
-            wheres.append('({})'.format(' | '.join(record_types_wheres)))
+        if types is not None:
+            if not issubclass(type(types), list):
+                types = [types]
+            types_wheres = ['type={}'.format(current_type.value) for current_type
+                            in types]
+            wheres.append('({})'.format(' | '.join(types_wheres)))
 
         if record_ids is not None:
             if isinstance(record_ids, int):
@@ -730,7 +673,8 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             if isinstance(record_ids, pd.Series):
                 record_ids = record_ids.drop_duplicates().values
 
-            record_ids_wheres = ['record_id={}'.format(record_id) for record_id in record_ids]
+            record_ids_wheres = ['record_id={}'.format(record_id) for record_id in
+                                 record_ids]
             wheres.append('({})'.format(' | '.join(record_ids_wheres)))
 
         if interval is not None:
@@ -746,20 +690,15 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
     def __get_unique_records_ids(
             self,
             key: HDF5StorageKeys,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> pd.Series:
         """Gets all unique record ids or empty series if empty.
 
         Args:
             key: Key to get data by
-            record_types: Record types to filter by
+            types: Record types to filter by
             record_ids: Record ids to filter by
             interval: timeframe to filter by
 
@@ -768,13 +707,13 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
         """
         record_ids = self.__get_data(
             key=key,
-            record_types=record_types,
+            types=types,
             record_ids=record_ids,
             interval=interval,
             columns=['record_id']
         )
         if record_ids is None:
-            record_ids_series = pd.Series([]).astype(int)
+            record_ids_series = pd.Series([], dtype='int64')
         else:
             record_ids_series = record_ids['record_id'].drop_duplicates()
         return record_ids_series
@@ -797,36 +736,26 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
 
     def get_record_ids_with_hits(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> pd.Series:
         return self.__get_unique_records_ids(
             HDF5StorageKeys.HITS,
-            record_types=record_types,
+            types=types,
             record_ids=record_ids,
             interval=interval
         )
 
     def get_record_ids_with_sources(
             self,
-            record_types: Optional[
-                Union[
-                    List[EventTypes],
-                    EventTypes
-                ]
-            ] = None,
-            record_ids: Optional[Union[List[int], pd.Series]] = None,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
             interval: Optional[Interval] = None
     ) -> pd.Series:
         return self.__get_unique_records_ids(
             HDF5StorageKeys.SOURCES,
-            record_types=record_types,
+            types=types,
             record_ids=record_ids,
             interval=interval
         )
@@ -876,7 +805,8 @@ class StorageFactory:
     """Class as factory for collection storages"""
 
     #: Mapping from configuration to actual storage class
-    configuration_mapping: Dict[Type[StorageConfiguration], Type[AbstractCollectionStorage]] = {
+    configuration_mapping: Dict[
+        Type[StorageConfiguration], Type[AbstractCollectionStorage]] = {
         HDF5StorageConfiguration: HDF5CollectionStorage
     }
 
@@ -890,7 +820,8 @@ class StorageFactory:
         Returns:
             Collection storage to get and retrieve data from
         """
-        configuration_type = type(configuration)
-        if configuration_type not in cls.configuration_mapping:
-            raise ValueError('Configuration type \'{}\' is not supported')
-        return cls.configuration_mapping[configuration_type](configuration)
+        for configuration_type in cls.configuration_mapping.keys():
+            if isinstance(configuration, configuration_type):
+                return cls.configuration_mapping[configuration_type](configuration)
+
+        raise ValueError('Configuration type \'{}\' is not supported')

@@ -5,11 +5,14 @@ from typing import TYPE_CHECKING, TypeVar, Generic
 
 from tqdm import tqdm
 
-from ananke.configurations.collection import ExportConfiguration, GraphNetExportConfiguration
+from ananke.configurations.collection import (
+    ExportConfiguration,
+    GraphNetExportConfiguration,
+)
 
 if TYPE_CHECKING:
     from ananke.models.collection import Collection
-    from ananke.models.event import Hits
+    from ananke.models.event import Hits, Records
 
 import os
 from abc import ABC, abstractmethod
@@ -43,7 +46,9 @@ class AbstractCollectionExporter(ABC, Generic[ExportConfiguration_]):
         pass
 
 
-class GraphNetCollectionExporter(AbstractCollectionExporter[GraphNetExportConfiguration]):
+class GraphNetCollectionExporter(
+    AbstractCollectionExporter[GraphNetExportConfiguration]
+):
     """Concrete implementation for Graph Net exports."""
 
     def __get_file_path(self, batch_number: int) -> str:
@@ -55,7 +60,10 @@ class GraphNetCollectionExporter(AbstractCollectionExporter[GraphNetExportConfig
         Returns:
             complete path of current file.
         """
-        return os.path.join(self.configuration.data_path, 'batch_{}.parquet'.format(batch_number))
+        return os.path.join(
+            self.configuration.data_path,
+            'batch_{}.parquet'.format(batch_number)
+        )
 
     @staticmethod
     def __get_mapped_hits_df(hits: Hits) -> pd.DataFrame:
@@ -92,13 +100,13 @@ class GraphNetCollectionExporter(AbstractCollectionExporter[GraphNetExportConfig
             batch_size: Events per file
             kwargs: Additional exporter args
         """
-        records = collection.get_records()
+        records = collection.storage.get_records()
 
         if records is None:
             raise ValueError('Can\'t export empty collection')
 
         # TODO: Properly implement interaction type
-        new_records = pd.DataFrame(
+        new_records_df = pd.DataFrame(
             {
                 'event_id': records.df['record_id'],
                 'interaction_type': 0
@@ -108,19 +116,19 @@ class GraphNetCollectionExporter(AbstractCollectionExporter[GraphNetExportConfig
 
         if 'orientation_x' in records.df:
             orientations = Vectors3D.from_df(records.df, prefix='orientation_')
-            new_records['azimuth'] = orientations.phi
-            new_records['zenith'] = orientations.theta
+            new_records_df['azimuth'] = orientations.phi
+            new_records_df['zenith'] = orientations.theta
 
         if 'location_x' in records.df:
-            new_records['interaction_x'] = records.df['location_x']
-            new_records['interaction_y'] = records.df['location_y']
-            new_records['interaction_z'] = records.df['location_z']
+            new_records_df['interaction_x'] = records.df['location_x']
+            new_records_df['interaction_y'] = records.df['location_y']
+            new_records_df['interaction_z'] = records.df['location_z']
 
         if 'energy' in records.df:
-            new_records['energy'] = records.df['energy']
+            new_records_df['energy'] = records.df['energy']
 
         if 'particle_id' in records.df:
-            new_records['pid'] = records.df['particle_id']
+            new_records_df['pid'] = records.df['particle_id']
 
         mandatory_columns = [
             'azimuth', 'zenith', 'interaction_x', 'interaction_y',
@@ -128,19 +136,14 @@ class GraphNetCollectionExporter(AbstractCollectionExporter[GraphNetExportConfig
         ]
 
         for mandatory_column in mandatory_columns:
-            if mandatory_column not in new_records:
-                new_records[mandatory_column] = -1
+            if mandatory_column not in new_records_df:
+                new_records_df[mandatory_column] = -1
 
-        new_records.fillna(-1, inplace=True)
+        new_records_df.fillna(-1, inplace=True)
 
         os.makedirs(self.configuration.data_path, exist_ok=True)
 
-        number_of_records = len(records)
-        mc_truths = []
-        detector_responses = []
-        batch = 0
-
-        detector = collection.get_detector()
+        detector = collection.storage.get_detector()
 
         indices = detector.indices.rename(
             columns={
@@ -156,12 +159,14 @@ class GraphNetCollectionExporter(AbstractCollectionExporter[GraphNetExportConfig
         merge_detector_df['pmt_azimuth'] = orientations.phi
         merge_detector_df['pmt_zenith'] = orientations.theta
 
+        new_records = Records(df=new_records_df)
+
         with tqdm(total=len(new_records), mininterval=0.5) as pbar:
 
-            for index, row in enumerate(new_records.itertuples(index=False)):
-                current_record_id = getattr(row, 'event_id')
-
-                current_hits = collection.get_hits(record_ids=current_record_id)
+            for index, batch in enumerate(
+                    new_records.iterbatches(batch_size=batch_size)
+            ):
+                current_hits = collection.storage.get_hits(record_ids=batch.record_ids)
 
                 if current_hits is None:
                     continue
@@ -173,20 +178,12 @@ class GraphNetCollectionExporter(AbstractCollectionExporter[GraphNetExportConfig
                     how='inner',
                     on=['string_idx', 'dom_idx', 'pmt_idx']
                 )
+                array = ak.Array(
+                    {
+                        'mc_truth': batch.df.to_dict(orient='records'),
+                        'detector_response': mapped_hits.to_dict(orient='records')
+                    }
+                )
+                ak.to_parquet(array, self.__get_file_path(index), compression='GZIP')
 
-                mc_truths.append(row._asdict())
-                detector_responses.append(mapped_hits.to_dict(orient='records'))
-
-                if (index + 1) % batch_size == 0 or index + 1 == number_of_records:
-                    array = ak.Array(
-                        {
-                            'mc_truth': mc_truths,
-                            'detector_response': detector_responses
-                        }
-                    )
-                    ak.to_parquet(array, self.__get_file_path(batch), compression='GZIP')
-                    mc_truths = []
-                    detector_responses = []
-                    batch += 1
-
-                pbar.update()
+                pbar.update(batch_size)

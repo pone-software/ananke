@@ -5,11 +5,16 @@ from ananke.services.collection.importers import LegacyCollectionImporter
 
 
 collection_config = HDF5StorageConfiguration(
-    data_path='../../data/new_collection/cascades_100.h5',
+    data_path='../../data/new_collection/combined_10_20_redistributed.h5',
 )
 
 collection = Collection(configuration=collection_config)
+collection.open()
+#collection.import_data(importer=LegacyCollectionImporter, import_path='../../data/combined_10_20_redistributed/data.h5')
 
-with collection:
-    print(collection.storage.get_hits(interval=Interval(start=0, end=500)))
-#collection.import_data(importer=LegacyCollectionImporter, import_path='../../data/cascades_100/data.h5')
+collection.g
+records = collection.get_records()
+
+print(records)
+
+collection.

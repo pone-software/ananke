@@ -1,11 +1,12 @@
 """Module containing all the Services for a detector."""
 import itertools
-
 from abc import ABC, abstractmethod
-from typing import Dict, List, Mapping, Optional, Type
+from typing import Dict, List, Mapping, Type
 
 import numpy as np
 import pandas as pd
+from pandera import check_output
+from pandera.typing import DataFrame
 
 from ananke.configurations.detector import (
     DetectorConfiguration,
@@ -18,8 +19,6 @@ from ananke.models.geometry import Vectors3D
 from ananke.schemas.detector import DetectorSchema
 from ananke.schemas.geometry import SphericalSchema
 from ananke.utils import get_repeated_df
-from pandera import check_output
-from pandera.typing import DataFrame
 
 
 class AbstractDetectorBuilder(ABC):
@@ -30,23 +29,16 @@ class AbstractDetectorBuilder(ABC):
     """
 
     def __init__(
-        self,
-        configuration: DetectorConfiguration,
-        detector_subclass: Optional[Type[Detector]] = None,
+            self,
+            configuration: DetectorConfiguration,
     ) -> None:
         """Constructor of the Detector builder.
 
         Args:
             configuration: Configuration to build the detector from.
-            detector_subclass: Subclass by which detector should be generated.
         """
         self.configuration = configuration
         self.rng = np.random.default_rng(configuration.seed)
-
-        if detector_subclass is None:
-            self.detector_class = Detector
-        else:
-            self.detector_class = detector_subclass
 
     @abstractmethod
     def _get_string_locations(self) -> Vectors3D:
@@ -119,7 +111,7 @@ class AbstractDetectorBuilder(ABC):
         return orientations_vectors
 
     def _extend_df_by_pmts(
-        self, modules_df: pd.DataFrame, module_as_pmt: bool = False
+            self, modules_df: pd.DataFrame, module_as_pmt: bool = False
     ) -> DataFrame[DetectorSchema]:
         """Build the PMTs for a given module.
 
@@ -169,15 +161,15 @@ class AbstractDetectorBuilder(ABC):
         module_radius = self.configuration.module.radius
         complete_df = complete_df.assign(
             pmt_location_x=lambda x: x.module_location_x
-            + module_radius * x.pmt_orientation_x
+                                     + module_radius * x.pmt_orientation_x
         )
         complete_df = complete_df.assign(
             pmt_location_y=lambda x: x.module_location_y
-            + module_radius * x.pmt_orientation_y
+                                     + module_radius * x.pmt_orientation_y
         )
         complete_df = complete_df.assign(
             pmt_location_z=lambda x: x.module_location_z
-            + module_radius * x.pmt_orientation_z
+                                     + module_radius * x.pmt_orientation_z
         )
 
         return complete_df
@@ -202,15 +194,15 @@ class AbstractDetectorBuilder(ABC):
         )
         extended_strings_df["module_id"] = module_ids
         module_z_locations = (
-            module_ids * string_configuration.module_distance
-            + string_configuration.z_offset
+                module_ids * string_configuration.module_distance
+                + string_configuration.z_offset
         )
         extended_strings_df["module_location_x"] = extended_strings_df.loc[
-            :, "string_location_x"
-        ]
+                                                   :, "string_location_x"
+                                                   ]
         extended_strings_df["module_location_y"] = extended_strings_df.loc[
-            :, "string_location_y"
-        ]
+                                                   :, "string_location_y"
+                                                   ]
         extended_strings_df["module_location_z"] = module_z_locations
         extended_strings_df["module_radius"] = self.configuration.module.radius
         return extended_strings_df
@@ -239,7 +231,7 @@ class AbstractDetectorBuilder(ABC):
             Detector containing all strings and modules
 
         """
-        return self.detector_class(
+        return Detector(
             df=self._get_strings_df(), configuration=self.configuration
         )
 
@@ -270,7 +262,7 @@ class TriangularDetectorBuilder(AbstractDetectorBuilder):
             raise ValueError("Triangular Geometry needs LengthGeometryConfiguration")
         side_length = self.configuration.geometry.side_length
 
-        height = np.sqrt(side_length**2 - (side_length / 2) ** 2)
+        height = np.sqrt(side_length ** 2 - (side_length / 2) ** 2)
         z_position = 0.0
 
         positions = pd.DataFrame(
@@ -393,12 +385,8 @@ class GridDetectorBuilder(AbstractDetectorBuilder):
 class DetectorBuilderService:
     """Class responsible for building detectors."""
 
-    def __init__(self, detector_subclass: Optional[Type[Detector]] = None) -> None:
-        """Constructor for the DetectorBuilderService.
-
-        Args:
-            detector_subclass: Subclass by which detector should be generated.
-        """
+    def __init__(self) -> None:
+        """Constructor for the DetectorBuilderService."""
         self.__builders: Mapping[str, Type[AbstractDetectorBuilder]] = {
             DetectorGeometries.GRID: GridDetectorBuilder,
             DetectorGeometries.SINGLE: SingleStringDetectorBuilder,
@@ -406,7 +394,6 @@ class DetectorBuilderService:
             DetectorGeometries.TRIANGULAR: TriangularDetectorBuilder,
             DetectorGeometries.RHOMBUS: RhombusDetectorBuilder,
         }
-        self.detector_subclass = detector_subclass
 
     def get(self, configuration: DetectorConfiguration) -> Detector:
         """Returns a detector based on a given configuration.
@@ -425,7 +412,7 @@ class DetectorBuilderService:
             raise ValueError("Configuration must be of type detector configuration")
 
         builder = self.__builders[configuration.geometry.type](
-            configuration=configuration, detector_subclass=self.detector_subclass
+            configuration=configuration
         )
 
         return builder.get()

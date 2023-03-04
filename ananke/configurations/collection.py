@@ -2,7 +2,7 @@
 import os
 import uuid
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Literal, Annotated, Union
 
 from pydantic import BaseModel, PositiveInt, conint, constr, Field
 
@@ -37,16 +37,27 @@ class MergeContentConfiguration(BaseModel):
 
 class StorageTypes(str, Enum):
     HDF5 = 'hdf5'
+    MEMORY = 'memory'
 
 
 class StorageConfiguration(BaseModel):
     """Base configuration for all collection storages."""
 
+    type: str
+
     read_only: bool = False
+
+
+class MemoryStorageConfiguration(StorageConfiguration):
+    """Configuration for collection storage in memory"""
+
+    type: Literal[StorageTypes.MEMORY] = StorageTypes.MEMORY
 
 
 class HDF5StorageConfiguration(StorageConfiguration):
     """Configuration for hdf5 collection storage"""
+
+    type: Literal[StorageTypes.HDF5] = StorageTypes.HDF5
 
     data_path: str
 
@@ -71,16 +82,26 @@ class GraphNetExportConfiguration:
     data_path: str
 
 
+# TODO: Implement Memory Storage
+AnnotatedStorageConfiguration = Annotated[
+    Union[HDF5StorageConfiguration, MemoryStorageConfiguration],
+    Field(discriminator="type")]
+
+
 class MergeConfiguration(BaseModel):
     """Configuration to merge multiple collections into one"""
-    in_collections: List[StorageConfiguration]
-    tmp_collection: StorageConfiguration = Field(
+    in_collections: List[AnnotatedStorageConfiguration]
+    tmp_collection: Union[HDF5StorageConfiguration, MemoryStorageConfiguration] = Field(
+        discriminator="type",
         default_factory=lambda: HDF5StorageConfiguration(
             data_path=os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), '../../_tmp/', '_tmp_' + str(uuid.uuid4()) + 'data.h5')
+                os.path.dirname(os.path.abspath(__file__)),
+                '../../_tmp/',
+                '_tmp_' + str(uuid.uuid4()) + 'data.h5'
+            )
         )
     )
-    out_collection: StorageConfiguration
+    out_collection: AnnotatedStorageConfiguration
     content: Optional[List[MergeContentConfiguration]] = None
     redistribution: Optional[RedistributionConfiguration] = None
     seed: int = defaults.seed
