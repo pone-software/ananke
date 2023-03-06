@@ -1,24 +1,25 @@
 """Module containing all schemas for Collection."""
 from enum import Enum
-from typing import Optional, Union
+from typing import List, Optional, Union
 
+import pandas as pd
 import pandera as pa
 
 from ananke.schemas.geometry import OrientedLocatedObjectSchema
 from pandera.typing import Series
 
 
-class RecordType(str, Enum):
+class RecordType(Enum):
     """Enum for different records types."""
 
-    STARTING_TRACK = "starting_track"
-    CASCADE = "cascade"
-    REALISTIC_TRACK = "realistic_track"
-    ELECTRICAL = "electrical"
-    BIOLUMINESCENCE = "bioluminescence"
+    STARTING_TRACK = 0
+    CASCADE = 1
+    REALISTIC_TRACK = 2
+    ELECTRICAL = 20
+    BIOLUMINESCENCE = 21
 
 
-class EventType(str, Enum):
+class EventType(Enum):
     """Enum for different event types."""
 
     STARTING_TRACK = RecordType.STARTING_TRACK.value
@@ -26,27 +27,31 @@ class EventType(str, Enum):
     REALISTIC_TRACK = RecordType.REALISTIC_TRACK.value
 
 
-class NoiseType(str, Enum):
+class NoiseType(Enum):
     """Enum for different noise types."""
 
     ELECTRICAL = RecordType.ELECTRICAL.value
     BIOLUMINESCENCE = RecordType.BIOLUMINESCENCE.value
 
 
-class SourceType(str, Enum):
+class SourceType(Enum):
     """Enum for photon source types."""
 
-    STANDARD_CHERENKOV = "cherenkov"
-    ISOTROPIC = "isotropic"
+    CHERENKOV = 0
+    ISOTROPIC = 1
 
 
-EventTypes = Union[EventType, NoiseType, SourceType, RecordType]
+Types = Union[EventType, NoiseType, SourceType, RecordType]
+TypesTypes_ = Optional[Union[List[Types], Types]]
 
 
 class RecordIdSchema(pa.SchemaModel):
     """Schema for Dataframes having record ids."""
 
     record_id: Series[int] = pa.Field(coerce=True)
+
+
+RecordIdsTypes_ = Optional[Union[int, List[int], pd.Series]]
 
 
 class TimedSchema(pa.SchemaModel):
@@ -62,7 +67,7 @@ class TimedSchema(pa.SchemaModel):
 class RecordSchema(RecordIdSchema, TimedSchema):
     """Schema for a timed record with an ID and type."""
 
-    type: Series[str] = pa.Field(coerce=True, isin=[x.value for x in RecordType])
+    type: Series[int] = pa.Field(coerce=True, isin=[x.value for x in RecordType])
 
 
 class RecordStatisticsSchema(RecordSchema):
@@ -76,16 +81,10 @@ class RecordStatisticsSchema(RecordSchema):
     last_source: Optional[Series[pa.Float]] = pa.Field(coerce=True, nullable=True)
 
 
-class NoiseRecordSchema(RecordSchema):
-    """Schema for noise records."""
-
-    type: Series[str] = pa.Field(coerce=True, isin=[x.value for x in NoiseType])
-
-
 class HitSchema(RecordSchema):
     """Schema for individual hits."""
 
-    type: Series[str] = pa.Field(coerce=True, isin=[x.value for x in RecordType])
+    type: Series[int] = pa.Field(coerce=True, isin=[x.value for x in RecordType])
     string_id: Series[int] = pa.Field(coerce=True)
     module_id: Series[int] = pa.Field(coerce=True)
     pmt_id: Series[int] = pa.Field(coerce=True)
@@ -97,17 +96,29 @@ class OrientedRecordSchema(OrientedLocatedObjectSchema, RecordSchema):
     pass
 
 
-class SourceRecordSchema(OrientedRecordSchema):
+class SourceSchema(OrientedRecordSchema):
     """Schema for photon sources."""
 
     number_of_photons: Series[int] = pa.Field(coerce=True)
-    type: Series[str] = pa.Field(coerce=True, isin=[x for x in SourceType])
+    type: Series[int] = pa.Field(coerce=True, isin=[x.value for x in SourceType])
+
+
+class NoiseRecordSchema(RecordSchema):
+    """Schema for noise records."""
+
+    type: Series[int] = pa.Field(coerce=True, isin=[x.value for x in NoiseType])
 
 
 class EventRecordSchema(OrientedRecordSchema):
     """Schema for event records."""
 
-    energy: Series[float] = pa.Field(coerce=True)
-    type: Series[str] = pa.Field(isin=[x for x in EventType])
-    particle_id: Series[int] = pa.Field(coerce=True)
-    length: Optional[Series[float]] = pa.Field(coerce=True)
+    energy: Series[float] = pa.Field(coerce=True, nullable=True)
+    type: Series[int] = pa.Field(isin=[x.value for x in EventType])
+    particle_id: Series[int] = pa.Field(coerce=True, nullable=True)
+    length: Optional[Series[float]] = pa.Field(coerce=True, nullable=True)
+
+
+class FullRecordSchema(NoiseRecordSchema, EventRecordSchema):
+    """Schema with all possible event and noise columns."""
+
+    type: Series[int] = pa.Field(isin=[x.value for x in RecordType])

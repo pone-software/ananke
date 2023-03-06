@@ -11,11 +11,11 @@ from ananke.models.event import Sources
 
 
 def get_detector_scatter3ds(
-        detector: Detector,
-        include_pmts: bool = False,
-        include_modules: bool = True,
-        pmt_color: Optional[pd.Series] = None,
-        sources: Optional[Sources] = None
+    detector: Detector,
+    include_pmts: bool = False,
+    include_modules: bool = True,
+    pmt_color: Optional[pd.Series] = None,
+    sources: Optional[Sources] = None,
 ) -> List[go.Scatter3d]:
     """Paint the detectors modules and eventually strings onto a 3d-scatter trace.
 
@@ -55,8 +55,8 @@ def get_detector_scatter3ds(
             opacity=0.6,
         )
         if pmt_color is not None:
-            marker['color'] = pmt_color
-            marker['colorbar'] = dict(thickness=20)
+            marker["color"] = pmt_color
+            marker["colorbar"] = dict(thickness=20)
         traces.append(
             go.Scatter3d(
                 x=pmt_coordinates[:, 0],
@@ -85,6 +85,5 @@ def get_detector_scatter3ds(
                 ),
             ),
         )
-
 
     return traces

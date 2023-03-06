@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "ananke"}]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.12"
+python = ">=3.10,<3.12"
 numpy = "^1.23.4"
 pydantic = "^1.10.2"
 plotly = "^5.11.0"
@@ -17,6 +17,7 @@ h5py = "^3.8.0"
 tables = "^3.8.0"
 awkward = "^2.0.6"
 pyarrow = "^11.0.0"
+tqdm = "^4.65.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -31,6 +32,7 @@ sphinx = "^5.3.0"
 sphinx-rtd-theme = "^1.1.1"
 pydocstyle = {extras = ["toml"], version = "^6.1.1"}
 pandas-stubs = "^1.5.2.230105"
+types-tqdm = "^4.65.0.0"
 
 
 [build-system]
@@ -39,7 +41,7 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.black]
-target-version = ["py38"]
+target-version = ["py310"]
 preview = true
 force-exclude = '''
 .*/setup\.py$
@@ -50,7 +52,7 @@ convention = "google"
 
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 plugins = "numpy.typing.mypy_plugin, pandera.mypy, pydantic.mypy"
 files = "ananke"
 strict = true
@@ -92,12 +94,12 @@ exclude_lines = [
 # Activating branch coverage is super important
 branch = true
 omit = [
-  # add your files to omit here
-    ]
+  '*tests*'
+]
 
 
 [tool.isort]
-py_version = 38
+py_version = 310
 profile = "black"
 combine_as_imports = true
 lines_between_types = 1

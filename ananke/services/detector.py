@@ -2,7 +2,7 @@
 import itertools
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Mapping, Optional, Type
+from typing import Dict, List, Mapping, Type
 
 import numpy as np
 import pandas as pd
@@ -32,21 +32,14 @@ class AbstractDetectorBuilder(ABC):
     def __init__(
         self,
         configuration: DetectorConfiguration,
-        detector_subclass: Optional[Type[Detector]] = None,
     ) -> None:
         """Constructor of the Detector builder.
 
         Args:
             configuration: Configuration to build the detector from.
-            detector_subclass: Subclass by which detector should be generated.
         """
         self.configuration = configuration
         self.rng = np.random.default_rng(configuration.seed)
-
-        if detector_subclass is None:
-            self.detector_class = Detector
-        else:
-            self.detector_class = detector_subclass
 
     @abstractmethod
     def _get_string_locations(self) -> Vectors3D:
@@ -239,9 +232,7 @@ class AbstractDetectorBuilder(ABC):
             Detector containing all strings and modules
 
         """
-        return self.detector_class(
-            df=self._get_strings_df(), configuration=self.configuration
-        )
+        return Detector(df=self._get_strings_df(), configuration=self.configuration)
 
 
 class SingleStringDetectorBuilder(AbstractDetectorBuilder):
@@ -393,12 +384,8 @@ class GridDetectorBuilder(AbstractDetectorBuilder):
 class DetectorBuilderService:
     """Class responsible for building detectors."""
 
-    def __init__(self, detector_subclass: Optional[Type[Detector]] = None) -> None:
-        """Constructor for the DetectorBuilderService.
-
-        Args:
-            detector_subclass: Subclass by which detector should be generated.
-        """
+    def __init__(self) -> None:
+        """Constructor for the DetectorBuilderService."""
         self.__builders: Mapping[str, Type[AbstractDetectorBuilder]] = {
             DetectorGeometries.GRID: GridDetectorBuilder,
             DetectorGeometries.SINGLE: SingleStringDetectorBuilder,
@@ -406,7 +393,6 @@ class DetectorBuilderService:
             DetectorGeometries.TRIANGULAR: TriangularDetectorBuilder,
             DetectorGeometries.RHOMBUS: RhombusDetectorBuilder,
         }
-        self.detector_subclass = detector_subclass
 
     def get(self, configuration: DetectorConfiguration) -> Detector:
         """Returns a detector based on a given configuration.
@@ -425,7 +411,7 @@ class DetectorBuilderService:
             raise ValueError("Configuration must be of type detector configuration")
 
         builder = self.__builders[configuration.geometry.type](
-            configuration=configuration, detector_subclass=self.detector_subclass
+            configuration=configuration
         )
 
         return builder.get()

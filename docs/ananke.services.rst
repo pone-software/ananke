@@ -1,6 +1,14 @@
 ananke.services package
 =======================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ananke.services.collection
+
 Submodules
 ----------
 

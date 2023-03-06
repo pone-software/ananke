@@ -66,7 +66,7 @@ class Interval(BaseModel):
 class HistogramConfiguration(Interval):
     """Subclass of Interval adding tht bin size to configure a histogram."""
 
-    bin_size: int = 10
+    bin_size: float = 10
 
     @property
     def number_of_bins(self) -> int:

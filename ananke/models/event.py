@@ -3,25 +3,31 @@ from __future__ import annotations
 
 from typing import Optional
 
-import pandas as pd
 import numpy as np
-from pydantic import BaseModel, NonNegativeInt
+import numpy.typing as npt
+import pandas as pd
 
 from ananke.models.geometry import OrientedLocatedObjects
 from ananke.models.interfaces import DataFrameFacade
 from ananke.schemas.event import (
     EventRecordSchema,
+    FullRecordSchema,
     HitSchema,
     NoiseRecordSchema,
     OrientedRecordSchema,
     RecordIdSchema,
+    RecordIdsTypes_,
     RecordSchema,
-    SourceRecordSchema,
-    TimedSchema, RecordStatisticsSchema,
+    RecordStatisticsSchema,
+    SourceSchema,
+    TimedSchema,
 )
 from ananke.utils import percentile as percentile_func
-import numpy.typing as npt
 from pandera.typing import DataFrame
+from pydantic import BaseModel, NonNegativeInt
+
+
+# TODO: Add typed schema
 
 
 class RecordIds(DataFrameFacade):
@@ -29,16 +35,32 @@ class RecordIds(DataFrameFacade):
 
     df: DataFrame[RecordIdSchema]
 
-    def get_by_record(self, record_id: int) -> RecordIds:
+    def get_by_record_ids(
+        self, record_ids: RecordIdsTypes_, invert: bool = False
+    ) -> Optional[RecordIds]:
         """Gets all sources by a record id.
 
         Args:
-            record_id: ID of the record to get
+            record_ids: ID(s) of the record to get
+            invert: Get except passed record ids
 
         Returns:
-            Sources of the record
+            Records with given ids
         """
-        return self.__class__(df=self.df[self.df["record_id"] == record_id])
+        if isinstance(record_ids, int):
+            record_ids = [record_ids]
+
+        if invert:
+            new_df = self.df[~self.df["record_id"].isin(record_ids)]
+        else:
+            new_df = self.df[self.df["record_id"].isin(record_ids)]
+
+        new_df.reset_index(drop=True, inplace=True)
+
+        if new_df.empty:
+            return None
+
+        return self.__class__(df=new_df)
 
     @property
     def record_ids(self) -> pd.Series:
@@ -46,7 +68,10 @@ class RecordIds(DataFrameFacade):
         return self.df["record_id"]
 
 
+# TODO: Fix everything here
 class TimeStatistics(BaseModel):
+    """Model for staticstical information of record."""
+
     count: NonNegativeInt
     min: float
     max: float
@@ -68,7 +93,7 @@ class RecordTimes(DataFrameFacade):
         Args:
             time_difference: time to add
         """
-        self.df["time"] = self.df["time"] + time_difference
+        self.df["time"] = self.df["time"] + np.array(time_difference)
 
     def get_statistics(self, percentile: Optional[float] = None) -> TimeStatistics:
         """Returns the Statistics of the current hits.
@@ -79,10 +104,11 @@ class RecordTimes(DataFrameFacade):
         Returns:
             TimeStatistics Object containing min, max, and count
         """
+        # TODO: Refractor get statistics
         count = len(self)
         if percentile is not None:
             if percentile < 0 or percentile > 1:
-                raise ValueError('Percentiles can only be between 0 and 1.')
+                raise ValueError("Percentiles can only be between 0 and 1.")
             beginning_percentile = 0.5 - percentile / 2.0
             ending_percentile = 0.5 + percentile / 2.0
             aggregations = [
@@ -97,8 +123,8 @@ class RecordTimes(DataFrameFacade):
 
         return TimeStatistics(
             count=count,
-            min=grouped_hits.at['min', 'time'],
-            max=grouped_hits.at['max', 'time']
+            min=grouped_hits.at["min", "time"],
+            max=grouped_hits.at["max", "time"],
         )
 
 
@@ -123,10 +149,7 @@ class OrientedRecords(OrientedLocatedObjects, Records):
 class Sources(OrientedRecords):
     """Record for a photon source."""
 
-    df: DataFrame[SourceRecordSchema]
-
-    # TODO: Fix THis
-    # angle_distribution: Optional[npt.ArrayLike] = None
+    df: DataFrame[SourceSchema]
 
     @property
     def number_of_photons(self) -> pd.Series:
@@ -144,6 +167,12 @@ class NoiseRecords(Records):
     """Record of an event that happened."""
 
     df: DataFrame[NoiseRecordSchema]
+
+
+class FullRecords(Records):
+    """General description of a record for events or sources."""
+
+    df: DataFrame[FullRecordSchema]
 
 
 class Hits(Records):

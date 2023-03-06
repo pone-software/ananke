@@ -1,5 +1,5 @@
 """Contains all the classes for representing a detector."""
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -81,6 +81,7 @@ class Detector(Strings):
         """Returns all indices of the PMTs."""
         return self.df[self.id_columns]
 
+    # TODO: Ask Christian why two times for the cylinder?
     @property
     def outer_radius(self) -> float:
         """Returns the distance of the farthest out module."""
@@ -96,10 +97,7 @@ class Detector(Strings):
             float(2 * np.abs(module_locations[:, 2].max())),
         )
 
-    def __number_of_ids(
-            self,
-            slice: slice = slice(0, 3)
-    ) -> int:
+    def __number_of_ids(self, slice: slice = slice(0, 3)) -> int:
         """Returns number of elements based on the column id slice.
 
         Args:
