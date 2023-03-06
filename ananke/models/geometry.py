@@ -31,8 +31,8 @@ class Vectors2D(DataFrameFacade):
     @property
     def phi(self) -> pd.Series:
         """Phi coordinate in radial units."""
-        unsigned_angle = np.arccos((self.df['x'] / self.norm).to_numpy())
-        signs = np.sign(self.df['y'])
+        unsigned_angle = np.arccos((self.df["x"] / self.norm).to_numpy())
+        signs = np.sign(self.df["y"])
         signs[signs == 0] = 1
         return pd.Series(unsigned_angle * signs)
 
@@ -64,7 +64,7 @@ class Vectors2D(DataFrameFacade):
             length: length to scale the vector to.
         """
         factor = self._get_scaling_factor_for_length(length)
-        self.df = self.df.mul(factor, axis='rows')
+        self.df = self.df.mul(factor, axis="rows")
 
     @classmethod
     @check_types(with_pydantic=True)
@@ -122,10 +122,10 @@ class Vectors3D(Vectors2D):
     def phi(self) -> pd.Series:
         """Phi coordinate in radial units."""
         unsigned_angle = np.arccos(
-            (self.df['x'] / np.sqrt(self.df['x'] ** 2 + self.df['y'] ** 2)).to_numpy()
+            (self.df["x"] / np.sqrt(self.df["x"] ** 2 + self.df["y"] ** 2)).to_numpy()
         )
         unsigned_angle = np.nan_to_num(unsigned_angle, True, 0.0, 0.0, 0.0)
-        signs = np.sign(self.df['y'])
+        signs = np.sign(self.df["y"])
         signs[signs == 0] = 1
         return pd.Series(unsigned_angle * signs)
 

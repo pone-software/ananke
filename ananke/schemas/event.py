@@ -1,6 +1,6 @@
 """Module containing all schemas for Collection."""
 from enum import Enum
-from typing import Optional, Union, List
+from typing import List, Optional, Union
 
 import pandas as pd
 import pandera as pa
@@ -112,11 +112,13 @@ class NoiseRecordSchema(RecordSchema):
 class EventRecordSchema(OrientedRecordSchema):
     """Schema for event records."""
 
-    energy: Series[float] = pa.Field(coerce=True)
+    energy: Series[float] = pa.Field(coerce=True, nullable=True)
     type: Series[int] = pa.Field(isin=[x.value for x in EventType])
-    particle_id: Series[int] = pa.Field(coerce=True)
-    length: Optional[Series[float]] = pa.Field(coerce=True)
+    particle_id: Series[int] = pa.Field(coerce=True, nullable=True)
+    length: Optional[Series[float]] = pa.Field(coerce=True, nullable=True)
 
 
 class FullRecordSchema(NoiseRecordSchema, EventRecordSchema):
+    """Schema with all possible event and noise columns."""
+
     type: Series[int] = pa.Field(isin=[x.value for x in RecordType])

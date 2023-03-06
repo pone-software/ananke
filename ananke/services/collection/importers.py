@@ -2,24 +2,28 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Type, List, TypeVar
+
+from typing import TYPE_CHECKING, List, Type, TypeVar
 
 import pandas as pd
-from tqdm import tqdm
 
 from ananke.configurations.events import Interval
 from ananke.models.detector import Detector
-from ananke.models.event import Records, Sources, Hits
+from ananke.models.event import Hits, Records, Sources
 from ananke.models.interfaces import DataFrameFacade
-from ananke.schemas.event import Types, RecordType, SourceType
+from ananke.schemas.event import RecordType, SourceType, Types
+from tqdm import tqdm
+
 
 if TYPE_CHECKING:
     from ananke.models.collection import Collection
 
 import os
+
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Union, Optional
+from typing import Optional, Union
+
 
 DataFrameFacade_ = TypeVar("DataFrameFacade_", bound=DataFrameFacade)
 
@@ -27,10 +31,7 @@ DataFrameFacade_ = TypeVar("DataFrameFacade_", bound=DataFrameFacade)
 class AbstractCollectionImporter(ABC):
     """Abstract parent class for collection importers."""
 
-    def __init__(
-            self,
-            collection: Collection
-    ):
+    def __init__(self, collection: Collection):
         """Constructor of the Abstract Collection Importer.
 
         Args:
@@ -40,10 +41,7 @@ class AbstractCollectionImporter(ABC):
         self.logger = logging.getLogger(self.__class__.__name__)
 
     @abstractmethod
-    def import_data(
-            self,
-            **kwargs
-    ) -> None:
+    def import_data(self, **kwargs) -> None:
         """Abstract stub for the import of a collection.
 
         Args:
@@ -81,6 +79,7 @@ class AbstractCollectionImporter(ABC):
 #             if filename.endswith(".arrow"):
 #                 self.__read_file(filename)
 
+
 class LegacyCollectionKeys(str, Enum):
     """Enum containing keys for the collection file."""
 
@@ -94,11 +93,11 @@ class LegacyCollection:
     """Class combining all data frames to a complete record collection."""
 
     def __init__(
-            self,
-            data_path: str,
-            complevel: int = 3,
-            complib: str = 'lzo',
-            read_only: bool = False
+        self,
+        data_path: str,
+        complevel: int = 3,
+        complib: str = "lzo",
+        read_only: bool = False,
     ):
         """Constructor for the collection.
 
@@ -110,7 +109,7 @@ class LegacyCollection:
             complib: Compression Algorithm to use
             read_only: Ensure that no data is written
         """
-        logging.debug('Instantiated collection with path {}'.format(data_path))
+        logging.debug("Instantiated collection with path {}".format(data_path))
         file_extensions = (".hdf", ".h5")
         if not str(data_path).lower().endswith(file_extensions):
             raise ValueError(
@@ -132,9 +131,9 @@ class LegacyCollection:
         Returns:
             stored hdf object.
         """
-        mode = 'a'
+        mode = "a"
         if self.read_only:
-            mode = 'r'
+            mode = "r"
         return pd.HDFStore(self.data_path, mode=mode)
 
     def __del__(self):
@@ -142,7 +141,7 @@ class LegacyCollection:
         self.store.close()
 
     def __get_hdf_path(
-            self, collection_key: LegacyCollectionKeys, record_id: int | str | pd.Series
+        self, collection_key: LegacyCollectionKeys, record_id: int | str | pd.Series
     ) -> str:
         """Gets a proper hdf path for all subgrouped datasets.
 
@@ -154,23 +153,21 @@ class LegacyCollection:
             string combining the two elements
         """
         if not (
-                collection_key == LegacyCollectionKeys.HITS
-                or collection_key == LegacyCollectionKeys.SOURCES
+            collection_key == LegacyCollectionKeys.HITS
+            or collection_key == LegacyCollectionKeys.SOURCES
         ):
             raise ValueError("Paths only possible for hits and sources.")
         if type(record_id) == pd.Series:
             record_id = record_id.astype(str)
         elif type(record_id) != str:
             record_id = str(record_id)
-        return "/{key}/".format(
-            key=collection_key.value
-        ) + record_id
+        return "/{key}/".format(key=collection_key.value) + record_id
 
     def __get_data(
-            self,
-            key: str,
-            facade_class: Type[DataFrameFacade_],
-            where: Optional[list] = None
+        self,
+        key: str,
+        facade_class: Type[DataFrameFacade_],
+        where: Optional[list] = None,
     ) -> Optional[DataFrameFacade_]:
         """Gets data frame facade from file.
 
@@ -182,20 +179,20 @@ class LegacyCollection:
             Data frame facade containing data or None
         """
         logging.debug(
-            'Get {} with key {} at \'{}\''.format(facade_class, key, self.data_path)
+            "Get {} with key {} at '{}'".format(facade_class, key, self.data_path)
         )
 
         try:
             store = self.store
             df = pd.DataFrame(store.select(key=key, where=where))
-            if 'type' in df.columns:
+            if "type" in df.columns:
                 new_dict = {}
                 for type in RecordType:
                     new_dict[type.name.lower()] = type.value
                 for type in SourceType:
                     new_dict[type.name.lower()] = type.value
 
-                df['type'] = df['type'].map(new_dict)
+                df["type"] = df["type"].map(new_dict)
             facade = facade_class(df=df)
             return facade
         except KeyError:
@@ -207,21 +204,11 @@ class LegacyCollection:
         Returns:
             Detector of the collection.
         """
-        return self.__get_data(
-            key=LegacyCollectionKeys.DETECTOR,
-            facade_class=Detector
-        )
+        return self.__get_data(key=LegacyCollectionKeys.DETECTOR, facade_class=Detector)
 
     def get_records(
-            self,
-            record_type: Optional[
-                Union[
-                    List[Types],
-                    Types
-                ]
-            ] = None
+        self, record_type: Optional[Union[List[Types], Types]] = None
     ) -> Optional[Records]:
-
         """Gets records of the collection.
 
         Args:
@@ -235,46 +222,18 @@ class LegacyCollection:
             if type(record_type) is not list:
                 record_type = [record_type]
 
-            wheres = ['type={}'.format(current_type) for current_type in record_type]
-            where = '({})'.format(' & '.join(wheres))
+            wheres = ["type={}".format(current_type) for current_type in record_type]
+            where = "({})".format(" & ".join(wheres))
         return self.__get_data(
-            key=LegacyCollectionKeys.RECORDS,
-            facade_class=Records,
-            where=where
+            key=LegacyCollectionKeys.RECORDS, facade_class=Records, where=where
         )
 
-    def __drop_records_without_hits_in_interval(
-            self,
-            records: Records,
-            interval: Interval
-    ) -> Records:
-        """Drops all records without hits in intverval.
-
-        Args:
-            records: Records to drop without hits in interval from
-            interval: Interval for interval in question
-
-        Returns:
-
-        """
-        record_ids_without_hits_in_interval = []
-        current_record_ids = records.record_ids
-        for index, record_id in current_record_ids.items():
-            if self.get_hits(record_id=record_id, interval=interval) is None:
-                record_ids_without_hits_in_interval.append(record_id)
-
-        records.df = records.df[
-            ~current_record_ids.isin(record_ids_without_hits_in_interval)
-        ]
-
-        return records
-
     def __get_subgroup_dataset(
-            self,
-            base_key: LegacyCollectionKeys,
-            facade_class: Type[DataFrameFacade_],
-            record_id: int | str,
-            interval: Optional[Interval] = None
+        self,
+        base_key: LegacyCollectionKeys,
+        facade_class: Type[DataFrameFacade_],
+        record_id: int | str,
+        interval: Optional[Interval] = None,
     ) -> Optional[DataFrameFacade_]:
         """Gets data of group based on record id.
 
@@ -290,21 +249,14 @@ class LegacyCollection:
         # TODO: Check right place
         where = None
         if interval is not None:
-            where = '(time < {end_time} & time >= {start_time})'.format(
-                end_time=interval.end,
-                start_time=interval.start
+            where = "(time < {end_time} & time >= {start_time})".format(
+                end_time=interval.end, start_time=interval.start
             )
-        return self.__get_data(
-            key=key,
-            facade_class=facade_class,
-            where=where
-        )
+        return self.__get_data(key=key, facade_class=facade_class, where=where)
 
     # TODO: Allow multiple or all
     def get_sources(
-            self,
-            record_id: int | str,
-            interval: Optional[Interval] = None
+        self, record_id: int | str, interval: Optional[Interval] = None
     ) -> Optional[Sources]:
         """Gets sources by a specific record id.
 
@@ -319,14 +271,12 @@ class LegacyCollection:
             base_key=LegacyCollectionKeys.SOURCES,
             facade_class=Sources,
             record_id=record_id,
-            interval=interval
+            interval=interval,
         )
 
     # TODO: Allow multiple or all
     def get_hits(
-            self,
-            record_id: int | str,
-            interval: Optional[Interval] = None
+        self, record_id: int | str, interval: Optional[Interval] = None
     ) -> Optional[Hits]:
         """Gets hits by a specific record id.
 
@@ -341,7 +291,7 @@ class LegacyCollection:
             base_key=LegacyCollectionKeys.HITS,
             facade_class=Hits,
             record_id=record_id,
-            interval=interval
+            interval=interval,
         )
 
 
@@ -349,23 +299,29 @@ class LegacyCollectionImporter(AbstractCollectionImporter):
     """Class to import legacy collection to current one."""
 
     def import_data(
-            self,
-            import_path: Union[str, bytes, os.PathLike],
-            **kwargs
+        self, import_path: Union[str, bytes, os.PathLike], **kwargs
     ) -> None:
+        """Imports data from legacy collection.
+
+        Args:
+            import_path: Path to import data from
+            **kwargs: additional args for data import.
+        """
         self.logger.info(
-            'Starting Legacy import from path \'{}\''.format(str(import_path))
+            "Starting Legacy import from path '{}'".format(str(import_path))
         )
         legacy_collection = LegacyCollection(import_path)
         legacy_detector = legacy_collection.get_detector()
         legacy_records = legacy_collection.get_records()
+        if legacy_records is None:
+            raise ValueError("No records to import")
         number_of_records = len(legacy_records)
         with self.collection:
             if legacy_detector is not None:
                 self.collection.storage.set_detector(legacy_detector)
             new_ids = self.collection.storage.get_next_record_ids(number_of_records)
             legacy_records_ids = legacy_records.record_ids
-            legacy_records.df['record_id'] = new_ids
+            legacy_records.df["record_id"] = new_ids
             if legacy_records is not None:
                 self.collection.storage.set_records(legacy_records)
 
@@ -379,10 +335,10 @@ class LegacyCollectionImporter(AbstractCollectionImporter):
                             record_id=legacy_record_id
                         )
                         if legacy_hits is not None:
-                            legacy_hits.df['record_id'] = new_id
+                            legacy_hits.df["record_id"] = new_id
                             self.collection.storage.set_hits(legacy_hits)
                         if legacy_sources is not None:
-                            legacy_sources.df['record_id'] = new_id
+                            legacy_sources.df["record_id"] = new_id
                             self.collection.storage.set_sources(legacy_sources)
 
                         pbar.update()

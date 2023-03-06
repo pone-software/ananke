@@ -1,27 +1,33 @@
 """This module contains all event and photon source related structures."""
 from __future__ import annotations
 
-from typing import Optional, Union, List
+from typing import Optional
 
-import pandas as pd
 import numpy as np
-from pydantic import BaseModel, NonNegativeInt
+import numpy.typing as npt
+import pandas as pd
 
 from ananke.models.geometry import OrientedLocatedObjects
 from ananke.models.interfaces import DataFrameFacade
 from ananke.schemas.event import (
     EventRecordSchema,
+    FullRecordSchema,
     HitSchema,
     NoiseRecordSchema,
     OrientedRecordSchema,
     RecordIdSchema,
+    RecordIdsTypes_,
     RecordSchema,
+    RecordStatisticsSchema,
     SourceSchema,
-    TimedSchema, RecordStatisticsSchema, Types, RecordIdsTypes_,
+    TimedSchema,
 )
 from ananke.utils import percentile as percentile_func
-import numpy.typing as npt
 from pandera.typing import DataFrame
+from pydantic import BaseModel, NonNegativeInt
+
+
+# TODO: Add typed schema
 
 
 class RecordIds(DataFrameFacade):
@@ -29,11 +35,14 @@ class RecordIds(DataFrameFacade):
 
     df: DataFrame[RecordIdSchema]
 
-    def get_by_record_ids(self, record_ids: RecordIdsTypes_) -> Optional[RecordIds]:
+    def get_by_record_ids(
+        self, record_ids: RecordIdsTypes_, invert: bool = False
+    ) -> Optional[RecordIds]:
         """Gets all sources by a record id.
 
         Args:
             record_ids: ID(s) of the record to get
+            invert: Get except passed record ids
 
         Returns:
             Records with given ids
@@ -41,7 +50,12 @@ class RecordIds(DataFrameFacade):
         if isinstance(record_ids, int):
             record_ids = [record_ids]
 
-        new_df = self.df[self.df["record_id"].isin(record_ids)].reset_index(drop=True)
+        if invert:
+            new_df = self.df[~self.df["record_id"].isin(record_ids)]
+        else:
+            new_df = self.df[self.df["record_id"].isin(record_ids)]
+
+        new_df.reset_index(drop=True, inplace=True)
 
         if new_df.empty:
             return None
@@ -54,7 +68,10 @@ class RecordIds(DataFrameFacade):
         return self.df["record_id"]
 
 
+# TODO: Fix everything here
 class TimeStatistics(BaseModel):
+    """Model for staticstical information of record."""
+
     count: NonNegativeInt
     min: float
     max: float
@@ -91,7 +108,7 @@ class RecordTimes(DataFrameFacade):
         count = len(self)
         if percentile is not None:
             if percentile < 0 or percentile > 1:
-                raise ValueError('Percentiles can only be between 0 and 1.')
+                raise ValueError("Percentiles can only be between 0 and 1.")
             beginning_percentile = 0.5 - percentile / 2.0
             ending_percentile = 0.5 + percentile / 2.0
             aggregations = [
@@ -106,8 +123,8 @@ class RecordTimes(DataFrameFacade):
 
         return TimeStatistics(
             count=count,
-            min=grouped_hits.at['min', 'time'],
-            max=grouped_hits.at['max', 'time']
+            min=grouped_hits.at["min", "time"],
+            max=grouped_hits.at["max", "time"],
         )
 
 
@@ -150,6 +167,12 @@ class NoiseRecords(Records):
     """Record of an event that happened."""
 
     df: DataFrame[NoiseRecordSchema]
+
+
+class FullRecords(Records):
+    """General description of a record for events or sources."""
+
+    df: DataFrame[FullRecordSchema]
 
 
 class Hits(Records):

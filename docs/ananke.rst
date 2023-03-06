@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   ananke.configurations
    ananke.models
    ananke.schemas
    ananke.services

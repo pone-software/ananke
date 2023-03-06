@@ -1,5 +1,22 @@
-from ananke.models.collection import Collection, CollectionExporters
+from ananke.configurations.collection import (
+    HDF5StorageConfiguration,
+    GraphNetExportConfiguration,
+)
+from ananke.models.collection import Collection
+from ananke.services.collection.exporters import GraphNetCollectionExporter
 
-collection = Collection(data_path='../../data/combined_10_20_redistributed/data.h5')
+collection = Collection(
+    HDF5StorageConfiguration(
+        data_path='../../data/new_collection/cascades_10.h5'
+    )
+)
 
-collection.export(export_path='../../data/graph_net/combined_10_20_redistributed', exporter=CollectionExporters.GRAPH_NET)
+collection.open()
+collection.export(
+    GraphNetExportConfiguration(
+        data_path='../../data/graph_net/cascades_10',
+        batch_size=5
+    ),
+    exporter=GraphNetCollectionExporter,
+)
+collection.close()

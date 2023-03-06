@@ -22,6 +22,10 @@ def get_records() -> Records:
             }
         )
     )
+def get_records_with_particle_ids() -> Records:
+    records = get_records()
+    records.df['particle_id'] = 4
+    return records
 
 
 def get_hits() -> Hits:

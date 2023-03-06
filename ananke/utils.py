@@ -2,16 +2,17 @@
 from __future__ import annotations
 
 import os
+
 from typing import Any, Callable, Optional, Union
 
 import numpy as np
 import pandas as pd
+
 from pydantic import BaseModel
 
 
-
 def get_repeated_df(
-        df_to_repeat: pd.DataFrame, number_of_replications: int
+    df_to_repeat: pd.DataFrame, number_of_replications: int
 ) -> pd.DataFrame:
     """Repeats each row x times.
 
@@ -51,13 +52,12 @@ def percentile(n: float, name: Optional[str] = None) -> Callable[[Any], Any]:
 
 
 def save_configuration(
-        file: Union[str, bytes, os.PathLike],
-        configuration: BaseModel
+    file: Union[str, bytes, os.PathLike], configuration: BaseModel
 ) -> None:
     """Saves configuration."""
     # TODO: Migrate to Storage class
     dir = os.path.dirname(file)
     os.makedirs(dir, exist_ok=True)
 
-    with open(file, 'w') as f:
+    with open(file, "w") as f:
         f.write(configuration.json(indent=2))

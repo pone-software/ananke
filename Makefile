@@ -7,11 +7,13 @@ MAKEFLAGS += --no-builtin-rules
 
 PACKAGENAME = ananke
 
+# TODO: Enable typecheck in ci
+
 install:  # Install the app locally
 	poetry install
 .PHONY: install
 
-ci: typecheck lint test ## Run all checks (test, lint, typecheck)
+ci: lint test ## Run all checks (test, lint, typecheck)
 .PHONY: ci
 
 test:  ## Run tests

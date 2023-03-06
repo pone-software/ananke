@@ -5,8 +5,15 @@ from typing import Type, Callable, TypeVar, Optional, TYPE_CHECKING
 from unittest import mock
 from unittest.mock import patch, MagicMock
 
+import numpy as np
 import pandas as pd
-from ...common.schemas import get_records, get_hits, get_sources, get_detector
+from ...common.schemas import (
+    get_records,
+    get_hits,
+    get_sources,
+    get_detector,
+    get_records_with_particle_ids,
+)
 
 from ananke.configurations.collection import (
     HDF5StorageConfiguration,
@@ -143,11 +150,63 @@ class StorageTests(_Base):
 
     def test_readonly(self) -> None:
         self.storage._read_only = True
-        hits = get_hits()
-        with self.assertRaises(PermissionError, msg='ReadOnly not implemented'):
+
+        # Test Setting
+        with self.assertRaises(
+                PermissionError,
+                msg='Set Hits ReadOnly not implemented'
+        ):
+            hits = get_hits()
             self.storage.set_hits(hits)
+        with self.assertRaises(
+                PermissionError,
+                msg='Set Sources ReadOnly not implemented'
+        ):
+            sources = get_sources()
+            self.storage.set_sources(sources)
+        with self.assertRaises(
+                PermissionError,
+                msg='Set Records ReadOnly not implemented'
+        ):
+            records = get_records()
+            self.storage.set_records(records)
+        with self.assertRaises(
+                PermissionError,
+                msg='Set Detector ReadOnly not implemented'
+        ):
+            detector = get_detector()
+            self.storage.set_detector(detector)
+
+        # Test Deleting
+        with self.assertRaises(
+                PermissionError,
+                msg='Delete Hits ReadOnly not implemented'
+        ):
+            self.storage.del_hits()
+        with self.assertRaises(
+                PermissionError,
+                msg='Delete Sources ReadOnly not implemented'
+        ):
+            self.storage.del_sources()
+        with self.assertRaises(
+                PermissionError,
+                msg='Delete Records ReadOnly not implemented'
+        ):
+            self.storage.del_records()
+        with self.assertRaises(
+                PermissionError,
+                msg='Delete Detector ReadOnly not implemented'
+        ):
+            self.storage.del_detector()
+
+        with self.assertRaises(
+                PermissionError,
+                msg='Delete Storage ReadOnly not implemented'
+        ):
+            self.storage.delete()
         self.storage._read_only = False
 
+        self.storage.open()
         self.storage.set_hits(hits)
         self.assertEqual(
             hits,
@@ -460,6 +519,10 @@ class StorageTests(_Base):
             name='records'
         )
 
+    def test_records_flexible_columns(self) -> None:
+        self.storage.set_records(get_records())
+        self.storage.set_records(get_records_with_particle_ids(), append=True)
+
     def test_hits(self) -> None:
         hits = get_hits()
         self._test_filterable(
@@ -485,13 +548,17 @@ class StorageTests(_Base):
         self.storage.set_records(records)
         self.assertTrue(
             pd.Series([0, 1, 2]).equals(
-                self.storage.get_record_ids_with_sources().sort_values(ignore_index=True)
+                self.storage.get_record_ids_with_sources().sort_values(
+                    ignore_index=True
+                )
             ),
             'All without filters.'
         )
         self.assertTrue(
             pd.Series([1]).equals(
-                self.storage.get_record_ids_with_sources(record_ids=1).reset_index(drop=True)
+                self.storage.get_record_ids_with_sources(record_ids=1).reset_index(
+                    drop=True
+                )
             ),
             'All with filters.'
         )
@@ -513,7 +580,9 @@ class StorageTests(_Base):
         )
         self.assertTrue(
             pd.Series([1]).equals(
-                self.storage.get_record_ids_with_hits(record_ids=1).reset_index(drop=True)
+                self.storage.get_record_ids_with_hits(record_ids=1).reset_index(
+                    drop=True
+                )
             ),
             'All with filters.'
         )
@@ -524,7 +593,8 @@ class HDFStorageTestCase(StorageTests, unittest.TestCase):
 
     def _get_configuration(self) -> HDF5StorageConfiguration:
         return HDF5StorageConfiguration(
-            data_path=self.tmp_collection_path
+            data_path=self.tmp_collection_path,
+            read_only=False
         )
 
     def _get_storage_class(self) -> Type[HDF5CollectionStorage]:
@@ -553,24 +623,40 @@ class HDFStorageTestCase(StorageTests, unittest.TestCase):
 
     def test_get_where_record_id(self):
         record_ids = 1
-        self.assertEqual(
-            '((record_id={}))'.format(record_ids),
-            self.storage._HDF5CollectionStorage__get_where(record_ids=record_ids),
+        self.assertListEqual(
+            ['((record_id={}))'.format(record_ids)],
+            self.storage._HDF5CollectionStorage__get_wheres(record_ids=record_ids),
             "Where for single record id broken."
+        )
+        record_ids = np.int64(1)
+        self.assertListEqual(
+            ['((record_id={}))'.format(record_ids)],
+            self.storage._HDF5CollectionStorage__get_wheres(record_ids=record_ids),
+            "Where for single record id broken (np)."
         )
 
         multiple_record_ids = [1, 2]
         multiple_record_ids_expected = '((record_id=1 | record_id=2))'
-        self.assertEqual(
-            multiple_record_ids_expected,
-            self.storage._HDF5CollectionStorage__get_where(
+        self.assertListEqual(
+            [multiple_record_ids_expected],
+            self.storage._HDF5CollectionStorage__get_wheres(
                 record_ids=multiple_record_ids
             ),
             "Where for multiple record ids list broken."
         )
-        self.assertEqual(
-            multiple_record_ids_expected,
-            self.storage._HDF5CollectionStorage__get_where(
+
+        multiple_record_ids = [np.int64(1), 2]
+        multiple_record_ids_expected = '((record_id=1 | record_id=2))'
+        self.assertListEqual(
+            [multiple_record_ids_expected],
+            self.storage._HDF5CollectionStorage__get_wheres(
+                record_ids=multiple_record_ids
+            ),
+            "Where for multiple record ids list broken (np)."
+        )
+        self.assertListEqual(
+            [multiple_record_ids_expected],
+            self.storage._HDF5CollectionStorage__get_wheres(
                 record_ids=pd.Series(multiple_record_ids)
             ),
             "Where for multiple record ids pd.Series broken."
@@ -578,9 +664,9 @@ class HDFStorageTestCase(StorageTests, unittest.TestCase):
 
     def test_get_where_type(self):
         type = RecordType.CASCADE
-        self.assertEqual(
-            '((type={}))'.format(type.value),
-            self.storage._HDF5CollectionStorage__get_where(types=type),
+        self.assertListEqual(
+            ['((type={}))'.format(type.value)],
+            self.storage._HDF5CollectionStorage__get_wheres(types=type),
             "Where for single type broken."
         )
 
@@ -589,9 +675,9 @@ class HDFStorageTestCase(StorageTests, unittest.TestCase):
             multiple_types[0].value,
             multiple_types[1].value
         )
-        self.assertEqual(
-            multiple_types_expected,
-            self.storage._HDF5CollectionStorage__get_where(
+        self.assertListEqual(
+            [multiple_types_expected],
+            self.storage._HDF5CollectionStorage__get_wheres(
                 types=multiple_types
             ),
             "Where for multiple types broken."
@@ -599,34 +685,69 @@ class HDFStorageTestCase(StorageTests, unittest.TestCase):
 
     def test_get_where_interval(self):
         interval = Interval(start=0, end=1000)
-        self.assertEqual(
-            '((time>={} & time<{}))'.format(interval.start, interval.end),
-            self.storage._HDF5CollectionStorage__get_where(interval=interval),
+        self.assertListEqual(
+            ['((time>={} & time<{}))'.format(interval.start, interval.end)],
+            self.storage._HDF5CollectionStorage__get_wheres(interval=interval),
             "Where for interval broken."
         )
 
     def test_get_where_combined(self):
-        self.assertIsNone(
-            self.storage._HDF5CollectionStorage__get_where(),
+        self.assertListEqual(
+            [None],
+            self.storage._HDF5CollectionStorage__get_wheres(),
             "Empty parameter where is not None."
         )
 
         interval = Interval(start=0, end=1000)
         record_ids = 1
         multiple_types = [RecordType.CASCADE, RecordType.ELECTRICAL]
-        self.assertEqual(
-            '((type={} | type={}) & (record_id=1) & (time>={} & time<{}))'.format(
+        self.assertListEqual(
+            ['((type={} | type={}) & (time>={} & time<{}) & (record_id=1))'.format(
                 multiple_types[0].value,
                 multiple_types[1].value,
                 interval.start,
                 interval.end
-            ),
-            self.storage._HDF5CollectionStorage__get_where(
+            )],
+            self.storage._HDF5CollectionStorage__get_wheres(
                 record_ids=record_ids,
                 types=multiple_types,
                 interval=interval
             ),
             "Where for multiple parameters broken."
+        )
+
+    def test_get_where_batching(self):
+        multiple_record_ids = [1, 2, 3, 4]
+
+        interval = Interval(start=0, end=1000)
+        multiple_types = [RecordType.CASCADE, RecordType.ELECTRICAL]
+        multiple_record_ids_expected_1 = '(record_id=1 | record_id=2)'
+        multiple_record_ids_expected_2 = '(record_id=3 | record_id=4)'
+        multiple_types_expected = '(type={} | type={})'.format(
+            multiple_types[0].value,
+            multiple_types[1].value
+        )
+        interval_expected = '(time>={} & time<{})'.format(interval.start, interval.end)
+        combined_expected = [
+            '({} & {} & {})'.format(
+                multiple_types_expected,
+                interval_expected,
+                multiple_record_ids_expected_1
+            ),
+            '({} & {} & {})'.format(
+                multiple_types_expected,
+                interval_expected,
+                multiple_record_ids_expected_2
+            ),
+        ]
+        self.assertListEqual(
+            combined_expected,
+            self.storage._HDF5CollectionStorage__get_wheres(
+                record_ids=multiple_record_ids,
+                types=multiple_types,
+                interval=interval,
+                max_wheres_number=6
+            )
         )
 
     def test_get_unique_record_ids(self):
@@ -665,7 +786,7 @@ class HDFStorageTestCase(StorageTests, unittest.TestCase):
         with mock.patch.object(
                 self.storage,
                 '_HDF5CollectionStorage__get_unique_records_ids',
-                return_value=pd.Series([])
+                return_value=pd.Series([], dtype=int)
         ):
             self.assertEqual(
                 [0],
@@ -695,14 +816,15 @@ class HDFStorageTestCase(StorageTests, unittest.TestCase):
                 "Next record ids multiple broken with offset"
             )
 
+
 class StorageFactoryTestCase(unittest.TestCase):
     def test_no_supported_storage_configuration(self):
         class NoStorageConfiguration(StorageConfiguration):
             pass
 
         with self.assertRaises(
-            ValueError,
-            msg='No supported configuration wrong'
+                ValueError,
+                msg='No supported configuration wrong'
         ):
             StorageFactory.create(NoStorageConfiguration())
 

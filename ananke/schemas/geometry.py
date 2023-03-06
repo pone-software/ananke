@@ -34,14 +34,14 @@ class Vector3DSchema(Vector2DSchema):
 class LocatedObjectSchema(pa.SchemaModel):
     """Schema for a located objects data frame."""
 
-    location_x: Series[float] = pa.Field(coerce=True)
-    location_y: Series[float] = pa.Field(coerce=True)
-    location_z: Series[float] = pa.Field(coerce=True)
+    location_x: Series[float] = pa.Field(coerce=True, nullable=True)
+    location_y: Series[float] = pa.Field(coerce=True, nullable=True)
+    location_z: Series[float] = pa.Field(coerce=True, nullable=True)
 
 
 class OrientedLocatedObjectSchema(LocatedObjectSchema):
     """Schema for a located objects that are oriented data frame."""
 
-    orientation_x: Series[float] = pa.Field(coerce=True)
-    orientation_y: Series[float] = pa.Field(coerce=True)
-    orientation_z: Series[float] = pa.Field(coerce=True)
+    orientation_x: Series[float] = pa.Field(coerce=True, nullable=True)
+    orientation_y: Series[float] = pa.Field(coerce=True, nullable=True)
+    orientation_z: Series[float] = pa.Field(coerce=True, nullable=True)

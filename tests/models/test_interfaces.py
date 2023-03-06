@@ -19,7 +19,7 @@ class MockDataFrameFacade(DataFrameFacade):
 
 class DataFrameFacadeTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.array = np.array([1, 2, 3])
+        self.array = np.array([1, 2, 3, 4])
         self.array_extra_axis = self.array[:, np.newaxis]
         self.dataframe = pd.DataFrame(
             {
@@ -39,7 +39,7 @@ class DataFrameFacadeTestCase(unittest.TestCase):
         )
 
     def test_length(self):
-        assert len(self.dataframe_facade) == 3
+        assert len(self.dataframe_facade) == 4
 
     def test_equal(self):
         assert self.dataframe_facade == self.dataframe_facade
@@ -71,9 +71,9 @@ class DataFrameFacadeTestCase(unittest.TestCase):
             [self.dataframe_facade, self.dataframe_facade]
         ) == MockDataFrameFacade(
             df=pd.DataFrame(
-                index=[0, 1, 2, 0, 1, 2],
+                index=[0, 1, 2, 3, 0, 1, 2, 3],
                 data={
-                    'a': [1, 2, 3, 1, 2, 3]
+                    'a': [1, 2, 3, 4, 1, 2, 3, 4]
                 }
             )
         )
@@ -95,9 +95,10 @@ class DataFrameFacadeTestCase(unittest.TestCase):
 
         for index, current_facade in enumerate(dataframe_iterator):
             count += 1
-            current_index = index*batch_size
+            current_index = index * batch_size
             self.assertTrue(
-                self.dataframe_facade.df.iloc[current_index:current_index + batch_size].equals(
+                self.dataframe_facade.df.iloc[
+                current_index:current_index + batch_size].equals(
                     current_facade.df
                 )
             )
