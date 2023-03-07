@@ -755,6 +755,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
                 types = [types]
 
             if len(types) == 0:
+
                 class NoValueTypeEnum(Enum):
                     NO_VALUE_ENUM = -10000000
 
