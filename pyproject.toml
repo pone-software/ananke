@@ -1,36 +1,35 @@
 [tool.poetry]
 name = "pone-ananke"
-version = "0.2.0"
+version = "0.2.1"
 description = ""
 authors = ["Janik Prottung <me@jprottung.com>"]
 readme = "README.md"
-packages = [{include = "ananke"}]
+packages = [{ include = "ananke" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-numpy = "^1.23.4"
-pydantic = "^1.10.2"
-plotly = "^5.11.0"
-pandas = "^1.5.2"
-pandera = {extras = ["hypothesis"], version = "^0.13.4"}
-h5py = "^3.8.0"
+numpy = ">=1.21.0,<2.0.0"
+pydantic = ">1.8.0"
+plotly = ">5.0.0"
+pandas = ">=1.4.0,<2.0.0"
+pandera = { extras = ["hypothesis"], version = "^0.13.4" }
 tables = "^3.8.0"
-awkward = "^2.0.6"
-pyarrow = "^11.0.0"
-tqdm = "^4.65.0"
+awkward = ">=1.8"
+pyarrow = ">9.0.0"
+tqdm = ">4.64"
 
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^5.0.4"
 mypy = "^0.991"
-black = {extras = ["jupyter"], version = "^22.10.0"}
+black = { extras = ["jupyter"], version = "^22.10.0" }
 pytest = "^7.2.0"
 jupyter = "^1.0.0"
 pytest-cov = "^4.0.0"
 isort = "^5.10.1"
 sphinx = "^5.3.0"
 sphinx-rtd-theme = "^1.1.1"
-pydocstyle = {extras = ["toml"], version = "^6.1.1"}
+pydocstyle = { extras = ["toml"], version = "^6.1.1" }
 pandas-stubs = "^1.5.2.230105"
 types-tqdm = "^4.65.0.0"
 
@@ -94,7 +93,7 @@ exclude_lines = [
 # Activating branch coverage is super important
 branch = true
 omit = [
-  '*tests*'
+    '*tests*'
 ]
 
 
