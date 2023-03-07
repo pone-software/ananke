@@ -67,6 +67,8 @@ class HDF5StorageConfiguration(StorageConfiguration):
 
     type: Literal[StorageTypes.HDF5] = StorageTypes.HDF5
 
+    # TODO: Implement is file check
+    #: Path of the HDF5 file
     data_path: str
 
     #: Compression level; See documentation of `pd.to_hdf`

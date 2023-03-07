@@ -570,7 +570,10 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
 
         if not os.path.isfile(data_path):
             if mode == "r":
-                raise PermissionError("Cannot create collection in read_only mode.")
+                raise PermissionError(
+                    "Cannot create collection in read_only mode. "
+                    "Consider changing the configuration."
+                )
             dir_path = os.path.dirname(data_path)
             if len(dir_path) > 0:
                 os.makedirs(os.path.dirname(data_path), exist_ok=True)
@@ -656,8 +659,11 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             types=types, record_ids=record_ids, interval=interval
         )
 
-        for where in wheres:
-            self.store.remove(key=str_key, where=where)
+        try:
+            for where in wheres:
+                self.store.remove(key=str_key, where=where)
+        except KeyError:
+            pass
 
     def __raise_writable(self) -> None:
         """Raises exception if not writable.
@@ -747,6 +753,13 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
         if types is not None:
             if not issubclass(type(types), list):
                 types = [types]
+
+            if len(types) == 0:
+                class NoValueTypeEnum(Enum):
+                    NO_VALUE_ENUM = -10000000
+
+                # not a valid type id. should get nothing
+                types = [NoValueTypeEnum.NO_VALUE_ENUM]
             wheres_number += len(types)
             types_wheres = [
                 "type={}".format(current_type.value) for current_type in types
@@ -764,6 +777,10 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
                 record_ids = [int(record_ids)]
             if isinstance(record_ids, pd.Series):
                 record_ids = record_ids.drop_duplicates().values
+
+            if len(record_ids) == 0:
+                # as record_ids should be positive int considered save enough
+                record_ids = [-10000000]
 
             record_ids_wheres = [
                 "record_id={}".format(record_id) for record_id in record_ids
@@ -894,12 +911,15 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             HDF5StorageKeys.RECORDS,
         ]
         self.logger.debug("Starting to recreate indices.")
+        file_keys = self.store.keys()
         for index in indices_to_create_index:
-            self.store.create_table_index(
-                key=str(index),
-                columns=["record_id"],
-                optlevel=self.configuration.optlevel,
-            )
+            current_index = str(index)
+            if current_index in file_keys:
+                self.store.create_table_index(
+                    key=current_index,
+                    columns=["record_id"],
+                    optlevel=self.configuration.optlevel,
+                )
         self.logger.debug("Finished recreating indices.")
         self.close()
         try:
@@ -920,7 +940,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             self.logger.debug("Finished to ptrepack files.")
         except:  # noqa: E722
             logging.warning("PTRepack not working. Skipping compression")
-        self.store.open()
+        self.open()
         self.logger.info("Finished to optimize HDF5.")
 
 

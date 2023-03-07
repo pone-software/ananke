@@ -267,6 +267,9 @@ class StorageTests(_Base):
             "Getter not none after deleting"
         )
 
+        # Test if it runs through :D
+        deleter()
+
     def _test_get_filtered(
             self,
             name: str,
@@ -409,6 +412,11 @@ class StorageTests(_Base):
         if 'record_id' in data.df.columns:
             record_id = 1
             setter(data, False)
+            deleter(record_ids=[])
+            self.assertTrue(
+                data.df.equals(getter().df),
+                "Empty list delete does not delete."
+            )
             deleter(record_ids=record_id)
 
             record_id_condition = (data.df['record_id'] == record_id)
@@ -446,6 +454,11 @@ class StorageTests(_Base):
             type_ = RecordType.CASCADE
             type2_ = RecordType.ELECTRICAL
             setter(data, False)
+            deleter(types=[])
+            self.assertTrue(
+                data.df.equals(getter().df),
+                "Empty list delete does not delete."
+            )
             deleter(types=type_)
 
             type_condition = (data.df['type'] == type_.value)

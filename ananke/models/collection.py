@@ -322,11 +322,14 @@ class Collection:
             record_ids_with_hits = []
 
         records = self.storage.get_records()
-        records_ids = records.record_ids
-        records_ids_without_hits = records_ids[~records_ids.isin(record_ids_with_hits)]
-        self.storage.del_sources(record_ids=records_ids_without_hits)
-        self.storage.del_records(record_ids=records_ids_without_hits)
-        logging.info("Dropped {} records".format(len(records_ids_without_hits)))
+        if records is not None:
+            records_ids = records.record_ids
+            records_ids_without_hits = records_ids[
+                ~records_ids.isin(record_ids_with_hits)
+            ]
+            self.storage.del_sources(record_ids=records_ids_without_hits)
+            self.storage.del_records(record_ids=records_ids_without_hits)
+            logging.info("Dropped {} records".format(len(records_ids_without_hits)))
 
     def get_record_statistics(self) -> Optional[RecordStatistics]:
         """Gets all the statistics added to the current records.
