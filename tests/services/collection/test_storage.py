@@ -25,7 +25,7 @@ from ananke.models.interfaces import DataFrameFacade
 from ananke.schemas.event import RecordType
 from ananke.services.collection.storage import (
     HDF5CollectionStorage,
-    HDF5StorageKeys,
+    StorageKeys,
     AbstractCollectionStorage, StorageFactory,
 )
 
@@ -51,19 +51,19 @@ class HDFStorageKeysTestCase(unittest.TestCase):
     def test_enum(self) -> None:
         self.assertListEqual(
             self.names,
-            [e.name for e in HDF5StorageKeys],
+            [e.name for e in StorageKeys],
             "Enum names not as expected."
         )
         self.assertListEqual(
             self.values,
-            [e.value for e in HDF5StorageKeys],
+            [e.value for e in StorageKeys],
             "Enum values not as expected."
         )
 
     def test_string_conversion(self) -> None:
         self.assertEqual(
             'records',
-            str(HDF5StorageKeys.RECORDS),
+            str(StorageKeys.RECORDS),
             'string conversion broken'
         )
 
@@ -765,7 +765,7 @@ class HDFStorageTestCase(StorageTests, unittest.TestCase):
 
     def test_get_unique_record_ids(self):
         unique_ids = self.storage._HDF5CollectionStorage__get_unique_records_ids(
-            key=HDF5StorageKeys.HITS
+            key=StorageKeys.HITS
         )
         self.assertEqual(
             0,
@@ -787,7 +787,7 @@ class HDFStorageTestCase(StorageTests, unittest.TestCase):
             )
         )
         unique_ids = self.storage._HDF5CollectionStorage__get_unique_records_ids(
-            key=HDF5StorageKeys.HITS
+            key=StorageKeys.HITS
         )
         self.assertListEqual(
             [45, 2],

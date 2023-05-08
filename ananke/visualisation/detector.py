@@ -16,6 +16,8 @@ def get_detector_scatter3ds(
     include_modules: bool = True,
     pmt_color: Optional[pd.Series] = None,
     sources: Optional[Sources] = None,
+    size: int = 5,
+    pmt_opacity: float = 0.6
 ) -> List[go.Scatter3d]:
     """Paint the detectors modules and eventually strings onto a 3d-scatter trace.
 
@@ -38,7 +40,7 @@ def get_detector_scatter3ds(
                 name="modules",
                 mode="markers",
                 marker=dict(
-                    size=5,
+                    size=size,
                     color="black",  # set color to an array/list of desired values
                     colorscale="Viridis",  # choose a colorscale
                     opacity=0.4,
@@ -49,10 +51,10 @@ def get_detector_scatter3ds(
     if include_pmts:
         pmt_coordinates = detector.pmt_locations.to_numpy(np.float32)
         marker = dict(
-            size=5,
+            size=size,
             color="red",  # set color to an array/list of desired values
             colorscale="Inferno",  # choose a colorscale
-            opacity=0.6,
+            opacity=pmt_opacity,
         )
         if pmt_color is not None:
             marker["color"] = pmt_color
@@ -78,7 +80,7 @@ def get_detector_scatter3ds(
                 name="modules",
                 mode="markers",
                 marker=dict(
-                    size=5,
+                    size=size,
                     color="blue",  # set color to an array/list of desired values
                     colorscale="Viridis",  # choose a colorscale
                     opacity=0.4,

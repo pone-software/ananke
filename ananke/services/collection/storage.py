@@ -17,7 +17,7 @@ import pandera as pa
 
 from ananke.configurations.collection import (
     HDF5StorageConfiguration,
-    StorageConfiguration,
+    StorageConfiguration, MemoryStorageConfiguration,
 )
 from ananke.configurations.events import Interval
 from ananke.models.detector import Detector
@@ -296,7 +296,7 @@ class AbstractCollectionStorage(ABC, Generic[CollectionStorageConfiguration_]):
         pass
 
 
-class HDF5StorageKeys(Enum):
+class StorageKeys(Enum):
     """Enum containing keys for the collection file."""
 
     RECORDS = "records"
@@ -311,6 +311,118 @@ class HDF5StorageKeys(Enum):
             String representation of the value
         """
         return str(self.value)
+
+class MemoryCollectionStorage(AbstractCollectionStorage[MemoryStorageConfiguration]):
+
+    def __init__(self, configuration: HDF5StorageConfiguration):
+        """Constructor of HDF5 collection storage."""
+        super(MemoryCollectionStorage, self).__init__(configuration=configuration)
+        self.__store = None
+        self.__is_open = False
+
+    def open(self) -> MemoryCollectionStorage:
+        if self.__store is None:
+            self.__store = {}
+        elif not self.__is_open:
+            self.__is_open = True
+
+        return self
+
+    def close(self) -> None:
+        self.__is_open = False
+
+    def __get_data(self, key: StorageKeys):
+        logging.debug(
+            "Get key {}".format(key)
+        )
+
+    def get_detector(self) -> Optional[Detector]:
+        pass
+
+    def set_detector(self, detector: Detector, append: bool = False) -> None:
+        pass
+
+    def del_detector(self) -> None:
+        pass
+
+    def get_records(
+            self,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
+            interval: Optional[Interval] = None
+            ) -> Optional[Records]:
+        pass
+
+    def set_records(self, records: Records, append: bool = True) -> None:
+        pass
+
+    def del_records(
+            self,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
+            interval: Optional[Interval] = None
+            ) -> None:
+        pass
+
+    def get_hits(
+            self,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
+            interval: Optional[Interval] = None
+            ) -> Optional[Hits]:
+        pass
+
+    def set_hits(self, hits: Hits, append: bool = True) -> None:
+        pass
+
+    def del_hits(
+            self,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
+            interval: Optional[Interval] = None
+            ) -> None:
+        pass
+
+    def get_sources(
+            self,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
+            interval: Optional[Interval] = None
+            ) -> Optional[Sources]:
+        pass
+
+    def set_sources(self, sources: Sources, append: bool = True) -> None:
+        pass
+
+    def del_sources(
+            self,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
+            interval: Optional[Interval] = None
+            ) -> None:
+        pass
+
+    def get_next_record_ids(self, n: int = 1) -> List[int]:
+        pass
+
+    def delete(self) -> None:
+        pass
+
+    def get_record_ids_with_hits(
+            self,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
+            interval: Optional[Interval] = None
+            ) -> pd.Series:
+        pass
+
+    def get_record_ids_with_sources(
+            self,
+            types: TypesTypes_ = None,
+            record_ids: RecordIdsTypes_ = None,
+            interval: Optional[Interval] = None
+            ) -> pd.Series:
+        pass
 
 
 class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration]):
@@ -364,7 +476,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
         Returns:
             Detector from file
         """
-        return self.__get_data(key=HDF5StorageKeys.DETECTOR, facade_class=Detector)
+        return self.__get_data(key=StorageKeys.DETECTOR, facade_class=Detector)
 
     def set_detector(
         self,
@@ -378,13 +490,13 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             append: append to current one
         """
         return self.__set_data(
-            key=HDF5StorageKeys.DETECTOR, data=detector, append=append
+            key=StorageKeys.DETECTOR, data=detector, append=append
         )
 
     def del_detector(self) -> None:
         """Deletes the detector from HDF5."""
         return self.__del_data(
-            key=HDF5StorageKeys.DETECTOR,
+            key=StorageKeys.DETECTOR,
         )
 
     def get_records(
@@ -404,7 +516,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             Records matching criteria.
         """
         return self.__get_data(
-            key=HDF5StorageKeys.RECORDS,
+            key=StorageKeys.RECORDS,
             facade_class=Records,
             types=types,
             record_ids=record_ids,
@@ -419,7 +531,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             append: append to current one
         """
         return self.__set_data(
-            key=HDF5StorageKeys.RECORDS,
+            key=StorageKeys.RECORDS,
             data=records,
             append=append,
             schema=FullRecordSchema,
@@ -439,7 +551,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             interval: Interval to filter by.
         """
         return self.__del_data(
-            key=HDF5StorageKeys.RECORDS,
+            key=StorageKeys.RECORDS,
             types=types,
             record_ids=record_ids,
             interval=interval,
@@ -462,7 +574,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             Hits matching criteria.
         """
         return self.__get_data(
-            key=HDF5StorageKeys.HITS,
+            key=StorageKeys.HITS,
             facade_class=Hits,
             types=types,
             record_ids=record_ids,
@@ -476,7 +588,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             hits: hits to store
             append: append to current one
         """
-        return self.__set_data(key=HDF5StorageKeys.HITS, data=hits, append=append)
+        return self.__set_data(key=StorageKeys.HITS, data=hits, append=append)
 
     def del_hits(
         self,
@@ -492,7 +604,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             interval: Interval to filter by.
         """
         return self.__del_data(
-            key=HDF5StorageKeys.HITS,
+            key=StorageKeys.HITS,
             types=types,
             record_ids=record_ids,
             interval=interval,
@@ -515,7 +627,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             Sources matching criteria.
         """
         return self.__get_data(
-            key=HDF5StorageKeys.SOURCES,
+            key=StorageKeys.SOURCES,
             facade_class=Sources,
             types=types,
             record_ids=record_ids,
@@ -530,7 +642,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             append: append to current one
         """
         return self.__set_data(
-            key=HDF5StorageKeys.SOURCES,
+            key=StorageKeys.SOURCES,
             data=sources,
             append=append,
         )
@@ -549,7 +661,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             interval: Interval to filter by.
         """
         return self.__del_data(
-            key=HDF5StorageKeys.SOURCES,
+            key=StorageKeys.SOURCES,
             types=types,
             record_ids=record_ids,
             interval=interval,
@@ -587,7 +699,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
 
     def __get_data(
         self,
-        key: HDF5StorageKeys,
+        key: StorageKeys,
         facade_class: Optional[Type[DataFrameFacade_]] = None,
         types: TypesTypes_ = None,
         record_ids: Optional[Union[int, List[int], pd.Series]] = None,
@@ -636,7 +748,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
 
     def __del_data(
         self,
-        key: HDF5StorageKeys,
+        key: StorageKeys,
         types: TypesTypes_ = None,
         record_ids: RecordIdsTypes_ = None,
         interval: Optional[Interval] = None,
@@ -676,7 +788,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
 
     def __set_data(
         self,
-        key: HDF5StorageKeys,
+        key: StorageKeys,
         data: DataFrameFacade,
         append: bool = True,
         schema: Optional[Type[pa.SchemaModel]] = None,
@@ -813,7 +925,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
 
     def __get_unique_records_ids(
         self,
-        key: HDF5StorageKeys,
+        key: StorageKeys,
         types: TypesTypes_ = None,
         record_ids: RecordIdsTypes_ = None,
         interval: Optional[Interval] = None,
@@ -851,7 +963,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
         Returns:
             List of integer ids
         """
-        record_ids = self.__get_unique_records_ids(HDF5StorageKeys.RECORDS)
+        record_ids = self.__get_unique_records_ids(StorageKeys.RECORDS)
         if len(record_ids) == 0:
             start = 0
         else:
@@ -875,7 +987,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             Unique record ids or empty series of records with hits
         """
         return self.__get_unique_records_ids(
-            HDF5StorageKeys.HITS, types=types, record_ids=record_ids, interval=interval
+            StorageKeys.HITS, types=types, record_ids=record_ids, interval=interval
         )
 
     def get_record_ids_with_sources(
@@ -895,7 +1007,7 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             Unique record ids or empty series of records with sources
         """
         return self.__get_unique_records_ids(
-            HDF5StorageKeys.SOURCES,
+            StorageKeys.SOURCES,
             types=types,
             record_ids=record_ids,
             interval=interval,
@@ -907,9 +1019,9 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
         self.logger.info("Starting to optimize HDF5.")
         tmp_file = os.path.join(dir, "{}.h5".format(str(uuid.uuid4())))
         indices_to_create_index = [
-            HDF5StorageKeys.HITS,
-            HDF5StorageKeys.SOURCES,
-            HDF5StorageKeys.RECORDS,
+            StorageKeys.HITS,
+            StorageKeys.SOURCES,
+            StorageKeys.RECORDS,
         ]
         self.logger.debug("Starting to recreate indices.")
         file_keys = self.store.keys()

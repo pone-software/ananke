@@ -353,7 +353,7 @@ class Collection:
             for index, record_id in records.record_ids.items():
                 record_hits = self.storage.get_hits(record_ids=record_id)
                 if record_hits is None:
-                    hits_counts.append(np.nan)
+                    hits_counts.append(0)
                     first_hits.append(np.nan)
                     last_hits.append(np.nan)
                     empty_hits += 1
@@ -364,7 +364,7 @@ class Collection:
                     last_hits.append(hits_statistics.max)
                 record_sources = self.storage.get_sources(record_ids=record_id)
                 if record_sources is None:
-                    sources_counts.append(np.nan)
+                    sources_counts.append(0)
                     first_sources.append(np.nan)
                     last_sources.append(np.nan)
                     empty_sources += 1

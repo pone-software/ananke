@@ -17,6 +17,9 @@ tables = "^3.8.0"
 awkward = ">=1.8"
 pyarrow = ">9.0.0"
 tqdm = ">4.64"
+jupyterlab = "^3.6.3"
+ipywidgets = "^8.0.6"
+kaleido = "0.2.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -24,7 +27,6 @@ flake8 = "^5.0.4"
 mypy = "^0.991"
 black = { extras = ["jupyter"], version = "^22.10.0" }
 pytest = "^7.2.0"
-jupyter = "^1.0.0"
 pytest-cov = "^4.0.0"
 isort = "^5.10.1"
 sphinx = "^5.3.0"
