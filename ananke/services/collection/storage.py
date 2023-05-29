@@ -738,6 +738,8 @@ class HDF5CollectionStorage(AbstractCollectionStorage[HDF5StorageConfiguration])
             del dfs
             if df.empty:
                 return None
+            # Be careful of side effects
+            df.reset_index(drop=True, inplace=True)
             if facade_class is not None:
                 facade = facade_class(df=df)
                 return facade
