@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ananke.models package &mdash; Ananke 0.2.2 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ananke.schemas package" href="ananke.schemas.html" />
+    <link rel="prev" title="ananke.configurations.presets package" href="ananke.configurations.presets.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Ananke
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="ananke.html">ananke package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="ananke.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ananke.configurations.html">ananke.configurations package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">ananke.models package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ananke.models.detector">ananke.models.detector module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ananke.models.event">ananke.models.event module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ananke.models.geometry">ananke.models.geometry module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ananke.models.interfaces">ananke.models.interfaces module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ananke.models">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.schemas.html">ananke.schemas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.html">ananke.services package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.visualisation.html">ananke.visualisation package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ananke.html#module-ananke">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Ananke</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="ananke.html">ananke package</a></li>
+      <li class="breadcrumb-item active">ananke.models package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ananke.models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ananke-models-package">
+<h1>ananke.models package<a class="headerlink" href="#ananke-models-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-ananke.models.detector">
+<span id="ananke-models-detector-module"></span><h2>ananke.models.detector module<a class="headerlink" href="#module-ananke.models.detector" title="Permalink to this heading"></a></h2>
+<p>Contains all the classes for representing a detector.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.detector.PMTs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.detector.</span></span><span class="sig-name descname"><span class="pre">PMTs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ananke.schemas.html#ananke.schemas.detector.PMTSchema" title="ananke.schemas.detector.PMTSchema"><span class="pre">PMTSchema</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/detector.html#PMTs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.detector.PMTs" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.interfaces.DataFrameFacade" title="ananke.models.interfaces.DataFrameFacade"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrameFacade</span></code></a></p>
+<p>Python class representing individual PMT.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.PMTs.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ananke.schemas.html#ananke.schemas.detector.PMTSchema" title="ananke.schemas.detector.PMTSchema"><span class="pre">PMTSchema</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.PMTs.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.PMTs.pmt_locations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pmt_locations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.geometry.Vectors3D" title="ananke.models.geometry.Vectors3D"><span class="pre">Vectors3D</span></a></em><a class="headerlink" href="#ananke.models.detector.PMTs.pmt_locations" title="Permalink to this definition"></a></dt>
+<dd><p>Gets DataFrame with (x,y,z)-locations of PMTs.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.PMTs.pmt_orientations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pmt_orientations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.geometry.Vectors3D" title="ananke.models.geometry.Vectors3D"><span class="pre">Vectors3D</span></a></em><a class="headerlink" href="#ananke.models.detector.PMTs.pmt_orientations" title="Permalink to this definition"></a></dt>
+<dd><p>Gets DataFrame with (x,y,z)-orientations of PMTs.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.PMTs.pmt_areas">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pmt_areas</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#ananke.models.detector.PMTs.pmt_areas" title="Permalink to this definition"></a></dt>
+<dd><p>Gets Dataframe with PMT area.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.PMTs.pmt_efficiencies">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pmt_efficiencies</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#ananke.models.detector.PMTs.pmt_efficiencies" title="Permalink to this definition"></a></dt>
+<dd><p>Gets Dataframe with PMT efficiencies.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.PMTs.pmt_noise_rates">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pmt_noise_rates</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#ananke.models.detector.PMTs.pmt_noise_rates" title="Permalink to this definition"></a></dt>
+<dd><p>Gets Dataframe with PMT noise rates.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.detector.Modules">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.detector.</span></span><span class="sig-name descname"><span class="pre">Modules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ananke.schemas.html#ananke.schemas.detector.ModuleSchema" title="ananke.schemas.detector.ModuleSchema"><span class="pre">ModuleSchema</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/detector.html#Modules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.detector.Modules" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.detector.PMTs" title="ananke.models.detector.PMTs"><code class="xref py py-class docutils literal notranslate"><span class="pre">PMTs</span></code></a></p>
+<p>Python class representing individual module.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.Modules.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ananke.schemas.html#ananke.schemas.detector.ModuleSchema" title="ananke.schemas.detector.ModuleSchema"><span class="pre">ModuleSchema</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.Modules.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.Modules.module_locations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">module_locations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.geometry.Vectors3D" title="ananke.models.geometry.Vectors3D"><span class="pre">Vectors3D</span></a></em><a class="headerlink" href="#ananke.models.detector.Modules.module_locations" title="Permalink to this definition"></a></dt>
+<dd><p>Gets DataFrame with (x,y,z)-location of modules.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.Modules.module_radius">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">module_radius</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#ananke.models.detector.Modules.module_radius" title="Permalink to this definition"></a></dt>
+<dd><p>Gets Dataframe with Module radius.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.detector.Strings">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.detector.</span></span><span class="sig-name descname"><span class="pre">Strings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ananke.schemas.html#ananke.schemas.detector.DetectorSchema" title="ananke.schemas.detector.DetectorSchema"><span class="pre">DetectorSchema</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/detector.html#Strings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.detector.Strings" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.detector.Modules" title="ananke.models.detector.Modules"><code class="xref py py-class docutils literal notranslate"><span class="pre">Modules</span></code></a></p>
+<p>Python class representing individual string.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.Strings.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ananke.schemas.html#ananke.schemas.detector.DetectorSchema" title="ananke.schemas.detector.DetectorSchema"><span class="pre">DetectorSchema</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.Strings.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.Strings.string_locations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">string_locations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.geometry.Vectors3D" title="ananke.models.geometry.Vectors3D"><span class="pre">Vectors3D</span></a></em><a class="headerlink" href="#ananke.models.detector.Strings.string_locations" title="Permalink to this definition"></a></dt>
+<dd><p>Gets DataFrame with (x,y,z)-location of modules.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.detector.</span></span><span class="sig-name descname"><span class="pre">Detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ananke.schemas.html#ananke.schemas.detector.DetectorSchema" title="ananke.schemas.detector.DetectorSchema"><span class="pre">DetectorSchema</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ananke.configurations.html#ananke.configurations.detector.DetectorConfiguration" title="ananke.configurations.detector.DetectorConfiguration"><span class="pre">DetectorConfiguration</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['string_id',</span> <span class="pre">'module_id',</span> <span class="pre">'pmt_id']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/detector.html#Detector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.detector.Detector" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.detector.Strings" title="ananke.models.detector.Strings"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strings</span></code></a></p>
+<p>Python class representing detector.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector.configuration">
+<span class="sig-name descname"><span class="pre">configuration</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ananke.configurations.html#ananke.configurations.detector.DetectorConfiguration" title="ananke.configurations.detector.DetectorConfiguration"><span class="pre">DetectorConfiguration</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.Detector.configuration" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector.id_columns">
+<span class="sig-name descname"><span class="pre">id_columns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.Detector.id_columns" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector.indices">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">indices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span></em><a class="headerlink" href="#ananke.models.detector.Detector.indices" title="Permalink to this definition"></a></dt>
+<dd><p>Returns all indices of the PMTs.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector.outer_radius">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outer_radius</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.detector.Detector.outer_radius" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the distance of the farthest out module.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector.outer_cylinder">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outer_cylinder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.detector.Detector.outer_cylinder" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a tuple of the height and radius of the outer cylinder.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector.number_of_pmts">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_pmts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ananke.models.detector.Detector.number_of_pmts" title="Permalink to this definition"></a></dt>
+<dd><p>Gets total number of pmts.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector.number_of_modules">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ananke.models.detector.Detector.number_of_modules" title="Permalink to this definition"></a></dt>
+<dd><p>Gets total number of modules.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.detector.Detector.number_of_strings">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_strings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ananke.models.detector.Detector.number_of_strings" title="Permalink to this definition"></a></dt>
+<dd><p>Gets total number of strings.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ananke.models.event">
+<span id="ananke-models-event-module"></span><h2>ananke.models.event module<a class="headerlink" href="#module-ananke.models.event" title="Permalink to this heading"></a></h2>
+<p>This module contains all event and photon source related structures.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.RecordIds">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">RecordIds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">RecordIdSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#RecordIds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.RecordIds" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.interfaces.DataFrameFacade" title="ananke.models.interfaces.DataFrameFacade"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrameFacade</span></code></a></p>
+<p>General description of a record ids.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.RecordIds.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">RecordIdSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.event.RecordIds.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.event.RecordIds.get_by_record_ids">
+<span class="sig-name descname"><span class="pre">get_by_record_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.event.RecordIds" title="ananke.models.event.RecordIds"><span class="pre">RecordIds</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/ananke/models/event.html#RecordIds.get_by_record_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.RecordIds.get_by_record_ids" title="Permalink to this definition"></a></dt>
+<dd><p>Gets all sources by a record id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>record_ids</strong> – ID(s) of the record to get</p></li>
+<li><p><strong>invert</strong> – Get except passed record ids</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Records with given ids</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.event.RecordIds.record_ids">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">record_ids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#ananke.models.event.RecordIds.record_ids" title="Permalink to this definition"></a></dt>
+<dd><p>Gets all the record ids of the current df.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.TimeStatistics">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">TimeStatistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NonNegativeInt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#TimeStatistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.TimeStatistics" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<p>Model for staticstical information of record.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.TimeStatistics.count">
+<span class="sig-name descname"><span class="pre">count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">NonNegativeInt</span></em><a class="headerlink" href="#ananke.models.event.TimeStatistics.count" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.TimeStatistics.min">
+<span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.event.TimeStatistics.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.TimeStatistics.max">
+<span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ananke.models.event.TimeStatistics.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.RecordTimes">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">RecordTimes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">TimedSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#RecordTimes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.RecordTimes" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.interfaces.DataFrameFacade" title="ananke.models.interfaces.DataFrameFacade"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrameFacade</span></code></a></p>
+<p>General description of intervals.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.RecordTimes.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">TimedSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.event.RecordTimes.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.event.RecordTimes.times">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">times</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#ananke.models.event.RecordTimes.times" title="Permalink to this definition"></a></dt>
+<dd><p>Gets DataFrame with all times.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.event.RecordTimes.add_time">
+<span class="sig-name descname"><span class="pre">add_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_difference</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/ananke/models/event.html#RecordTimes.add_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.RecordTimes.add_time" title="Permalink to this definition"></a></dt>
+<dd><p>Adds time to the data frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>time_difference</strong> – time to add</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.event.RecordTimes.get_statistics">
+<span class="sig-name descname"><span class="pre">get_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">percentile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ananke.models.event.TimeStatistics" title="ananke.models.event.TimeStatistics"><span class="pre">TimeStatistics</span></a></span></span><a class="reference internal" href="_modules/ananke/models/event.html#RecordTimes.get_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.RecordTimes.get_statistics" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the Statistics of the current hits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>percentile</strong> – Float between 0 and one to give percentile of included rows.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>TimeStatistics Object containing min, max, and count</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.Records">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">Records</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">RecordSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#Records"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.Records" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.event.RecordIds" title="ananke.models.event.RecordIds"><code class="xref py py-class docutils literal notranslate"><span class="pre">RecordIds</span></code></a>, <a class="reference internal" href="#ananke.models.event.RecordTimes" title="ananke.models.event.RecordTimes"><code class="xref py py-class docutils literal notranslate"><span class="pre">RecordTimes</span></code></a></p>
+<p>General description of a record for events or sources.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Records.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">RecordSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.event.Records.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.RecordStatistics">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">RecordStatistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">RecordStatisticsSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#RecordStatistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.RecordStatistics" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.event.Records" title="ananke.models.event.Records"><code class="xref py py-class docutils literal notranslate"><span class="pre">Records</span></code></a></p>
+<p>General description of a record for events or sources.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.RecordStatistics.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">RecordStatisticsSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.event.RecordStatistics.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.OrientedRecords">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">OrientedRecords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">OrientedRecordSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#OrientedRecords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.OrientedRecords" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.geometry.OrientedLocatedObjects" title="ananke.models.geometry.OrientedLocatedObjects"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrientedLocatedObjects</span></code></a>, <a class="reference internal" href="#ananke.models.event.Records" title="ananke.models.event.Records"><code class="xref py py-class docutils literal notranslate"><span class="pre">Records</span></code></a></p>
+<p>General description of a record for events or sources.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.OrientedRecords.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">OrientedRecordSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.event.OrientedRecords.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.Sources">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">Sources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">SourceSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#Sources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.Sources" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.event.OrientedRecords" title="ananke.models.event.OrientedRecords"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrientedRecords</span></code></a></p>
+<p>Record for a photon source.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Sources.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">SourceSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.event.Sources.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.event.Sources.number_of_photons">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_photons</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#ananke.models.event.Sources.number_of_photons" title="Permalink to this definition"></a></dt>
+<dd><p>Gets DataFrame with all numbers of photons.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.EventRecords">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">EventRecords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">EventRecordSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#EventRecords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.EventRecords" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.event.OrientedRecords" title="ananke.models.event.OrientedRecords"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrientedRecords</span></code></a></p>
+<p>Record of an event that happened.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.EventRecords.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">EventRecordSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.event.EventRecords.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.NoiseRecords">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">NoiseRecords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">NoiseRecordSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#NoiseRecords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.NoiseRecords" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.event.Records" title="ananke.models.event.Records"><code class="xref py py-class docutils literal notranslate"><span class="pre">Records</span></code></a></p>
+<p>Record of an event that happened.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.NoiseRecords.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">NoiseRecordSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.event.NoiseRecords.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.FullRecords">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">FullRecords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">FullRecordSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#FullRecords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.FullRecords" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.event.Records" title="ananke.models.event.Records"><code class="xref py py-class docutils literal notranslate"><span class="pre">Records</span></code></a></p>
+<p>General description of a record for events or sources.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.FullRecords.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">FullRecordSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.event.FullRecords.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.event.Hits">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.event.</span></span><span class="sig-name descname"><span class="pre">Hits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">HitSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/event.html#Hits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.event.Hits" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.event.Records" title="ananke.models.event.Records"><code class="xref py py-class docutils literal notranslate"><span class="pre">Records</span></code></a></p>
+<p>Record of an event that happened.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.event.Hits.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">HitSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.event.Hits.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ananke.models.geometry">
+<span id="ananke-models-geometry-module"></span><h2>ananke.models.geometry module<a class="headerlink" href="#module-ananke.models.geometry" title="Permalink to this heading"></a></h2>
+<p>This module contains all geometric dataclasses.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors2D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.geometry.</span></span><span class="sig-name descname"><span class="pre">Vectors2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">Vector2DSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vectors2D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vectors2D" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.interfaces.DataFrameFacade" title="ananke.models.interfaces.DataFrameFacade"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrameFacade</span></code></a></p>
+<p>A 2D vector with interface to radial and cartesian coordinates.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors2D.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">Vector2DSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.geometry.Vectors2D.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors2D.phi">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">phi</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#ananke.models.geometry.Vectors2D.phi" title="Permalink to this definition"></a></dt>
+<dd><p>Phi coordinate in radial units.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors2D.norm">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#ananke.models.geometry.Vectors2D.norm" title="Permalink to this definition"></a></dt>
+<dd><p>Returns L2-norm of 2D vector.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors2D.scale_to_length">
+<span class="sig-name descname"><span class="pre">scale_to_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vectors2D.scale_to_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vectors2D.scale_to_length" title="Permalink to this definition"></a></dt>
+<dd><p>Scaling the vector to a given length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>length</strong> – length to scale the vector to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors2D.from_polar">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_polar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">PolarSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vectors2D.from_polar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vectors2D.from_polar" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a 2D vector from polar coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>polar</strong> – DataFrame with columns (norm, phi)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2D Vector with the given properties.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors2D.from_numpy">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_numpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numpy_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vectors2D.from_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vectors2D.from_numpy" title="Permalink to this definition"></a></dt>
+<dd><p>Creates 2d vector out of numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>numpy_array</strong> – numpy array of length two [x, y]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2d vector by given numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors3D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.geometry.</span></span><span class="sig-name descname"><span class="pre">Vectors3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">Vector3DSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vectors3D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vectors3D" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.geometry.Vectors2D" title="ananke.models.geometry.Vectors2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">Vectors2D</span></code></a></p>
+<p>A 3D vector with interface to radial and spherical coordinates.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors3D.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">Vector3DSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.geometry.Vectors3D.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors3D.theta">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">theta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#ananke.models.geometry.Vectors3D.theta" title="Permalink to this definition"></a></dt>
+<dd><p>Phi coordinate in radial units.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors3D.phi">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">phi</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#ananke.models.geometry.Vectors3D.phi" title="Permalink to this definition"></a></dt>
+<dd><p>Phi coordinate in radial units.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors3D.from_polar">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_polar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">PolarSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vectors3D.from_polar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vectors3D.from_polar" title="Permalink to this definition"></a></dt>
+<dd><p>3D vector cannot be created from polar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>AttributeError</strong> – A creation from polar coordinates is not possible</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors3D.from_spherical">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_spherical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spherical</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">SphericalSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vectors3D.from_spherical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vectors3D.from_spherical" title="Permalink to this definition"></a></dt>
+<dd><p>Create 3D vector based on spherical coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>spherical</strong> – Dataframe with columns (norm, phi, theta)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AttributeError</strong> – A creation from polar coordinates is not possible</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors3D.from_numpy">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_numpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numpy_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vectors3D.from_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vectors3D.from_numpy" title="Permalink to this definition"></a></dt>
+<dd><p>Creates 3d vector out of numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>numpy_array</strong> – numpy array of length three [x, y, z]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>3d vector by given numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors3D.from_df">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vectors3D.from_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vectors3D.from_df" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a DataFrame of 3d vectors.</p>
+<p>As many of the classes have a prefix in front of the coordinates,
+this method strips the prefix and returns a valid 3dVectors object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – DataFrame with columns</p></li>
+<li><p><strong>prefix</strong> – prefix to be stripped</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Valid Vectors3D Object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.geometry.Vectors3D.get_df_with_prefix">
+<span class="sig-name descname"><span class="pre">get_df_with_prefix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/ananke/models/geometry.html#Vectors3D.get_df_with_prefix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.Vectors3D.get_df_with_prefix" title="Permalink to this definition"></a></dt>
+<dd><p>Gets DataFrame from Vectors with prefixed columns for later use.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>prefix</strong> – prefix to prepend (x,y,z)-columns</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with prefixed columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.geometry.LocatedObjects">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.geometry.</span></span><span class="sig-name descname"><span class="pre">LocatedObjects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">LocatedObjectSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#LocatedObjects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.LocatedObjects" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.interfaces.DataFrameFacade" title="ananke.models.interfaces.DataFrameFacade"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrameFacade</span></code></a></p>
+<p>Object that has a location.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.geometry.LocatedObjects.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">LocatedObjectSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.geometry.LocatedObjects.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.geometry.LocatedObjects.locations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">locations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.geometry.Vectors3D" title="ananke.models.geometry.Vectors3D"><span class="pre">Vectors3D</span></a></em><a class="headerlink" href="#ananke.models.geometry.LocatedObjects.locations" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the 3D vectors data frame of the locations.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.geometry.OrientedLocatedObjects">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.geometry.</span></span><span class="sig-name descname"><span class="pre">OrientedLocatedObjects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">OrientedLocatedObjectSchema</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/geometry.html#OrientedLocatedObjects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.geometry.OrientedLocatedObjects" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.models.geometry.LocatedObjects" title="ananke.models.geometry.LocatedObjects"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocatedObjects</span></code></a></p>
+<p>Object that has a location and orientation.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.geometry.OrientedLocatedObjects.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">OrientedLocatedObjectSchema</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.geometry.OrientedLocatedObjects.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ananke.models.geometry.OrientedLocatedObjects.orientations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">orientations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ananke.models.geometry.Vectors3D" title="ananke.models.geometry.Vectors3D"><span class="pre">Vectors3D</span></a></em><a class="headerlink" href="#ananke.models.geometry.OrientedLocatedObjects.orientations" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the 3D vectors data frame of the orientations.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ananke.models.interfaces">
+<span id="ananke-models-interfaces-module"></span><h2>ananke.models.interfaces module<a class="headerlink" href="#module-ananke.models.interfaces" title="Permalink to this heading"></a></h2>
+<p>Place for all interfaces used in the package.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.interfaces.DataFrameFacadeIterator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.interfaces.</span></span><span class="sig-name descname"><span class="pre">DataFrameFacadeIterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">facade</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrameFacade_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/interfaces.html#DataFrameFacadeIterator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.interfaces.DataFrameFacadeIterator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFrameFacade_</span></code>]</p>
+<p>Class serving as iterator for the DataFrameFacade’s.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ananke.models.interfaces.DataFrameFacade">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ananke.models.interfaces.</span></span><span class="sig-name descname"><span class="pre">DataFrameFacade</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">T_</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/models/interfaces.html#DataFrameFacade"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.interfaces.DataFrameFacade" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<p>Interface for making a class numpy representable.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ananke.models.interfaces.DataFrameFacade.df">
+<span class="sig-name descname"><span class="pre">df</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">[</span></span><span class="pre">T_</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ananke.models.interfaces.DataFrameFacade.df" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.interfaces.DataFrameFacade.to_numpy">
+<span class="sig-name descname"><span class="pre">to_numpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_SupportsDType</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">SupportsIndex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">SupportsIndex</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_DTypeDict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/ananke/models/interfaces.html#DataFrameFacade.to_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.interfaces.DataFrameFacade.to_numpy" title="Permalink to this definition"></a></dt>
+<dd><p>Converts data frame to numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dtype</strong> – Type of the final dataframe.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Numpy array based on data frame.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.interfaces.DataFrameFacade.concat">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">concat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">facades_to_concat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.interfaces.DataFrameFacade" title="ananke.models.interfaces.DataFrameFacade"><span class="pre">DataFrameFacade</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ananke.models.interfaces.DataFrameFacade" title="ananke.models.interfaces.DataFrameFacade"><span class="pre">DataFrameFacade</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/ananke/models/interfaces.html#DataFrameFacade.concat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.interfaces.DataFrameFacade.concat" title="Permalink to this definition"></a></dt>
+<dd><p>Concats multiple facades to one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>facades_to_concat</strong> – List of facades to concat</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Concatenated Facade</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.interfaces.DataFrameFacade.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Generator</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ananke.models.interfaces.DataFrameFacade" title="ananke.models.interfaces.DataFrameFacade"><span class="pre">DataFrameFacade</span></a></span></span><a class="reference internal" href="_modules/ananke/models/interfaces.html#DataFrameFacade.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.interfaces.DataFrameFacade.sample" title="Permalink to this definition"></a></dt>
+<dd><p>Returns class with a random sample of its dataframe rows.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – number of samples to draw.</p></li>
+<li><p><strong>random_state</strong> – random state to choose</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – When fewer samples than required are available.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Class with the given number of random samples.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.interfaces.DataFrameFacade.iterbatches">
+<span class="sig-name descname"><span class="pre">iterbatches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ananke.models.interfaces.DataFrameFacadeIterator" title="ananke.models.interfaces.DataFrameFacadeIterator"><span class="pre">DataFrameFacadeIterator</span></a><span class="p"><span class="pre">[</span></span><span class="pre">DataFrameFacade_</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/ananke/models/interfaces.html#DataFrameFacade.iterbatches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.interfaces.DataFrameFacade.iterbatches" title="Permalink to this definition"></a></dt>
+<dd><p>Get iterator of current facade.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch_size</strong> – How many rows in each iteration</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterator for batched dataframe iteration</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ananke.models.interfaces.DataFrameFacade.itertuples">
+<span class="sig-name descname"><span class="pre">itertuples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/ananke/models/interfaces.html#DataFrameFacade.itertuples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ananke.models.interfaces.DataFrameFacade.itertuples" title="Permalink to this definition"></a></dt>
+<dd><p>Pass through itertuples from dataframe with name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>index</strong> – Whether index should be part of the Tuple</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Itertuples iterator of dataframe.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ananke.models">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ananke.models" title="Permalink to this heading"></a></h2>
+<p>Package containing all data models with business logic for cross package use.</p>
+<p class="rubric">Examples</p>
+<ul class="simple">
+<li><p>Detector class and all its subclasses</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ananke.configurations.presets.html" class="btn btn-neutral float-left" title="ananke.configurations.presets package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ananke.schemas.html" class="btn btn-neutral float-right" title="ananke.schemas package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Janik Prottung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

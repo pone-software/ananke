@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ananke.services.collection.importers &mdash; Ananke 0.2.2 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Ananke
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../ananke.html">ananke package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Ananke</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ananke.services.collection.importers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ananke.services.collection.importers</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module containing all logic to import collections.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">ananke.configurations.events</span> <span class="kn">import</span> <span class="n">Interval</span>
+<span class="kn">from</span> <span class="nn">ananke.models.detector</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">from</span> <span class="nn">ananke.models.event</span> <span class="kn">import</span> <span class="n">Hits</span><span class="p">,</span> <span class="n">Records</span><span class="p">,</span> <span class="n">Sources</span>
+<span class="kn">from</span> <span class="nn">ananke.models.interfaces</span> <span class="kn">import</span> <span class="n">DataFrameFacade</span>
+<span class="kn">from</span> <span class="nn">ananke.schemas.event</span> <span class="kn">import</span> <span class="n">RecordType</span><span class="p">,</span> <span class="n">SourceType</span><span class="p">,</span> <span class="n">Types</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">ananke.models.collection</span> <span class="kn">import</span> <span class="n">Collection</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+
+<span class="n">DataFrameFacade_</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;DataFrameFacade_&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">DataFrameFacade</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AbstractCollectionImporter"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.importers.AbstractCollectionImporter">[docs]</a><span class="k">class</span> <span class="nc">AbstractCollectionImporter</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract parent class for collection importers.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection</span><span class="p">:</span> <span class="n">Collection</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor of the Abstract Collection Importer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            collection: Path to collection or collection</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">collection</span> <span class="o">=</span> <span class="n">collection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AbstractCollectionImporter.import_data"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.importers.AbstractCollectionImporter.import_data">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">import_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Abstract stub for the import of a collection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            kwargs: Additional importer args</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Imported collection</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<span class="c1"># class JuliaArrowCollectionImporter(AbstractCollectionImporter):</span>
+<span class="c1">#     &quot;&quot;&quot;Concrete implementation for Julia Arrow imports.&quot;&quot;&quot;</span>
+<span class="c1">#</span>
+<span class="c1">#     def __read_file(self, filename: Union[str, bytes, os.PathLike]):</span>
+<span class="c1">#</span>
+<span class="c1">#         with pa.ipc.open_file(filename) as reader:</span>
+<span class="c1">#             df = reader.read_pandas()</span>
+<span class="c1">#             print(df.dtypes)</span>
+<span class="c1">#</span>
+<span class="c1">#     def import_data(</span>
+<span class="c1">#             self,</span>
+<span class="c1">#             import_path: Union[str, bytes, os.PathLike],</span>
+<span class="c1">#             **kwargs: object</span>
+<span class="c1">#     ) -&gt; None:</span>
+<span class="c1">#         &quot;&quot;&quot;Import of a julia arrow collection.</span>
+<span class="c1">#</span>
+<span class="c1">#         Args:</span>
+<span class="c1">#             import_path: File path to import</span>
+<span class="c1">#             **kwargs: Additional importer args</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         directory = os.fsencode(import_path)</span>
+<span class="c1">#         for file in os.listdir(directory):</span>
+<span class="c1">#             filename = os.path.join(import_path, os.fsdecode(file))</span>
+<span class="c1">#             if filename.endswith(&quot;.arrow&quot;):</span>
+<span class="c1">#                 self.__read_file(filename)</span>
+
+
+<div class="viewcode-block" id="LegacyCollectionKeys"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.importers.LegacyCollectionKeys">[docs]</a><span class="k">class</span> <span class="nc">LegacyCollectionKeys</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enum containing keys for the collection file.&quot;&quot;&quot;</span>
+
+    <span class="n">RECORDS</span> <span class="o">=</span> <span class="s2">&quot;records&quot;</span>
+    <span class="n">HITS</span> <span class="o">=</span> <span class="s2">&quot;hits&quot;</span>
+    <span class="n">SOURCES</span> <span class="o">=</span> <span class="s2">&quot;sources&quot;</span>
+    <span class="n">DETECTOR</span> <span class="o">=</span> <span class="s2">&quot;detector&quot;</span></div>
+
+
+<div class="viewcode-block" id="LegacyCollection"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.importers.LegacyCollection">[docs]</a><span class="k">class</span> <span class="nc">LegacyCollection</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class combining all data frames to a complete record collection.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">complevel</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">complib</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lzo&quot;</span><span class="p">,</span>
+        <span class="n">read_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the collection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data_path: Path to store/read collection from</span>
+<span class="sd">            records: Optional records to store directly</span>
+<span class="sd">            detector: Optional detector to store directly</span>
+<span class="sd">            complevel: Compression level for data file</span>
+<span class="sd">            complib: Compression Algorithm to use</span>
+<span class="sd">            read_only: Ensure that no data is written</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Instantiated collection with path </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_path</span><span class="p">))</span>
+        <span class="n">file_extensions</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;.hdf&quot;</span><span class="p">,</span> <span class="s2">&quot;.h5&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">file_extensions</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Only </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2"> are supported file extensions&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">file_extensions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">file_extensions</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span> <span class="o">=</span> <span class="n">data_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">complevel</span> <span class="o">=</span> <span class="n">complevel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">complib</span> <span class="o">=</span> <span class="n">complib</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_only</span> <span class="o">=</span> <span class="n">read_only</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_store</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__get_store</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the stored hdf object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            stored hdf object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_only</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Close store on delete.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__get_hdf_path</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">collection_key</span><span class="p">:</span> <span class="n">LegacyCollectionKeys</span><span class="p">,</span> <span class="n">record_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets a proper hdf path for all subgrouped datasets.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            collection_key: collection key to start with</span>
+<span class="sd">            record_id: record id of the record to save</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            string combining the two elements</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="n">collection_key</span> <span class="o">==</span> <span class="n">LegacyCollectionKeys</span><span class="o">.</span><span class="n">HITS</span>
+            <span class="ow">or</span> <span class="n">collection_key</span> <span class="o">==</span> <span class="n">LegacyCollectionKeys</span><span class="o">.</span><span class="n">SOURCES</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Paths only possible for hits and sources.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">record_id</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+            <span class="n">record_id</span> <span class="o">=</span> <span class="n">record_id</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">record_id</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">record_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">record_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;/</span><span class="si">{key}</span><span class="s2">/&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">collection_key</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">+</span> <span class="n">record_id</span>
+
+    <span class="k">def</span> <span class="nf">__get_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">facade_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">DataFrameFacade_</span><span class="p">],</span>
+        <span class="n">where</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DataFrameFacade_</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets data frame facade from file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: Key to get data by</span>
+<span class="sd">            facade_class: Data frame facade class to instantiate</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Data frame facade containing data or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Get </span><span class="si">{}</span><span class="s2"> with key </span><span class="si">{}</span><span class="s2"> at &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">facade_class</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">store</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="n">where</span><span class="p">))</span>
+            <span class="k">if</span> <span class="s2">&quot;type&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">new_dict</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="nb">type</span> <span class="ow">in</span> <span class="n">RecordType</span><span class="p">:</span>
+                    <span class="n">new_dict</span><span class="p">[</span><span class="nb">type</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="nb">type</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">for</span> <span class="nb">type</span> <span class="ow">in</span> <span class="n">SourceType</span><span class="p">:</span>
+                    <span class="n">new_dict</span><span class="p">[</span><span class="nb">type</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="nb">type</span><span class="o">.</span><span class="n">value</span>
+
+                <span class="n">df</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">new_dict</span><span class="p">)</span>
+            <span class="n">facade</span> <span class="o">=</span> <span class="n">facade_class</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">facade</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="LegacyCollection.get_detector"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.importers.LegacyCollection.get_detector">[docs]</a>    <span class="k">def</span> <span class="nf">get_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Detector</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets detector of the collection.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Detector of the collection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_data</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">LegacyCollectionKeys</span><span class="o">.</span><span class="n">DETECTOR</span><span class="p">,</span> <span class="n">facade_class</span><span class="o">=</span><span class="n">Detector</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LegacyCollection.get_records"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.importers.LegacyCollection.get_records">[docs]</a>    <span class="k">def</span> <span class="nf">get_records</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">record_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Types</span><span class="p">],</span> <span class="n">Types</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Records</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets records of the collection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            record_type: record type to include</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Records of the collection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">record_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">record_type</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
+                <span class="n">record_type</span> <span class="o">=</span> <span class="p">[</span><span class="n">record_type</span><span class="p">]</span>
+
+            <span class="n">wheres</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;type=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">current_type</span><span class="p">)</span> <span class="k">for</span> <span class="n">current_type</span> <span class="ow">in</span> <span class="n">record_type</span><span class="p">]</span>
+            <span class="n">where</span> <span class="o">=</span> <span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot; &amp; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wheres</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_data</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">LegacyCollectionKeys</span><span class="o">.</span><span class="n">RECORDS</span><span class="p">,</span> <span class="n">facade_class</span><span class="o">=</span><span class="n">Records</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="n">where</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__get_subgroup_dataset</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">base_key</span><span class="p">:</span> <span class="n">LegacyCollectionKeys</span><span class="p">,</span>
+        <span class="n">facade_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">DataFrameFacade_</span><span class="p">],</span>
+        <span class="n">record_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DataFrameFacade_</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets data of group based on record id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base_key: key of the subgroup</span>
+<span class="sd">            facade_class: Data frame facade class to instantiate</span>
+<span class="sd">            record_id: Record id to get hits from</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Data frame facade with the data from disc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_hdf_path</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">record_id</span><span class="p">)</span>
+        <span class="c1"># TODO: Check right place</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">where</span> <span class="o">=</span> <span class="s2">&quot;(time &lt; </span><span class="si">{end_time}</span><span class="s2"> &amp; time &gt;= </span><span class="si">{start_time}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">end_time</span><span class="o">=</span><span class="n">interval</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="n">interval</span><span class="o">.</span><span class="n">start</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_data</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">facade_class</span><span class="o">=</span><span class="n">facade_class</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="n">where</span><span class="p">)</span>
+
+    <span class="c1"># TODO: Allow multiple or all</span>
+<div class="viewcode-block" id="LegacyCollection.get_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.importers.LegacyCollection.get_sources">[docs]</a>    <span class="k">def</span> <span class="nf">get_sources</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">record_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sources</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets sources by a specific record id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            record_id: Record id to get hits from</span>
+<span class="sd">            interval: Interval to get hits in</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None if not available or sources for record id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_subgroup_dataset</span><span class="p">(</span>
+            <span class="n">base_key</span><span class="o">=</span><span class="n">LegacyCollectionKeys</span><span class="o">.</span><span class="n">SOURCES</span><span class="p">,</span>
+            <span class="n">facade_class</span><span class="o">=</span><span class="n">Sources</span><span class="p">,</span>
+            <span class="n">record_id</span><span class="o">=</span><span class="n">record_id</span><span class="p">,</span>
+            <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="c1"># TODO: Allow multiple or all</span>
+<div class="viewcode-block" id="LegacyCollection.get_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.importers.LegacyCollection.get_hits">[docs]</a>    <span class="k">def</span> <span class="nf">get_hits</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">record_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Hits</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets hits by a specific record id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            record_id: Record id to get hits from</span>
+<span class="sd">            interval: Interval to get hits in</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None if not available or hits for record id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_subgroup_dataset</span><span class="p">(</span>
+            <span class="n">base_key</span><span class="o">=</span><span class="n">LegacyCollectionKeys</span><span class="o">.</span><span class="n">HITS</span><span class="p">,</span>
+            <span class="n">facade_class</span><span class="o">=</span><span class="n">Hits</span><span class="p">,</span>
+            <span class="n">record_id</span><span class="o">=</span><span class="n">record_id</span><span class="p">,</span>
+            <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="LegacyCollectionImporter"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.importers.LegacyCollectionImporter">[docs]</a><span class="k">class</span> <span class="nc">LegacyCollectionImporter</span><span class="p">(</span><span class="n">AbstractCollectionImporter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to import legacy collection to current one.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="LegacyCollectionImporter.import_data"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.importers.LegacyCollectionImporter.import_data">[docs]</a>    <span class="k">def</span> <span class="nf">import_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">import_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Imports data from legacy collection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            import_path: Path to import data from</span>
+<span class="sd">            **kwargs: additional args for data import.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Starting Legacy import from path &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">import_path</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">legacy_collection</span> <span class="o">=</span> <span class="n">LegacyCollection</span><span class="p">(</span><span class="n">import_path</span><span class="p">)</span>
+        <span class="n">legacy_detector</span> <span class="o">=</span> <span class="n">legacy_collection</span><span class="o">.</span><span class="n">get_detector</span><span class="p">()</span>
+        <span class="n">legacy_records</span> <span class="o">=</span> <span class="n">legacy_collection</span><span class="o">.</span><span class="n">get_records</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">legacy_records</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No records to import&quot;</span><span class="p">)</span>
+        <span class="n">number_of_records</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">legacy_records</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">legacy_detector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">set_detector</span><span class="p">(</span><span class="n">legacy_detector</span><span class="p">)</span>
+            <span class="n">new_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">get_next_record_ids</span><span class="p">(</span><span class="n">number_of_records</span><span class="p">)</span>
+            <span class="n">legacy_records_ids</span> <span class="o">=</span> <span class="n">legacy_records</span><span class="o">.</span><span class="n">record_ids</span>
+            <span class="n">legacy_records</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;record_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_ids</span>
+            <span class="k">if</span> <span class="n">legacy_records</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">set_records</span><span class="p">(</span><span class="n">legacy_records</span><span class="p">)</span>
+
+                <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">legacy_records</span><span class="p">),</span> <span class="n">mininterval</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">legacy_record_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">legacy_records_ids</span><span class="p">):</span>
+                        <span class="n">new_id</span> <span class="o">=</span> <span class="n">new_ids</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+                        <span class="n">legacy_hits</span> <span class="o">=</span> <span class="n">legacy_collection</span><span class="o">.</span><span class="n">get_hits</span><span class="p">(</span>
+                            <span class="n">record_id</span><span class="o">=</span><span class="n">legacy_record_id</span>
+                        <span class="p">)</span>
+                        <span class="n">legacy_sources</span> <span class="o">=</span> <span class="n">legacy_collection</span><span class="o">.</span><span class="n">get_sources</span><span class="p">(</span>
+                            <span class="n">record_id</span><span class="o">=</span><span class="n">legacy_record_id</span>
+                        <span class="p">)</span>
+                        <span class="k">if</span> <span class="n">legacy_hits</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">legacy_hits</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;record_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_id</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">set_hits</span><span class="p">(</span><span class="n">legacy_hits</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">legacy_sources</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">legacy_sources</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;record_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_id</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">set_sources</span><span class="p">(</span><span class="n">legacy_sources</span><span class="p">)</span>
+
+                        <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Janik Prottung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

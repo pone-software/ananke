@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ananke.services.collection.storage &mdash; Ananke 0.2.2 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Ananke
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../ananke.html">ananke package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Ananke</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ananke.services.collection.storage</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ananke.services.collection.storage</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module containing all the storage interfaces for collections.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">call</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pandera</span> <span class="k">as</span> <span class="nn">pa</span>
+
+<span class="kn">from</span> <span class="nn">ananke.configurations.collection</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">HDF5StorageConfiguration</span><span class="p">,</span>
+    <span class="n">StorageConfiguration</span><span class="p">,</span> <span class="n">MemoryStorageConfiguration</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ananke.configurations.events</span> <span class="kn">import</span> <span class="n">Interval</span>
+<span class="kn">from</span> <span class="nn">ananke.models.detector</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">from</span> <span class="nn">ananke.models.event</span> <span class="kn">import</span> <span class="n">Hits</span><span class="p">,</span> <span class="n">RecordIds</span><span class="p">,</span> <span class="n">Records</span><span class="p">,</span> <span class="n">Sources</span>
+<span class="kn">from</span> <span class="nn">ananke.models.interfaces</span> <span class="kn">import</span> <span class="n">DataFrameFacade</span>
+<span class="kn">from</span> <span class="nn">ananke.schemas.event</span> <span class="kn">import</span> <span class="n">FullRecordSchema</span><span class="p">,</span> <span class="n">RecordIdsTypes_</span><span class="p">,</span> <span class="n">TypesTypes_</span>
+
+
+<span class="n">CollectionStorageConfiguration_</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span>
+    <span class="s2">&quot;CollectionStorageConfiguration_&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">StorageConfiguration</span>
+<span class="p">)</span>
+<span class="n">DataFrameFacade_</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;DataFrameFacade_&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">DataFrameFacade</span><span class="p">)</span>
+
+
+<span class="c1"># TODO: Implement Configuration Saving</span>
+<span class="c1"># TODO: Implement Deletion</span>
+
+
+<div class="viewcode-block" id="AbstractCollectionStorage"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage">[docs]</a><span class="k">class</span> <span class="nc">AbstractCollectionStorage</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">CollectionStorageConfiguration_</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface for all Collection Storage interfaces.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">:</span> <span class="n">CollectionStorageConfiguration_</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor of the Collection Storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            configuration: Configuration of the Collection Storage Interface</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span> <span class="o">=</span> <span class="n">configuration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_only</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">read_only</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractCollectionStorage</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Open storage connection on enter.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">exc_traceback</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Close storage connection on exit.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.open"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.open">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractCollectionStorage</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Opens storage connection.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Opening Connection not possible.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.close"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.close">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Opens storage connection.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Closing Connection not possible.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.get_detector"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_detector">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Detector</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the detector of the current collection.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Detector of collection or None if empty.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Get detector is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.set_detector"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.set_detector">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">set_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector</span><span class="p">:</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the detector for current storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            detector: Detector to set</span>
+<span class="sd">            append: Append to existing detector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Set detector is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.del_detector"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.del_detector">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">del_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes detector of collection storage.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Delete detector is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.get_records"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_records">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_records</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Records</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the records of the current collection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Type of records to get</span>
+<span class="sd">            record_ids: record_ids to pick</span>
+<span class="sd">            interval: only records in interval</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Records of collection or None if empty.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Get records is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.set_records"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.set_records">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">set_records</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">records</span><span class="p">:</span> <span class="n">Records</span><span class="p">,</span>
+        <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the records for current storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            records: Records to set</span>
+<span class="sd">            append: Append to existing detector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Set records is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.del_records"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.del_records">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">del_records</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes records of collection storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Type of records to get</span>
+<span class="sd">            record_ids: record_ids to pick</span>
+<span class="sd">            interval: only records in interval</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Delete records is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.get_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_hits">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_hits</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Hits</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the hits of the current collection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Type of hits to get</span>
+<span class="sd">            record_ids: record_ids to pick</span>
+<span class="sd">            interval: only hits in interval</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Hits of collection or None if empty.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Get hits is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.set_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.set_hits">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">set_hits</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">hits</span><span class="p">:</span> <span class="n">Hits</span><span class="p">,</span>
+        <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the hits for current storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hits: Hits to set</span>
+<span class="sd">            append: Append to existing detector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Set hits is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.del_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.del_hits">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">del_hits</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes hits of collection storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Type of hits to get</span>
+<span class="sd">            record_ids: record_ids to pick</span>
+<span class="sd">            interval: only hits in interval</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Delete hits is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.get_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_sources">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_sources</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sources</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the sources of the current collection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Type of sources to get</span>
+<span class="sd">            record_ids: record_ids to pick</span>
+<span class="sd">            interval: only sources in interval</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Sources of collection or None if empty.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Get sources is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.set_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.set_sources">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">set_sources</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sources</span><span class="p">:</span> <span class="n">Sources</span><span class="p">,</span>
+        <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the sources for current storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sources: Sources to set</span>
+<span class="sd">            append: Append to existing detector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Set sources is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.del_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.del_sources">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">del_sources</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes sources of collection storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Type of sources to get</span>
+<span class="sd">            record_ids: record_ids to pick</span>
+<span class="sd">            interval: only sources in interval</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Delete sources is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.get_next_record_ids"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_next_record_ids">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_next_record_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets n next record ids for generation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n: Number of record ids to generate</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of integers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Get next record ids not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.delete"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.delete">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes current collection.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Delete collection is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.get_record_ids_with_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_record_ids_with_hits">[docs]</a>    <span class="k">def</span> <span class="nf">get_record_ids_with_hits</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all record ids with hits.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Type of sources to get</span>
+<span class="sd">            record_ids: record_ids to pick</span>
+<span class="sd">            interval: only sources in interval</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Pandas Series containing all record ids</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Get record ids with hits is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.get_record_ids_with_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_record_ids_with_sources">[docs]</a>    <span class="k">def</span> <span class="nf">get_record_ids_with_sources</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all record ids with hits.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Type of sources to get</span>
+<span class="sd">            record_ids: record_ids to pick</span>
+<span class="sd">            interval: only sources in interval</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Pandas Series containing all record ids</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Get record ids with sources is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractCollectionStorage.optimize"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optimizes storage, if optimizable.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="StorageKeys"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.StorageKeys">[docs]</a><span class="k">class</span> <span class="nc">StorageKeys</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enum containing keys for the collection file.&quot;&quot;&quot;</span>
+
+    <span class="n">RECORDS</span> <span class="o">=</span> <span class="s2">&quot;records&quot;</span>
+    <span class="n">HITS</span> <span class="o">=</span> <span class="s2">&quot;hits&quot;</span>
+    <span class="n">SOURCES</span> <span class="o">=</span> <span class="s2">&quot;sources&quot;</span>
+    <span class="n">DETECTOR</span> <span class="o">=</span> <span class="s2">&quot;detector&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;To string coercion.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            String representation of the value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage">[docs]</a><span class="k">class</span> <span class="nc">MemoryCollectionStorage</span><span class="p">(</span><span class="n">AbstractCollectionStorage</span><span class="p">[</span><span class="n">MemoryStorageConfiguration</span><span class="p">]):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">:</span> <span class="n">HDF5StorageConfiguration</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor of HDF5 collection storage.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MemoryCollectionStorage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">configuration</span><span class="o">=</span><span class="n">configuration</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__store</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_open</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.open"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MemoryCollectionStorage</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__store</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__store</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_open</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__is_open</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.close"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_open</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+    <span class="k">def</span> <span class="nf">__get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">StorageKeys</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Get key </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.get_detector"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_detector">[docs]</a>    <span class="k">def</span> <span class="nf">get_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Detector</span><span class="p">]:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.set_detector"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.set_detector">[docs]</a>    <span class="k">def</span> <span class="nf">set_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector</span><span class="p">:</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.del_detector"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.del_detector">[docs]</a>    <span class="k">def</span> <span class="nf">del_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.get_records"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_records">[docs]</a>    <span class="k">def</span> <span class="nf">get_records</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Records</span><span class="p">]:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.set_records"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.set_records">[docs]</a>    <span class="k">def</span> <span class="nf">set_records</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">records</span><span class="p">:</span> <span class="n">Records</span><span class="p">,</span> <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.del_records"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.del_records">[docs]</a>    <span class="k">def</span> <span class="nf">del_records</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.get_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_hits">[docs]</a>    <span class="k">def</span> <span class="nf">get_hits</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Hits</span><span class="p">]:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.set_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.set_hits">[docs]</a>    <span class="k">def</span> <span class="nf">set_hits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hits</span><span class="p">:</span> <span class="n">Hits</span><span class="p">,</span> <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.del_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.del_hits">[docs]</a>    <span class="k">def</span> <span class="nf">del_hits</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.get_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_sources">[docs]</a>    <span class="k">def</span> <span class="nf">get_sources</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sources</span><span class="p">]:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.set_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.set_sources">[docs]</a>    <span class="k">def</span> <span class="nf">set_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sources</span><span class="p">:</span> <span class="n">Sources</span><span class="p">,</span> <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.del_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.del_sources">[docs]</a>    <span class="k">def</span> <span class="nf">del_sources</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.get_next_record_ids"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_next_record_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_record_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.delete"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.get_record_ids_with_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_record_ids_with_hits">[docs]</a>    <span class="k">def</span> <span class="nf">get_record_ids_with_hits</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MemoryCollectionStorage.get_record_ids_with_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_record_ids_with_sources">[docs]</a>    <span class="k">def</span> <span class="nf">get_record_ids_with_sources</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="HDF5CollectionStorage"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage">[docs]</a><span class="k">class</span> <span class="nc">HDF5CollectionStorage</span><span class="p">(</span><span class="n">AbstractCollectionStorage</span><span class="p">[</span><span class="n">HDF5StorageConfiguration</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implementation for collection storage using HDF5 file format.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">:</span> <span class="n">HDF5StorageConfiguration</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor of HDF5 collection storage.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HDF5CollectionStorage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">configuration</span><span class="o">=</span><span class="n">configuration</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__store</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">data_path</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the HDF5 store.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            HDF5 store object of storage.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__store</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__store</span><span class="o">.</span><span class="n">is_open</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You forgot to open the storage&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__store</span>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.open"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HDF5CollectionStorage</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Opens the file io connection.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Itself to work with open storage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__store</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__store</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_store</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__store</span><span class="o">.</span><span class="n">is_open</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__store</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.close"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Closes the file io connection.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__store</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.delete"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes the H5 file.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__raise_writable</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.get_detector"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_detector">[docs]</a>    <span class="k">def</span> <span class="nf">get_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Detector</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the detector from HDF5.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Detector from file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_data</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">DETECTOR</span><span class="p">,</span> <span class="n">facade_class</span><span class="o">=</span><span class="n">Detector</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.set_detector"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.set_detector">[docs]</a>    <span class="k">def</span> <span class="nf">set_detector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">detector</span><span class="p">:</span> <span class="n">Detector</span><span class="p">,</span>
+        <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the detector to HDF5.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            detector: detector to store</span>
+<span class="sd">            append: append to current one</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__set_data</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">DETECTOR</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">detector</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="n">append</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.del_detector"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.del_detector">[docs]</a>    <span class="k">def</span> <span class="nf">del_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes the detector from HDF5.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__del_data</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">DETECTOR</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.get_records"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_records">[docs]</a>    <span class="k">def</span> <span class="nf">get_records</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Records</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the records from HDF5.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Types to filter by.</span>
+<span class="sd">            record_ids: Record Ids to filter by.</span>
+<span class="sd">            interval: Interval to filter by.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Records matching criteria.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_data</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">RECORDS</span><span class="p">,</span>
+            <span class="n">facade_class</span><span class="o">=</span><span class="n">Records</span><span class="p">,</span>
+            <span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="o">=</span><span class="n">record_ids</span><span class="p">,</span>
+            <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.set_records"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.set_records">[docs]</a>    <span class="k">def</span> <span class="nf">set_records</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">records</span><span class="p">:</span> <span class="n">Records</span><span class="p">,</span> <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the records to HDF5.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            records: records to store</span>
+<span class="sd">            append: append to current one</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__set_data</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">RECORDS</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">records</span><span class="p">,</span>
+            <span class="n">append</span><span class="o">=</span><span class="n">append</span><span class="p">,</span>
+            <span class="n">schema</span><span class="o">=</span><span class="n">FullRecordSchema</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.del_records"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.del_records">[docs]</a>    <span class="k">def</span> <span class="nf">del_records</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes the records matching criteria from HDF5.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Types to filter by.</span>
+<span class="sd">            record_ids: Record Ids to filter by.</span>
+<span class="sd">            interval: Interval to filter by.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__del_data</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">RECORDS</span><span class="p">,</span>
+            <span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="o">=</span><span class="n">record_ids</span><span class="p">,</span>
+            <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.get_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_hits">[docs]</a>    <span class="k">def</span> <span class="nf">get_hits</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Hits</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the hits from HDF5.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Types to filter by.</span>
+<span class="sd">            record_ids: Record Ids to filter by.</span>
+<span class="sd">            interval: Interval to filter by.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Hits matching criteria.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_data</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">HITS</span><span class="p">,</span>
+            <span class="n">facade_class</span><span class="o">=</span><span class="n">Hits</span><span class="p">,</span>
+            <span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="o">=</span><span class="n">record_ids</span><span class="p">,</span>
+            <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.set_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.set_hits">[docs]</a>    <span class="k">def</span> <span class="nf">set_hits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hits</span><span class="p">:</span> <span class="n">Hits</span><span class="p">,</span> <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the hits to HDF5.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hits: hits to store</span>
+<span class="sd">            append: append to current one</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__set_data</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">HITS</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">hits</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="n">append</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.del_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.del_hits">[docs]</a>    <span class="k">def</span> <span class="nf">del_hits</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes the hits matching criteria from HDF5.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Types to filter by.</span>
+<span class="sd">            record_ids: Record Ids to filter by.</span>
+<span class="sd">            interval: Interval to filter by.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__del_data</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">HITS</span><span class="p">,</span>
+            <span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="o">=</span><span class="n">record_ids</span><span class="p">,</span>
+            <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.get_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_sources">[docs]</a>    <span class="k">def</span> <span class="nf">get_sources</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sources</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the sources from HDF5.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Types to filter by.</span>
+<span class="sd">            record_ids: Record Ids to filter by.</span>
+<span class="sd">            interval: Interval to filter by.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Sources matching criteria.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_data</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">SOURCES</span><span class="p">,</span>
+            <span class="n">facade_class</span><span class="o">=</span><span class="n">Sources</span><span class="p">,</span>
+            <span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="o">=</span><span class="n">record_ids</span><span class="p">,</span>
+            <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.set_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.set_sources">[docs]</a>    <span class="k">def</span> <span class="nf">set_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sources</span><span class="p">:</span> <span class="n">Sources</span><span class="p">,</span> <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the sources to HDF5.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sources: sources to store</span>
+<span class="sd">            append: append to current one</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__set_data</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">SOURCES</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">sources</span><span class="p">,</span>
+            <span class="n">append</span><span class="o">=</span><span class="n">append</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.del_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.del_sources">[docs]</a>    <span class="k">def</span> <span class="nf">del_sources</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes the sources matching criteria from HDF5.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Types to filter by.</span>
+<span class="sd">            record_ids: Record Ids to filter by.</span>
+<span class="sd">            interval: Interval to filter by.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__del_data</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">SOURCES</span><span class="p">,</span>
+            <span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="o">=</span><span class="n">record_ids</span><span class="p">,</span>
+            <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__get_store</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the stored hdf object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            stored hdf object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_only</span><span class="p">:</span>
+            <span class="c1"># TODO Make bulletproof on update of read only</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span>
+
+        <span class="n">data_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">data_path</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">PermissionError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot create collection in read_only mode. &quot;</span>
+                    <span class="s2">&quot;Consider changing the configuration.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dir_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">data_path</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+            <span class="n">complevel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">complevel</span><span class="p">,</span>
+            <span class="n">complib</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">complib</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__get_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">StorageKeys</span><span class="p">,</span>
+        <span class="n">facade_class</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">DataFrameFacade_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DataFrameFacade_</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets data frame facade from file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: Key to get data by</span>
+<span class="sd">            facade_class: Data frame facade class to instantiate</span>
+<span class="sd">            types: Record types to filter by</span>
+<span class="sd">            record_ids: Record ids to filter by</span>
+<span class="sd">            interval: timeframe to filter by</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Data frame facade containing data or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Get </span><span class="si">{}</span><span class="s2"> with key </span><span class="si">{}</span><span class="s2"> at &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">facade_class</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">str_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="n">wheres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_wheres</span><span class="p">(</span>
+            <span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span> <span class="n">record_ids</span><span class="o">=</span><span class="n">record_ids</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span>
+        <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">store</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span>
+            <span class="n">dfs</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">store</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">str_key</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="n">where</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">where</span> <span class="ow">in</span> <span class="n">wheres</span>
+            <span class="p">]</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">dfs</span>
+            <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="c1"># Be careful of side effects</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">facade_class</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">facade</span> <span class="o">=</span> <span class="n">facade_class</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">facade</span>
+
+            <span class="k">return</span> <span class="n">df</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__del_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">StorageKeys</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete rows or the dataframe.</span>
+
+<span class="sd">        If no criteria is passed, dataframe is deleted.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: Key to delete data by</span>
+<span class="sd">            types: Record types to filter by</span>
+<span class="sd">            record_ids: Record ids to filter by</span>
+<span class="sd">            interval: Interval to filter by</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__raise_writable</span><span class="p">()</span>
+
+        <span class="n">str_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="n">wheres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_wheres</span><span class="p">(</span>
+            <span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span> <span class="n">record_ids</span><span class="o">=</span><span class="n">record_ids</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span>
+        <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">where</span> <span class="ow">in</span> <span class="n">wheres</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">str_key</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="n">where</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">__raise_writable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Raises exception if not writable.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">              ValueError: When class not writable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_only</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">PermissionError</span><span class="p">(</span><span class="s2">&quot;Class cannot write as its opened in read only mode.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__set_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">StorageKeys</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">DataFrameFacade</span><span class="p">,</span>
+        <span class="n">append</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">SchemaModel</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets data frame facade to file by a specific key.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: Key to store data at</span>
+<span class="sd">            data: Data frame facade to store</span>
+<span class="sd">            append: Append data to existing</span>
+<span class="sd">            schema: ensures all columns exist for later appending</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__raise_writable</span><span class="p">()</span>
+
+        <span class="n">str_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">types</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">to_schema</span><span class="p">()</span><span class="o">.</span><span class="n">dtypes</span>
+            <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">type_</span> <span class="ow">in</span> <span class="n">types</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># TODO: Beautify this</span>
+                <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">NAN</span>
+                <span class="k">if</span> <span class="n">type_</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">type_</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Set </span><span class="si">{}</span><span class="s2"> with key </span><span class="si">{}</span><span class="s2"> at &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># TODO: Test override</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">str_key</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">df</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span>
+            <span class="n">append</span><span class="o">=</span><span class="n">append</span><span class="p">,</span>
+            <span class="n">complevel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">complevel</span><span class="p">,</span>
+            <span class="n">complib</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">complib</span><span class="p">,</span>
+            <span class="n">data_columns</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># TODO: Make smart and encourage once per append</span>
+        <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">RecordIds</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">create_table_index</span><span class="p">(</span>
+                <span class="n">key</span><span class="o">=</span><span class="n">str_key</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;record_id&quot;</span><span class="p">],</span> <span class="n">optlevel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">optlevel</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__get_wheres</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_wheres_number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the where clause to select records by.</span>
+
+<span class="sd">        As numpy only accepts less than 32 conditions per query, wheres are separated</span>
+<span class="sd">        in according lists.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Types to select</span>
+<span class="sd">            record_ids: record ids to select</span>
+<span class="sd">            interval: Interval to filter by</span>
+<span class="sd">            max_wheres_number: Number of maximal wheres per batch (numpy 32 limit)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            string to be passed to hdf</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">type_interval_wheres</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">wheres_number</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">types</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">types</span><span class="p">),</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">types</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">types</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+                <span class="k">class</span> <span class="nc">NoValueTypeEnum</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+                    <span class="n">NO_VALUE_ENUM</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10000000</span>
+
+                <span class="c1"># not a valid type id. should get nothing</span>
+                <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">NoValueTypeEnum</span><span class="o">.</span><span class="n">NO_VALUE_ENUM</span><span class="p">]</span>
+            <span class="n">wheres_number</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">types</span><span class="p">)</span>
+            <span class="n">types_wheres</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;type=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">current_type</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">current_type</span> <span class="ow">in</span> <span class="n">types</span>
+            <span class="p">]</span>
+            <span class="n">type_interval_wheres</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot; | &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">types_wheres</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">wheres_number</span> <span class="o">+=</span> <span class="mi">2</span>
+            <span class="n">type_interval_wheres</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;(time&gt;=</span><span class="si">{}</span><span class="s2"> &amp; time&lt;</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">record_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">record_ids</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ScalarType</span><span class="p">):</span>
+                <span class="n">record_ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">record_ids</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">record_ids</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+                <span class="n">record_ids</span> <span class="o">=</span> <span class="n">record_ids</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">record_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># as record_ids should be positive int considered save enough</span>
+                <span class="n">record_ids</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">10000000</span><span class="p">]</span>
+
+            <span class="n">record_ids_wheres</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;record_id=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">record_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">record_id</span> <span class="ow">in</span> <span class="n">record_ids</span>
+            <span class="p">]</span>
+
+            <span class="n">batch_size</span> <span class="o">=</span> <span class="n">max_wheres_number</span> <span class="o">-</span> <span class="n">wheres_number</span>
+
+            <span class="n">record_ids_wheres_batched</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">record_ids_wheres</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">batch_size</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">record_ids_wheres</span><span class="p">),</span> <span class="n">batch_size</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">wheres</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">record_ids_batch</span> <span class="ow">in</span> <span class="n">record_ids_wheres_batched</span><span class="p">:</span>
+                <span class="n">type_interval_copy</span> <span class="o">=</span> <span class="n">type_interval_wheres</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="n">type_interval_copy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot; | &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">record_ids_batch</span><span class="p">)))</span>
+                <span class="n">wheres</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">type_interval_copy</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">wheres</span> <span class="o">=</span> <span class="p">[</span><span class="n">type_interval_wheres</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">wheres</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">wheres</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">wheres</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot; &amp; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">where</span><span class="p">))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">where</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">where</span> <span class="ow">in</span> <span class="n">wheres</span>
+            <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">wheres</span>
+
+    <span class="k">def</span> <span class="nf">__get_unique_records_ids</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">StorageKeys</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all unique record ids or empty series if empty.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: Key to get data by</span>
+<span class="sd">            types: Record types to filter by</span>
+<span class="sd">            record_ids: Record ids to filter by</span>
+<span class="sd">            interval: timeframe to filter by</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Unique record ids or empty series</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">record_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_data</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+            <span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="o">=</span><span class="n">record_ids</span><span class="p">,</span>
+            <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;record_id&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">record_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">record_ids_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">record_ids_series</span> <span class="o">=</span> <span class="n">record_ids</span><span class="p">[</span><span class="s2">&quot;record_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">record_ids_series</span>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.get_next_record_ids"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_next_record_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_record_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates an auto increment based of the highest current record id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n: Number of record ids to be generated</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of integer ids</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">record_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_unique_records_ids</span><span class="p">(</span><span class="n">StorageKeys</span><span class="o">.</span><span class="n">RECORDS</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">record_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">record_ids</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">n</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.get_record_ids_with_hits"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_record_ids_with_hits">[docs]</a>    <span class="k">def</span> <span class="nf">get_record_ids_with_hits</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all unique record ids of records with hits or empty series if empty.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Record types to filter by</span>
+<span class="sd">            record_ids: Record ids to filter by</span>
+<span class="sd">            interval: timeframe to filter by</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Unique record ids or empty series of records with hits</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_unique_records_ids</span><span class="p">(</span>
+            <span class="n">StorageKeys</span><span class="o">.</span><span class="n">HITS</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span> <span class="n">record_ids</span><span class="o">=</span><span class="n">record_ids</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.get_record_ids_with_sources"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_record_ids_with_sources">[docs]</a>    <span class="k">def</span> <span class="nf">get_record_ids_with_sources</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">types</span><span class="p">:</span> <span class="n">TypesTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all unique record ids of records with sources or empty series if empty.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            types: Record types to filter by</span>
+<span class="sd">            record_ids: Record ids to filter by</span>
+<span class="sd">            interval: timeframe to filter by</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Unique record ids or empty series of records with sources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_unique_records_ids</span><span class="p">(</span>
+            <span class="n">StorageKeys</span><span class="o">.</span><span class="n">SOURCES</span><span class="p">,</span>
+            <span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span>
+            <span class="n">record_ids</span><span class="o">=</span><span class="n">record_ids</span><span class="p">,</span>
+            <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HDF5CollectionStorage.optimize"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optimize HDF5 Storage by recompressing and recreating indices.&quot;&quot;&quot;</span>
+        <span class="nb">dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting to optimize HDF5.&quot;</span><span class="p">)</span>
+        <span class="n">tmp_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">.h5&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())))</span>
+        <span class="n">indices_to_create_index</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">StorageKeys</span><span class="o">.</span><span class="n">HITS</span><span class="p">,</span>
+            <span class="n">StorageKeys</span><span class="o">.</span><span class="n">SOURCES</span><span class="p">,</span>
+            <span class="n">StorageKeys</span><span class="o">.</span><span class="n">RECORDS</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Starting to recreate indices.&quot;</span><span class="p">)</span>
+        <span class="n">file_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">indices_to_create_index</span><span class="p">:</span>
+            <span class="n">current_index</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">current_index</span> <span class="ow">in</span> <span class="n">file_keys</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">create_table_index</span><span class="p">(</span>
+                    <span class="n">key</span><span class="o">=</span><span class="n">current_index</span><span class="p">,</span>
+                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;record_id&quot;</span><span class="p">],</span>
+                    <span class="n">optlevel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">optlevel</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finished recreating indices.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Starting to ptrepack files.&quot;</span><span class="p">)</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;ptrepack&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;--chunkshape=auto&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;--propindexes&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;--complevel=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">complevel</span><span class="p">),</span>
+                <span class="s2">&quot;--complib=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">complib</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">,</span>
+                <span class="n">tmp_file</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="n">call</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">tmp_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finished to ptrepack files.&quot;</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;PTRepack not working. Skipping compression&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished to optimize HDF5.&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="StorageFactory"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.StorageFactory">[docs]</a><span class="k">class</span> <span class="nc">StorageFactory</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class as factory for collection storages.&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Mapping from configuration to actual storage class</span>
+    <span class="n">configuration_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span>
+        <span class="n">Type</span><span class="p">[</span><span class="n">StorageConfiguration</span><span class="p">],</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbstractCollectionStorage</span><span class="p">]</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">HDF5StorageConfiguration</span><span class="p">:</span> <span class="n">HDF5CollectionStorage</span><span class="p">}</span>
+
+<div class="viewcode-block" id="StorageFactory.create"><a class="viewcode-back" href="../../../../ananke.services.collection.html#ananke.services.collection.storage.StorageFactory.create">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">configuration</span><span class="p">:</span> <span class="n">StorageConfiguration</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractCollectionStorage</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Takes a configuration for a storage and returns according storage class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            configuration: Configuration for current storage</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Collection storage to get and retrieve data from</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">configuration_type</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">configuration_mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">configuration_type</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">configuration_mapping</span><span class="p">[</span><span class="n">configuration_type</span><span class="p">](</span><span class="n">configuration</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Configuration type &#39;</span><span class="si">{}</span><span class="s2">&#39; is not supported&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Janik Prottung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ananke.configurations.collection &mdash; Ananke 0.2.2 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ananke
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ananke.html">ananke package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ananke</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ananke.configurations.collection</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ananke.configurations.collection</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module for all the configuration models of the collection.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">ananke.defaults</span> <span class="k">as</span> <span class="nn">defaults</span>
+
+<span class="kn">from</span> <span class="nn">ananke.configurations.events</span> <span class="kn">import</span> <span class="n">Interval</span><span class="p">,</span> <span class="n">RedistributionConfiguration</span>
+<span class="kn">from</span> <span class="nn">ananke.schemas.event</span> <span class="kn">import</span> <span class="n">RecordType</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">PositiveInt</span><span class="p">,</span> <span class="n">conint</span><span class="p">,</span> <span class="n">constr</span>
+
+
+<div class="viewcode-block" id="MergeContentConfiguration"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.collection.MergeContentConfiguration">[docs]</a><span class="k">class</span> <span class="nc">MergeContentConfiguration</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration saying what should be in one.</span>
+
+<span class="sd">    It first tries to collect the number of records of the primary type. Then it</span>
+<span class="sd">    mixes in the secondary types. Each type must at least have the number of types</span>
+<span class="sd">    available.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: Types to keep and search for</span>
+    <span class="n">primary_type</span><span class="p">:</span> <span class="n">RecordType</span>
+
+    <span class="c1">#: Number of records</span>
+    <span class="n">number_of_records</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PositiveInt</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1">#: Types to mix in</span>
+    <span class="n">secondary_types</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">RecordType</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1">#: Interval of hits</span>
+    <span class="n">interval</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Interval</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1">#: Should empty hit records be filtered?</span>
+    <span class="n">filter_no_hits</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="StorageTypes"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.collection.StorageTypes">[docs]</a><span class="k">class</span> <span class="nc">StorageTypes</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Types of storage configurations.&quot;&quot;&quot;</span>
+
+    <span class="n">HDF5</span> <span class="o">=</span> <span class="s2">&quot;hdf5&quot;</span>
+    <span class="n">MEMORY</span> <span class="o">=</span> <span class="s2">&quot;memory&quot;</span></div>
+
+
+<div class="viewcode-block" id="StorageConfiguration"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.collection.StorageConfiguration">[docs]</a><span class="k">class</span> <span class="nc">StorageConfiguration</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base configuration for all collection storages.&quot;&quot;&quot;</span>
+
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="n">read_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="n">batch_size</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">=</span> <span class="mi">100</span></div>
+
+
+<div class="viewcode-block" id="MemoryStorageConfiguration"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.collection.MemoryStorageConfiguration">[docs]</a><span class="k">class</span> <span class="nc">MemoryStorageConfiguration</span><span class="p">(</span><span class="n">StorageConfiguration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for collection storage in memory.&quot;&quot;&quot;</span>
+
+    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">StorageTypes</span><span class="o">.</span><span class="n">MEMORY</span><span class="p">]</span> <span class="o">=</span> <span class="n">StorageTypes</span><span class="o">.</span><span class="n">MEMORY</span></div>
+
+
+<span class="n">ComplibConstraintType_</span> <span class="o">=</span> <span class="n">constr</span><span class="p">(</span><span class="n">regex</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;^(zlib|lzo|bzip2|blosc)&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="HDF5StorageConfiguration"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.collection.HDF5StorageConfiguration">[docs]</a><span class="k">class</span> <span class="nc">HDF5StorageConfiguration</span><span class="p">(</span><span class="n">StorageConfiguration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for hdf5 collection storage.&quot;&quot;&quot;</span>
+
+    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">StorageTypes</span><span class="o">.</span><span class="n">HDF5</span><span class="p">]</span> <span class="o">=</span> <span class="n">StorageTypes</span><span class="o">.</span><span class="n">HDF5</span>
+
+    <span class="c1"># TODO: Implement is file check</span>
+    <span class="c1">#: Path of the HDF5 file</span>
+    <span class="n">data_path</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="c1">#: Compression level; See documentation of `pd.to_hdf`</span>
+    <span class="n">complevel</span><span class="p">:</span> <span class="n">conint</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lt</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">=</span> <span class="mi">3</span>
+
+    <span class="c1">#: Compression library; See documentation of `pd.to_hdf`</span>
+    <span class="n">complib</span><span class="p">:</span> <span class="n">ComplibConstraintType_</span> <span class="o">=</span> <span class="s2">&quot;lzo&quot;</span>
+
+    <span class="c1">#: Index optimization level</span>
+    <span class="n">optlevel</span><span class="p">:</span> <span class="n">conint</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lt</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">=</span> <span class="mi">6</span></div>
+
+
+<div class="viewcode-block" id="ExportConfiguration"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.collection.ExportConfiguration">[docs]</a><span class="k">class</span> <span class="nc">ExportConfiguration</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base configuration for all exports.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="GraphNetExportConfiguration"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.collection.GraphNetExportConfiguration">[docs]</a><span class="k">class</span> <span class="nc">GraphNetExportConfiguration</span><span class="p">(</span><span class="n">ExportConfiguration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for GraphNetExports.&quot;&quot;&quot;</span>
+
+    <span class="n">data_path</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="c1"># Currently limited by 32 record ids per batch due to numpy</span>
+    <span class="c1"># https://github.com/numpy/numpy/issues/4398</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">=</span> <span class="mi">100</span></div>
+
+
+<span class="c1"># TODO: Implement Memory Storage</span>
+<span class="n">AnnotatedStorageConfiguration</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span>
+    <span class="n">Union</span><span class="p">[</span><span class="n">HDF5StorageConfiguration</span><span class="p">,</span> <span class="n">MemoryStorageConfiguration</span><span class="p">],</span>
+    <span class="n">Field</span><span class="p">(</span><span class="n">discriminator</span><span class="o">=</span><span class="s2">&quot;type&quot;</span><span class="p">),</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="MergeConfiguration"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.collection.MergeConfiguration">[docs]</a><span class="k">class</span> <span class="nc">MergeConfiguration</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration to merge multiple collections into one.&quot;&quot;&quot;</span>
+
+    <span class="n">in_collections</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AnnotatedStorageConfiguration</span><span class="p">]</span>
+    <span class="n">tmp_collection</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">HDF5StorageConfiguration</span><span class="p">,</span> <span class="n">MemoryStorageConfiguration</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">discriminator</span><span class="o">=</span><span class="s2">&quot;type&quot;</span><span class="p">,</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">HDF5StorageConfiguration</span><span class="p">(</span>
+            <span class="n">data_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)),</span>
+                <span class="s2">&quot;../../&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;_tmp_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot;data.h5&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">read_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">out_collection</span><span class="p">:</span> <span class="n">AnnotatedStorageConfiguration</span>
+    <span class="n">content</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">MergeContentConfiguration</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">redistribution</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RedistributionConfiguration</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">defaults</span><span class="o">.</span><span class="n">seed</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Janik Prottung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

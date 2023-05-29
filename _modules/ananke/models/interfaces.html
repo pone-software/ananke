@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ananke.models.interfaces &mdash; Ananke 0.2.2 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ananke
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ananke.html">ananke package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ananke</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ananke.models.interfaces</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ananke.models.interfaces</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Place for all interfaces used in the package.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterator</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">pandera.typing</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
+
+
+<span class="n">T_</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T_&quot;</span><span class="p">)</span>
+<span class="n">DataFrameFacade_</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;DataFrameFacade_&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;DataFrameFacade&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DataFrameFacadeIterator"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.interfaces.DataFrameFacadeIterator">[docs]</a><span class="k">class</span> <span class="nc">DataFrameFacadeIterator</span><span class="p">(</span><span class="n">Iterator</span><span class="p">[</span><span class="n">DataFrameFacade_</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class serving as iterator for the DataFrameFacade&#39;s.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">facade</span><span class="p">:</span> <span class="n">DataFrameFacade_</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor of the Iterator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            facade: Facade to iterate over</span>
+<span class="sd">            batch_size: Batch size of each individual iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">facade</span><span class="p">:</span> <span class="n">DataFrameFacade_</span> <span class="o">=</span> <span class="n">facade</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__number_of_items</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">facade</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__facade_class</span> <span class="o">=</span> <span class="n">facade</span><span class="o">.</span><span class="vm">__class__</span>
+        <span class="k">if</span> <span class="n">batch_size</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Batch size must be positive int&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__current</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrameFacadeIterator</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get iterator object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Itself as iterator object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrameFacade_</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get next element of iterator.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dataframe facade of current batch of data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__current</span>
+        <span class="k">if</span> <span class="n">current_index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__number_of_items</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">StopIteration</span>
+        <span class="n">next_index</span> <span class="o">=</span> <span class="n">current_index</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__current</span> <span class="o">=</span> <span class="n">next_index</span>
+        <span class="n">current_facade</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__facade_class</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__facade_class</span><span class="o">.</span><span class="n">__fields_set__</span><span class="p">,</span>
+            <span class="n">df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">facade</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">current_index</span><span class="p">:</span><span class="n">next_index</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">current_facade</span></div>
+
+
+<div class="viewcode-block" id="DataFrameFacade"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.interfaces.DataFrameFacade">[docs]</a><span class="k">class</span> <span class="nc">DataFrameFacade</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface for making a class numpy representable.&quot;&quot;&quot;</span>
+
+    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">[</span><span class="n">T_</span><span class="p">]</span>
+
+<div class="viewcode-block" id="DataFrameFacade.to_numpy"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.interfaces.DataFrameFacade.to_numpy">[docs]</a>    <span class="k">def</span> <span class="nf">to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">DTypeLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts data frame to numpy array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dtype: Type of the final dataframe.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Numpy array based on data frame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__array__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">DTypeLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make class numpy array castable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dtype: Type of the numpy array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Generated numpy array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Length of the numpy array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Length of the numpy array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">DataFrameFacade</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks whether it is equal to another facade.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other: Facade to check equality against</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True or false based on dataframe equality.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DataFrameFacade.concat"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.interfaces.DataFrameFacade.concat">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">concat</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">facades_to_concat</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">DataFrameFacade</span><span class="p">]]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DataFrameFacade</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Concats multiple facades to one.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            facades_to_concat: List of facades to concat</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Concatenated Facade</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">facades_to_concat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">facade</span> <span class="ow">in</span> <span class="n">facades_to_concat</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">facade</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">facade</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># TODO: Evaluate whether to drop index or not?</span>
+        <span class="n">full_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__fields_set__</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="n">full_df</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataFrameFacade.sample"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.interfaces.DataFrameFacade.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrameFacade</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns class with a random sample of its dataframe rows.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n: number of samples to draw.</span>
+<span class="sd">            random_state: random state to choose</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: When fewer samples than required are available.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Class with the given number of random samples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only </span><span class="si">{}</span><span class="s2"> of needed </span><span class="si">{}</span><span class="s2"> rows available&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">n</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DataFrameFacade.iterbatches"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.interfaces.DataFrameFacade.iterbatches">[docs]</a>    <span class="k">def</span> <span class="nf">iterbatches</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrameFacadeIterator</span><span class="p">[</span><span class="n">DataFrameFacade_</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get iterator of current facade.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: How many rows in each iteration</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Iterator for batched dataframe iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataFrameFacadeIterator</span><span class="p">(</span><span class="n">facade</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataFrameFacade.itertuples"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.interfaces.DataFrameFacade.itertuples">[docs]</a>    <span class="k">def</span> <span class="nf">itertuples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pass through itertuples from dataframe with name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            index: Whether index should be part of the Tuple</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Itertuples iterator of dataframe.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Janik Prottung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

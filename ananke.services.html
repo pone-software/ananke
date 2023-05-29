@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ananke.services package &mdash; Ananke 0.2.2 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ananke.services.collection package" href="ananke.services.collection.html" />
+    <link rel="prev" title="ananke.schemas package" href="ananke.schemas.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Ananke
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="ananke.html">ananke package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="ananke.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ananke.configurations.html">ananke.configurations package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.models.html">ananke.models package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.schemas.html">ananke.schemas package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">ananke.services package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ananke-services-detector-module">ananke.services.detector module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ananke.services">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.visualisation.html">ananke.visualisation package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ananke.html#module-ananke">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Ananke</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="ananke.html">ananke package</a></li>
+      <li class="breadcrumb-item active">ananke.services package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ananke.services.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ananke-services-package">
+<h1>ananke.services package<a class="headerlink" href="#ananke-services-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ananke.services.collection.html">ananke.services.collection package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ananke.services.collection.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ananke.services.collection.html#module-ananke.services.collection.exporters">ananke.services.collection.exporters module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.exporters.AbstractCollectionExporter"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionExporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.exporters.AbstractCollectionExporter.export"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionExporter.export()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.exporters.GraphNetCollectionExporter"><code class="docutils literal notranslate"><span class="pre">GraphNetCollectionExporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.exporters.GraphNetCollectionExporter.export"><code class="docutils literal notranslate"><span class="pre">GraphNetCollectionExporter.export()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ananke.services.collection.html#module-ananke.services.collection.importers">ananke.services.collection.importers module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.AbstractCollectionImporter"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionImporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.AbstractCollectionImporter.import_data"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionImporter.import_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.LegacyCollectionKeys"><code class="docutils literal notranslate"><span class="pre">LegacyCollectionKeys</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.LegacyCollectionKeys.RECORDS"><code class="docutils literal notranslate"><span class="pre">LegacyCollectionKeys.RECORDS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.LegacyCollectionKeys.HITS"><code class="docutils literal notranslate"><span class="pre">LegacyCollectionKeys.HITS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.LegacyCollectionKeys.SOURCES"><code class="docutils literal notranslate"><span class="pre">LegacyCollectionKeys.SOURCES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.LegacyCollectionKeys.DETECTOR"><code class="docutils literal notranslate"><span class="pre">LegacyCollectionKeys.DETECTOR</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.LegacyCollection"><code class="docutils literal notranslate"><span class="pre">LegacyCollection</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.LegacyCollection.get_detector"><code class="docutils literal notranslate"><span class="pre">LegacyCollection.get_detector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.LegacyCollection.get_records"><code class="docutils literal notranslate"><span class="pre">LegacyCollection.get_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.LegacyCollection.get_sources"><code class="docutils literal notranslate"><span class="pre">LegacyCollection.get_sources()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.LegacyCollection.get_hits"><code class="docutils literal notranslate"><span class="pre">LegacyCollection.get_hits()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.LegacyCollectionImporter"><code class="docutils literal notranslate"><span class="pre">LegacyCollectionImporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.importers.LegacyCollectionImporter.import_data"><code class="docutils literal notranslate"><span class="pre">LegacyCollectionImporter.import_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ananke.services.collection.html#module-ananke.services.collection.storage">ananke.services.collection.storage module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.open"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.open()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.close"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_detector"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.get_detector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.set_detector"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.set_detector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.del_detector"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.del_detector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_records"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.get_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.set_records"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.set_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.del_records"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.del_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_hits"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.get_hits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.set_hits"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.set_hits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.del_hits"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.del_hits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_sources"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.get_sources()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.set_sources"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.set_sources()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.del_sources"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.del_sources()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_next_record_ids"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.get_next_record_ids()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.delete"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.delete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_record_ids_with_hits"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.get_record_ids_with_hits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.get_record_ids_with_sources"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.get_record_ids_with_sources()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.AbstractCollectionStorage.optimize"><code class="docutils literal notranslate"><span class="pre">AbstractCollectionStorage.optimize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.StorageKeys"><code class="docutils literal notranslate"><span class="pre">StorageKeys</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.StorageKeys.RECORDS"><code class="docutils literal notranslate"><span class="pre">StorageKeys.RECORDS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.StorageKeys.HITS"><code class="docutils literal notranslate"><span class="pre">StorageKeys.HITS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.StorageKeys.SOURCES"><code class="docutils literal notranslate"><span class="pre">StorageKeys.SOURCES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.StorageKeys.DETECTOR"><code class="docutils literal notranslate"><span class="pre">StorageKeys.DETECTOR</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.open"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.open()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.close"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_detector"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.get_detector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.set_detector"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.set_detector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.del_detector"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.del_detector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_records"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.get_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.set_records"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.set_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.del_records"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.del_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_hits"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.get_hits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.set_hits"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.set_hits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.del_hits"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.del_hits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_sources"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.get_sources()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.set_sources"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.set_sources()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.del_sources"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.del_sources()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_next_record_ids"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.get_next_record_ids()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.delete"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.delete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_record_ids_with_hits"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.get_record_ids_with_hits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.MemoryCollectionStorage.get_record_ids_with_sources"><code class="docutils literal notranslate"><span class="pre">MemoryCollectionStorage.get_record_ids_with_sources()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.store"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.store</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.open"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.open()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.close"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.delete"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.delete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_detector"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.get_detector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.set_detector"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.set_detector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.del_detector"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.del_detector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_records"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.get_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.set_records"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.set_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.del_records"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.del_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_hits"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.get_hits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.set_hits"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.set_hits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.del_hits"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.del_hits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_sources"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.get_sources()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.set_sources"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.set_sources()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.del_sources"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.del_sources()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_next_record_ids"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.get_next_record_ids()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_record_ids_with_hits"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.get_record_ids_with_hits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.get_record_ids_with_sources"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.get_record_ids_with_sources()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.HDF5CollectionStorage.optimize"><code class="docutils literal notranslate"><span class="pre">HDF5CollectionStorage.optimize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.StorageFactory"><code class="docutils literal notranslate"><span class="pre">StorageFactory</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.StorageFactory.configuration_mapping"><code class="docutils literal notranslate"><span class="pre">StorageFactory.configuration_mapping</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ananke.services.collection.html#ananke.services.collection.storage.StorageFactory.create"><code class="docutils literal notranslate"><span class="pre">StorageFactory.create()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ananke.services.collection.html#module-ananke.services.collection">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="ananke-services-detector-module">
+<h2>ananke.services.detector module<a class="headerlink" href="#ananke-services-detector-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-ananke.services">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ananke.services" title="Permalink to this heading"></a></h2>
+<p>Package containing services for business logic.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ananke.schemas.html" class="btn btn-neutral float-left" title="ananke.schemas package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ananke.services.collection.html" class="btn btn-neutral float-right" title="ananke.services.collection package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Janik Prottung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

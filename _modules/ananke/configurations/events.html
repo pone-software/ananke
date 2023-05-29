@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ananke.configurations.events &mdash; Ananke 0.2.2 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ananke
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ananke.html">ananke package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ananke</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ananke.configurations.events</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ananke.configurations.events</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module containing all the configuration definitions for events.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">ananke.defaults</span> <span class="k">as</span> <span class="nn">defaults</span>
+
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
+
+
+<div class="viewcode-block" id="EventRedistributionMode"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.events.EventRedistributionMode">[docs]</a><span class="k">class</span> <span class="nc">EventRedistributionMode</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enum for all the different redistribution modes.&quot;&quot;&quot;</span>
+
+    <span class="c1"># I want the start time be that it is in the interval</span>
+    <span class="c1"># ..............start....first_hit....last_hit........</span>
+    <span class="c1"># ...........[..............................]..............</span>
+    <span class="n">START_TIME</span> <span class="o">=</span> <span class="s2">&quot;start_time&quot;</span>
+    <span class="c1"># I want the new start time be that the at least one hit overlaps with the time</span>
+    <span class="c1"># ....start....first_hit....last_hit........</span>
+    <span class="c1"># ...........[.................].................</span>
+    <span class="n">CONTAINS_HIT</span> <span class="o">=</span> <span class="s2">&quot;contains_hit&quot;</span>
+    <span class="c1"># I want the new start time be that all hits overlap with the time</span>
+    <span class="c1"># ....start....first_hit....last_hit........</span>
+    <span class="c1"># ...........[..............................]....</span>
+    <span class="n">CONTAINS_EVENT</span> <span class="o">=</span> <span class="s2">&quot;contains_event&quot;</span>
+    <span class="c1"># I want the new start time to be that x percent of the event are included</span>
+    <span class="c1"># I want the new start time be that all hits overlap with the time</span>
+    <span class="c1"># ....start....first_hit....last_hit........</span>
+    <span class="c1"># ....................[..............]...........</span>
+    <span class="n">CONTAINS_PERCENTAGE</span> <span class="o">=</span> <span class="s2">&quot;contains_percentage&quot;</span></div>
+
+
+<div class="viewcode-block" id="Interval"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.events.Interval">[docs]</a><span class="k">class</span> <span class="nc">Interval</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class defining a basic interval [start, end).&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Start time of the interval (&gt;=).</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1">#: End time of the interval (&lt;).</span>
+    <span class="n">end</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1000</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">range</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tuple containing the interval range.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">length</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Represents length of the interval.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
+
+<div class="viewcode-block" id="Interval.is_between"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.events.Interval.is_between">[docs]</a>    <span class="k">def</span> <span class="nf">is_between</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tells you whether your value is between or outside.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value: Value to check</span>
+
+<span class="sd">        Returns: Boolean containing whether value is between start and end.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span>
+        <span class="k">return</span> <span class="n">left</span> <span class="ow">and</span> <span class="n">right</span></div></div>
+
+
+<div class="viewcode-block" id="HistogramConfiguration"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.events.HistogramConfiguration">[docs]</a><span class="k">class</span> <span class="nc">HistogramConfiguration</span><span class="p">(</span><span class="n">Interval</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Subclass of Interval adding tht bin size to configure a histogram.&quot;&quot;&quot;</span>
+
+    <span class="n">bin_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">number_of_bins</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate how many bins are between start and end.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            number of bins</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_size</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="RedistributionConfiguration"><a class="viewcode-back" href="../../../ananke.configurations.html#ananke.configurations.events.RedistributionConfiguration">[docs]</a><span class="k">class</span> <span class="nc">RedistributionConfiguration</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Config to make redistribution standardized.&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Interval in which to redistribute</span>
+    <span class="n">interval</span><span class="p">:</span> <span class="n">Interval</span>
+
+    <span class="c1">#: Mode by which to redistribute</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="n">EventRedistributionMode</span>
+
+    <span class="c1">#: Seed for redistribution</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">defaults</span><span class="o">.</span><span class="n">seed</span>
+
+    <span class="c1">#: Percentile of hits in interval</span>
+    <span class="n">percentile</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Janik Prottung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

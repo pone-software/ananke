@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ananke.models.event &mdash; Ananke 0.2.2 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ananke
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ananke.html">ananke package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ananke</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ananke.models.event</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ananke.models.event</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module contains all event and photon source related structures.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">ananke.models.geometry</span> <span class="kn">import</span> <span class="n">OrientedLocatedObjects</span>
+<span class="kn">from</span> <span class="nn">ananke.models.interfaces</span> <span class="kn">import</span> <span class="n">DataFrameFacade</span>
+<span class="kn">from</span> <span class="nn">ananke.schemas.event</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EventRecordSchema</span><span class="p">,</span>
+    <span class="n">FullRecordSchema</span><span class="p">,</span>
+    <span class="n">HitSchema</span><span class="p">,</span>
+    <span class="n">NoiseRecordSchema</span><span class="p">,</span>
+    <span class="n">OrientedRecordSchema</span><span class="p">,</span>
+    <span class="n">RecordIdSchema</span><span class="p">,</span>
+    <span class="n">RecordIdsTypes_</span><span class="p">,</span>
+    <span class="n">RecordSchema</span><span class="p">,</span>
+    <span class="n">RecordStatisticsSchema</span><span class="p">,</span>
+    <span class="n">SourceSchema</span><span class="p">,</span>
+    <span class="n">TimedSchema</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ananke.utils</span> <span class="kn">import</span> <span class="n">percentile</span> <span class="k">as</span> <span class="n">percentile_func</span>
+<span class="kn">from</span> <span class="nn">pandera.typing</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">NonNegativeInt</span>
+
+
+<span class="c1"># TODO: Add typed schema</span>
+
+
+<div class="viewcode-block" id="RecordIds"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.RecordIds">[docs]</a><span class="k">class</span> <span class="nc">RecordIds</span><span class="p">(</span><span class="n">DataFrameFacade</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;General description of a record ids.&quot;&quot;&quot;</span>
+
+    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">[</span><span class="n">RecordIdSchema</span><span class="p">]</span>
+
+<div class="viewcode-block" id="RecordIds.get_by_record_ids"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.RecordIds.get_by_record_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_by_record_ids</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">record_ids</span><span class="p">:</span> <span class="n">RecordIdsTypes_</span><span class="p">,</span> <span class="n">invert</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RecordIds</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all sources by a record id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            record_ids: ID(s) of the record to get</span>
+<span class="sd">            invert: Get except passed record ids</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Records with given ids</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">record_ids</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">record_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">record_ids</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">invert</span><span class="p">:</span>
+            <span class="n">new_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;record_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">record_ids</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;record_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">record_ids</span><span class="p">)]</span>
+
+        <span class="n">new_df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">new_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">new_df</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">record_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all the record ids of the current df.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;record_id&quot;</span><span class="p">]</span></div>
+
+
+<span class="c1"># TODO: Fix everything here</span>
+<div class="viewcode-block" id="TimeStatistics"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.TimeStatistics">[docs]</a><span class="k">class</span> <span class="nc">TimeStatistics</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Model for staticstical information of record.&quot;&quot;&quot;</span>
+
+    <span class="n">count</span><span class="p">:</span> <span class="n">NonNegativeInt</span>
+    <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span></div>
+
+
+<div class="viewcode-block" id="RecordTimes"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.RecordTimes">[docs]</a><span class="k">class</span> <span class="nc">RecordTimes</span><span class="p">(</span><span class="n">DataFrameFacade</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;General description of intervals.&quot;&quot;&quot;</span>
+
+    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">[</span><span class="n">TimedSchema</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">times</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets DataFrame with all times.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="RecordTimes.add_time"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.RecordTimes.add_time">[docs]</a>    <span class="k">def</span> <span class="nf">add_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_difference</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds time to the data frame.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            time_difference: time to add</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">time_difference</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RecordTimes.get_statistics"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.RecordTimes.get_statistics">[docs]</a>    <span class="k">def</span> <span class="nf">get_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">percentile</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeStatistics</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the Statistics of the current hits.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            percentile: Float between 0 and one to give percentile of included rows.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TimeStatistics Object containing min, max, and count</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Refractor get statistics</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">percentile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">percentile</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">percentile</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Percentiles can only be between 0 and 1.&quot;</span><span class="p">)</span>
+            <span class="n">beginning_percentile</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="n">percentile</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="n">ending_percentile</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">percentile</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="n">aggregations</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">percentile_func</span><span class="p">(</span><span class="n">beginning_percentile</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">),</span>
+                <span class="n">percentile_func</span><span class="p">(</span><span class="n">ending_percentile</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">),</span>
+            <span class="p">]</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">count</span> <span class="o">*</span> <span class="n">percentile</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">aggregations</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">]</span>
+
+        <span class="n">grouped_hits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">aggregations</span><span class="p">})</span>
+
+        <span class="k">return</span> <span class="n">TimeStatistics</span><span class="p">(</span>
+            <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">,</span>
+            <span class="nb">min</span><span class="o">=</span><span class="n">grouped_hits</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">],</span>
+            <span class="nb">max</span><span class="o">=</span><span class="n">grouped_hits</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">],</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Records"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.Records">[docs]</a><span class="k">class</span> <span class="nc">Records</span><span class="p">(</span><span class="n">RecordIds</span><span class="p">,</span> <span class="n">RecordTimes</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;General description of a record for events or sources.&quot;&quot;&quot;</span>
+
+    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">[</span><span class="n">RecordSchema</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="RecordStatistics"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.RecordStatistics">[docs]</a><span class="k">class</span> <span class="nc">RecordStatistics</span><span class="p">(</span><span class="n">Records</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;General description of a record for events or sources.&quot;&quot;&quot;</span>
+
+    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">[</span><span class="n">RecordStatisticsSchema</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="OrientedRecords"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.OrientedRecords">[docs]</a><span class="k">class</span> <span class="nc">OrientedRecords</span><span class="p">(</span><span class="n">OrientedLocatedObjects</span><span class="p">,</span> <span class="n">Records</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;General description of a record for events or sources.&quot;&quot;&quot;</span>
+
+    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">[</span><span class="n">OrientedRecordSchema</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Sources"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.Sources">[docs]</a><span class="k">class</span> <span class="nc">Sources</span><span class="p">(</span><span class="n">OrientedRecords</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Record for a photon source.&quot;&quot;&quot;</span>
+
+    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">[</span><span class="n">SourceSchema</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">number_of_photons</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets DataFrame with all numbers of photons.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;number_of_photons&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="EventRecords"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.EventRecords">[docs]</a><span class="k">class</span> <span class="nc">EventRecords</span><span class="p">(</span><span class="n">OrientedRecords</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Record of an event that happened.&quot;&quot;&quot;</span>
+
+    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">[</span><span class="n">EventRecordSchema</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="NoiseRecords"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.NoiseRecords">[docs]</a><span class="k">class</span> <span class="nc">NoiseRecords</span><span class="p">(</span><span class="n">Records</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Record of an event that happened.&quot;&quot;&quot;</span>
+
+    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">[</span><span class="n">NoiseRecordSchema</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="FullRecords"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.FullRecords">[docs]</a><span class="k">class</span> <span class="nc">FullRecords</span><span class="p">(</span><span class="n">Records</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;General description of a record for events or sources.&quot;&quot;&quot;</span>
+
+    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">[</span><span class="n">FullRecordSchema</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Hits"><a class="viewcode-back" href="../../../ananke.models.html#ananke.models.event.Hits">[docs]</a><span class="k">class</span> <span class="nc">Hits</span><span class="p">(</span><span class="n">Records</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Record of an event that happened.&quot;&quot;&quot;</span>
+
+    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">[</span><span class="n">HitSchema</span><span class="p">]</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Janik Prottung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
